@@ -1,0 +1,17 @@
+export const metadata = {
+  title: "EnableOS - The Operating System for Enablement",
+  description: "9 features. One system. Zero spreadsheets. Built for the solo enablement hire.",
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+      </head>
+      <body style={{ margin: 0, background: "#09090b" }}>{children}</body>
+    </html>
+  );
+}
