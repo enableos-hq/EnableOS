@@ -1,144 +1,1352 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
-import { Zap, ArrowRight, Loader } from 'lucide-react'
+import {
+  LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
+  Video, Activity, Calendar, TrendingUp, Trophy, Settings,
+  LogOut, Plus, X, ChevronRight, BarChart2, Zap, Check,
+  AlertCircle, Clock, ArrowUp, ArrowDown, Sparkles, Target,
+  FileText, Star, ChevronDown, Trash2, Edit3, Send, Loader
+} from 'lucide-react'
 
 const supabase = createClient()
 
+// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const S = {
+  sidebar: { background: '#1a1235', width: 240 },
   canvas: '#FDFBFF',
   primary: '#7C5CFC',
   primaryHover: '#9B7EFF',
   primaryLight: '#BDA9FF',
   accentBg: '#F0ECFF',
+  accentBg2: '#E8E0FF',
   ink: '#1a1235',
   inkSecondary: '#4a4162',
   muted: '#8b82a0',
   border: '#E2DCF0',
-  sidebar: '#1a1235',
+  borderLight: '#F0ECF8',
+  success: '#059669',
+  warning: '#d97706',
   error: '#dc2626',
 }
 
-export default function Login() {
-  const [mode, setMode] = useState('login')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const router = useRouter()
+// ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
+function Card({ children, style, onClick }) {
+  return (
+    <div onClick={onClick} style={{
+      background: '#fff',
+      border: `1px solid ${S.borderLight}`,
+      borderRadius: 12,
+      padding: 20,
+      transition: 'box-shadow 0.2s, border-color 0.2s',
+      cursor: onClick ? 'pointer' : 'default',
+      ...style,
+    }}
+      onMouseEnter={e => { if (onClick) { e.currentTarget.style.boxShadow = `0 4px 20px rgba(124,92,252,0.12)`; e.currentTarget.style.borderColor = S.border } }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = S.borderLight }}
+    >
+      {children}
+    </div>
+  )
+}
 
-  const handle = async (e) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
-    setLoading(true)
+function Btn({ children, onClick, variant = 'primary', size = 'md', disabled, style }) {
+  const base = {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    fontFamily: 'var(--font-body)', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
+    border: 'none', transition: 'all 0.15s', opacity: disabled ? 0.5 : 1,
+    borderRadius: size === 'sm' ? 6 : 8,
+    fontSize: size === 'sm' ? 12 : 14,
+    padding: size === 'sm' ? '6px 12px' : '10px 18px',
+    ...style,
+  }
+  const variants = {
+    primary: { background: S.ink, color: '#fff' },
+    ghost: { background: 'transparent', color: S.inkSecondary, border: `1px solid ${S.border}` },
+    danger: { background: '#fef2f2', color: S.error, border: `1px solid #fecaca` },
+    purple: { background: S.primary, color: '#fff' },
+  }
+  return <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>{children}</button>
+}
 
-    if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { setError(error.message); setLoading(false); return }
-      router.push('/app')
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) { setError(error.message); setLoading(false); return }
-      setSuccess('Account created! Signing you in...')
-      setTimeout(() => router.push('/app'), 1500)
+function Badge({ children, color = 'purple' }) {
+  const colors = {
+    purple: { bg: S.accentBg2, text: S.primary },
+    green: { bg: '#d1fae5', text: S.success },
+    yellow: { bg: '#fef3c7', text: S.warning },
+    red: { bg: '#fee2e2', text: S.error },
+    gray: { bg: S.borderLight, text: S.muted },
+  }
+  const c = colors[color] || colors.gray
+  return (
+    <span style={{
+      background: c.bg, color: c.text, borderRadius: 100,
+      padding: '3px 10px', fontSize: 11, fontWeight: 700,
+      textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-body)',
+    }}>{children}</span>
+  )
+}
+
+function Modal({ title, onClose, children, wide }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(26,18,53,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ background: S.ink, borderRadius: 16, width: '100%', maxWidth: wide ? 680 : 480, maxHeight: '90vh', overflowY: 'auto', border: `1px solid #3a3550` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #3a3550' }}>
+          <span style={{ color: '#fff', fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)' }}>{title}</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer' }}><X size={18} /></button>
+        </div>
+        <div style={{ padding: '24px' }}>{children}</div>
+      </div>
+    </div>
+  )
+}
+
+function Field({ label, children }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <label style={{ display: 'block', color: S.muted, fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</label>
+      {children}
+    </div>
+  )
+}
+
+function Input({ value, onChange, placeholder, type = 'text', style }) {
+  return (
+    <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}
+    />
+  )
+}
+
+function Select({ value, onChange, children, style }) {
+  return (
+    <select value={value} onChange={onChange}
+      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}>
+      {children}
+    </select>
+  )
+}
+
+function Textarea({ value, onChange, placeholder, rows = 3, style }) {
+  return (
+    <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
+      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', ...style }}
+    />
+  )
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function Dashboard({ userId }) {
+  const [stats, setStats] = useState({ requests: 0, reps: 0, todos: 0 })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const [{ count: reqCount }, { count: repCount }, { count: todoCount }] = await Promise.all([
+        supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'open'),
+        supabase.from('reps').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('todos').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('done', false),
+      ])
+      setStats({ requests: reqCount || 0, reps: repCount || 0, todos: todoCount || 0 })
+      setLoading(false)
     }
-    setLoading(false)
+    load()
+  }, [userId])
+
+  const statCards = [
+    { label: 'Open Requests', value: stats.requests, icon: Inbox, color: S.primary },
+    { label: 'Ramping Reps', value: stats.reps, icon: Users, color: S.success },
+    { label: 'Must-Do Tasks', value: stats.todos, icon: Target, color: S.warning },
+    { label: 'Avg Ramp %', value: '68%', icon: TrendingUp, color: '#8b5cf6' },
+  ]
+
+  return (
+    <div>
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, color: S.ink, marginBottom: 4 }}>Good morning 👋</h1>
+        <p style={{ color: S.inkSecondary, fontSize: 15 }}>Here's what's happening with your team today.</p>
+      </div>
+      {loading ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+            {statCards.map(s => (
+              <Card key={s.label}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <s.icon size={18} color={s.color} />
+                  </div>
+                </div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: S.ink, fontFamily: 'var(--font-display)', marginBottom: 4 }}>{s.value}</div>
+                <div style={{ fontSize: 13, color: S.muted }}>{s.label}</div>
+              </Card>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <Card>
+              <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 15 }}>Priority Queue</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {['Finalize onboarding deck for new cohort', 'Battlecard update — competitor pricing changed', 'Cold outreach sequence refresh'].map((t, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: S.accentBg, borderRadius: 8 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? S.error : i === 1 ? S.warning : S.primary, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: S.inkSecondary }}>{t}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+            <Card>
+              <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 15 }}>Ramp Snapshot</h3>
+              {['Alex Chen', 'Priya Sharma', 'Marcus O.'].map((name, i) => {
+                const pct = [78, 52, 91][i]
+                return (
+                  <div key={name} style={{ marginBottom: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>{name}</span>
+                      <span style={{ fontSize: 13, color: S.primary, fontWeight: 700 }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: 6, background: S.borderLight, borderRadius: 3 }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 3 }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </Card>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ─── INTAKE ────────────────────────────────────────────────────────────────────
+function Intake({ userId }) {
+  const [requests, setRequests] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [filter, setFilter] = useState('all')
+  const [form, setForm] = useState({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' })
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('requests').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    setRequests(data || [])
+  }, [userId])
+
+  useEffect(() => { load() }, [load])
+
+  const save = async () => {
+    const priority = Math.round((form.impact * form.urgency) / form.effort)
+    await supabase.from('requests').insert({ ...form, user_id: userId, priority_score: priority })
+    setShowModal(false)
+    setForm({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' })
+    load()
+  }
+
+  const updateStatus = async (id, status) => {
+    await supabase.from('requests').update({ status }).eq('id', id)
+    load()
+  }
+
+  const buckets = ['all', 'Collateral', 'Training Session', 'Everboarding', 'Onboarding', 'Process', 'Playbook', 'Other']
+  const filtered = filter === 'all' ? requests : requests.filter(r => r.bucket === filter)
+  const statusColor = { open: 'purple', 'in-progress': 'yellow', done: 'green' }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Intake</h1>
+          <p style={{ color: S.muted, fontSize: 14 }}>Manage and prioritize enablement requests</p>
+        </div>
+        <Btn onClick={() => setShowModal(true)}><Plus size={16} />New Request</Btn>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        {buckets.map(b => (
+          <button key={b} onClick={() => setFilter(b)} style={{
+            padding: '6px 14px', borderRadius: 100, border: `1px solid ${filter === b ? S.primary : S.border}`,
+            background: filter === b ? S.accentBg2 : 'transparent', color: filter === b ? S.primary : S.inkSecondary,
+            fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
+          }}>{b === 'all' ? 'All' : b}</button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {filtered.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>No requests yet. Add your first one!</div>}
+        {filtered.map(r => (
+          <Card key={r.id} style={{ padding: '16px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontWeight: 700, color: S.ink, fontSize: 15 }}>{r.title}</span>
+                  <Badge color={statusColor[r.status] || 'gray'}>{r.status}</Badge>
+                  <Badge color="gray">{r.bucket}</Badge>
+                </div>
+                {r.description && <p style={{ color: S.muted, fontSize: 13, marginBottom: 8 }}>{r.description}</p>}
+                <div style={{ display: 'flex', gap: 16 }}>
+                  <span style={{ fontSize: 12, color: S.muted }}>Impact: <b style={{ color: S.inkSecondary }}>{r.impact}</b></span>
+                  <span style={{ fontSize: 12, color: S.muted }}>Urgency: <b style={{ color: S.inkSecondary }}>{r.urgency}</b></span>
+                  <span style={{ fontSize: 12, color: S.muted }}>Effort: <b style={{ color: S.inkSecondary }}>{r.effort}</b></span>
+                  <span style={{ fontSize: 12, color: S.primary, fontWeight: 700 }}>Priority: {r.priority_score}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 6, marginLeft: 16 }}>
+                {r.status !== 'done' && (
+                  <Btn size="sm" variant="ghost" onClick={() => updateStatus(r.id, r.status === 'open' ? 'in-progress' : 'done')}>
+                    {r.status === 'open' ? 'Start' : 'Done'}
+                  </Btn>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {showModal && (
+        <Modal title="New Enablement Request" onClose={() => setShowModal(false)}>
+          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What's being requested?" /></Field>
+          <Field label="Bucket">
+            <Select value={form.bucket} onChange={e => setForm({ ...form, bucket: e.target.value })}>
+              {['Collateral', 'Training Session', 'Everboarding', 'Onboarding', 'Process', 'Playbook', 'Other'].map(b => <option key={b} value={b}>{b}</option>)}
+            </Select>
+          </Field>
+          <Field label="Description"><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="More context..." /></Field>
+          {[['impact', 'Impact'], ['urgency', 'Urgency'], ['effort', 'Effort']].map(([key, label]) => (
+            <Field key={key} label={`${label}: ${form[key]}/5`}>
+              <input type="range" min={1} max={5} value={form[key]} onChange={e => setForm({ ...form, [key]: +e.target.value })}
+                style={{ width: '100%', accentColor: S.primary }} />
+            </Field>
+          ))}
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+            <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
+            <Btn onClick={save} disabled={!form.title}>Add Request</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── RAMP & ONBOARDING ────────────────────────────────────────────────────────
+function Ramp({ userId }) {
+  const [reps, setReps] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [showAddRep, setShowAddRep] = useState(false)
+  const [newRepName, setNewRepName] = useState('')
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('reps').select('*').eq('user_id', userId)
+    setReps(data || [])
+    if (data && data.length > 0 && !selected) setSelected(data[0])
+  }, [userId, selected])
+
+  useEffect(() => { load() }, [load])
+
+  const addRep = async () => {
+    if (!newRepName.trim()) return
+    const defaultProgress = {
+      sections: { 'Company & Culture': [false, false, false, false], 'Sales Process': [false, false, false, false], 'Product Deep Dive': [false, false, false, false], 'Outbound Mastery': [false, false, false, false], 'Live Certification': [false, false, false, false] },
+      benchmarks: {}
+    }
+    await supabase.from('reps').insert({ user_id: userId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() })
+    setNewRepName('')
+    setShowAddRep(false)
+    load()
+  }
+
+  const toggleCheck = async (section, idx) => {
+    if (!selected) return
+    const updated = { ...selected.progress }
+    updated.sections[section][idx] = !updated.sections[section][idx]
+    await supabase.from('reps').update({ progress: updated }).eq('id', selected.id)
+    setSelected({ ...selected, progress: updated })
+    load()
+  }
+
+  const sections = ['Company & Culture', 'Sales Process', 'Product Deep Dive', 'Outbound Mastery', 'Live Certification']
+  const sectionItems = {
+    'Company & Culture': ['Company history & mission', 'ICP and buyer personas', 'Competitive landscape', 'Internal tools & tech stack'],
+    'Sales Process': ['Discovery call framework', 'Demo flow walkthrough', 'Objection handling', 'Pipeline management'],
+    'Product Deep Dive': ['Core product features', 'Integration ecosystem', 'Pricing & packaging', 'Customer use cases'],
+    'Outbound Mastery': ['Cold email sequences', 'LinkedIn outreach', 'Cold call framework', 'Social selling tactics'],
+    'Live Certification': ['Discovery call roleplay', 'Demo certification', 'Objection handling test', 'Manager sign-off'],
+  }
+
+  const calcPct = (rep) => {
+    if (!rep?.progress?.sections) return 0
+    const all = Object.values(rep.progress.sections).flat()
+    return Math.round((all.filter(Boolean).length / all.length) * 100)
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: S.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
-      {/* Background decorations */}
-      <div style={{ position: 'absolute', top: -100, right: -100, width: 400, height: 400, borderRadius: '50%', background: `radial-gradient(circle, ${S.primary}12 0%, transparent 70%)`, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: -80, left: -80, width: 300, height: 300, borderRadius: '50%', background: `radial-gradient(circle, ${S.primaryLight}10 0%, transparent 70%)`, pointerEvents: 'none' }} />
+    <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 120px)' }}>
+      <div style={{ width: 220, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>Reps</span>
+          <button onClick={() => setShowAddRep(true)} style={{ background: 'none', border: 'none', color: S.primary, cursor: 'pointer' }}><Plus size={16} /></button>
+        </div>
+        {reps.map(r => (
+          <div key={r.id} onClick={() => setSelected(r)} style={{
+            padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
+            background: selected?.id === r.id ? S.accentBg2 : 'transparent',
+            border: `1px solid ${selected?.id === r.id ? S.primary + '40' : 'transparent'}`,
+          }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 4 }}>{r.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ flex: 1, height: 4, background: S.borderLight, borderRadius: 2 }}>
+                <div style={{ height: '100%', width: `${calcPct(r)}%`, background: S.primary, borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 11, color: S.primary, fontWeight: 700 }}>{calcPct(r)}%</span>
+            </div>
+          </div>
+        ))}
+        {reps.length === 0 && <div style={{ fontSize: 13, color: S.muted, textAlign: 'center', paddingTop: 20 }}>No reps yet</div>}
+      </div>
 
-      <div style={{ width: '100%', maxWidth: 420, position: 'relative' }}>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {!selected ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: S.muted }}>Select a rep or add one</div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <div>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>{selected.name}</h1>
+                <p style={{ color: S.muted, fontSize: 14 }}>{calcPct(selected)}% complete · Started {selected.start_date ? new Date(selected.start_date).toLocaleDateString() : 'recently'}</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {sections.map(section => {
+                const checks = selected.progress?.sections?.[section] || [false, false, false, false]
+                const done = checks.filter(Boolean).length
+                return (
+                  <Card key={section}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{section}</h3>
+                      <Badge color={done === 4 ? 'green' : 'gray'}>{done}/4</Badge>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {sectionItems[section].map((item, i) => (
+                        <div key={i} onClick={() => toggleCheck(section, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '6px 8px', borderRadius: 6, transition: 'background 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = S.accentBg}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                          <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checks[i] ? S.primary : S.border}`, background: checks[i] ? S.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                            {checks[i] && <Check size={11} color="#fff" strokeWidth={3} />}
+                          </div>
+                          <span style={{ fontSize: 14, color: checks[i] ? S.muted : S.inkSecondary, textDecoration: checks[i] ? 'line-through' : 'none' }}>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+      {showAddRep && (
+        <Modal title="Add Rep" onClose={() => setShowAddRep(false)}>
+          <Field label="Name"><Input value={newRepName} onChange={e => setNewRepName(e.target.value)} placeholder="Rep's name" /></Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => setShowAddRep(false)}>Cancel</Btn>
+            <Btn onClick={addRep} disabled={!newRepName.trim()}>Add Rep</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── 1:1 NOTES ────────────────────────────────────────────────────────────────
+function Notes({ userId }) {
+  const [reps, setReps] = useState([])
+  const [selectedRep, setSelectedRep] = useState(null)
+  const [notes, setNotes] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [form, setForm] = useState({ shared_agenda: '', private_notes: '' })
+  const [analyzing, setAnalyzing] = useState(false)
+  const [aiResult, setAiResult] = useState(null)
+
+  useEffect(() => {
+    supabase.from('reps').select('*').eq('user_id', userId).then(({ data }) => {
+      setReps(data || [])
+      if (data && data.length > 0) setSelectedRep(data[0])
+    })
+  }, [userId])
+
+  useEffect(() => {
+    if (!selectedRep) return
+    supabase.from('notes').select('*').eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data }) => setNotes(data || []))
+  }, [selectedRep, userId])
+
+  const save = async () => {
+    await supabase.from('notes').insert({ ...form, user_id: userId, rep_id: selectedRep.id, date: new Date().toISOString() })
+    setShowModal(false)
+    setForm({ shared_agenda: '', private_notes: '' })
+    setAiResult(null)
+    supabase.from('notes').select('*').eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data }) => setNotes(data || []))
+  }
+
+  const analyze = async () => {
+    if (!form.private_notes && !form.shared_agenda) return
+    setAnalyzing(true)
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: `Analyze this 1:1 note from a sales enablement manager. Return ONLY a JSON object with: sentiment ("positive"|"neutral"|"concern"), action (1 suggested next action as string), theme (1-2 word tag), session (suggested session topic).
+Shared agenda: ${form.shared_agenda}
+Private notes: ${form.private_notes}`
+          }]
+        })
+      })
+      const data = await res.json()
+      const text = data.content?.[0]?.text || '{}'
+      const clean = text.replace(/```json|```/g, '').trim()
+      setAiResult(JSON.parse(clean))
+    } catch { setAiResult({ sentiment: 'neutral', action: 'Follow up next session', theme: 'General', session: 'Discovery practice' }) }
+    setAnalyzing(false)
+  }
+
+  const sentimentColor = { positive: 'green', neutral: 'gray', concern: 'red' }
+
+  return (
+    <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 120px)' }}>
+      <div style={{ width: 200, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 13, color: S.ink, marginBottom: 14 }}>Reps</div>
+        {reps.map(r => (
+          <div key={r.id} onClick={() => setSelectedRep(r)} style={{
+            padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
+            background: selectedRep?.id === r.id ? S.accentBg2 : 'transparent',
+            border: `1px solid ${selectedRep?.id === r.id ? S.primary + '40' : 'transparent'}`,
+          }}>
+            <span style={{ fontWeight: 600, fontSize: 13, color: S.ink }}>{r.name}</span>
+          </div>
+        ))}
+        {reps.length === 0 && <div style={{ fontSize: 13, color: S.muted }}>Add reps in Ramp & Onboarding first</div>}
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>1:1 Notes</h1>
+            <p style={{ color: S.muted, fontSize: 14 }}>{selectedRep ? `Notes for ${selectedRep.name}` : 'Select a rep'}</p>
+          </div>
+          {selectedRep && <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Note</Btn>}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {notes.map(n => (
+            <Card key={n.id}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontSize: 13, color: S.muted }}>{new Date(n.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                {n.sentiment && <Badge color={sentimentColor[n.sentiment] || 'gray'}>{n.sentiment}</Badge>}
+              </div>
+              {n.shared_agenda && (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Shared Agenda</div>
+                  <p style={{ fontSize: 14, color: S.inkSecondary }}>{n.shared_agenda}</p>
+                </div>
+              )}
+              {n.ai_action && (
+                <div style={{ marginTop: 12, padding: '10px 14px', background: S.accentBg, borderRadius: 8, borderLeft: `3px solid ${S.primary}` }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: S.primary, marginBottom: 4 }}>✦ AI Suggestion</div>
+                  <p style={{ fontSize: 13, color: S.inkSecondary }}>{n.ai_action}</p>
+                </div>
+              )}
+            </Card>
+          ))}
+          {notes.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>No notes yet for this rep</div>}
+        </div>
+      </div>
+
+      {showModal && (
+        <Modal title={`New 1:1 Note — ${selectedRep?.name}`} onClose={() => { setShowModal(false); setAiResult(null) }} wide>
+          <Field label="Shared Agenda (rep can see)"><Textarea value={form.shared_agenda} onChange={e => setForm({ ...form, shared_agenda: e.target.value })} placeholder="Topics to cover together..." /></Field>
+          <Field label="Private Notes (only you see)"><Textarea value={form.private_notes} onChange={e => setForm({ ...form, private_notes: e.target.value })} placeholder="Your private observations, concerns, coaching notes..." rows={4} /></Field>
+
+          {!aiResult ? (
+            <Btn variant="ghost" onClick={analyze} disabled={analyzing} style={{ marginBottom: 16, color: S.primary, borderColor: S.primary }}>
+              {analyzing ? <><Loader size={14} />Analyzing...</> : <><Sparkles size={14} />Analyze with AI</>}
+            </Btn>
+          ) : (
+            <div style={{ background: '#2a2445', borderRadius: 10, padding: 16, marginBottom: 16, border: '1px solid #3a3550' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: S.primaryLight, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><Sparkles size={12} />AI Analysis</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Sentiment</div><Badge color={sentimentColor[aiResult.sentiment] || 'gray'}>{aiResult.sentiment}</Badge></div>
+                <div><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Theme</div><span style={{ fontSize: 13, color: '#fff', fontWeight: 600 }}>{aiResult.theme}</span></div>
+                <div style={{ gridColumn: '1/-1' }}><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Suggested Action</div><p style={{ fontSize: 13, color: '#ddd' }}>{aiResult.action}</p></div>
+                <div style={{ gridColumn: '1/-1' }}><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Session Idea</div><p style={{ fontSize: 13, color: S.primaryLight }}>{aiResult.session}</p></div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => { setShowModal(false); setAiResult(null) }}>Cancel</Btn>
+            <Btn onClick={save}>Save Note</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── COLLATERALS ───────────────────────────────────────────────────────────────
+function Collaterals({ userId }) {
+  const [items, setItems] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [search, setSearch] = useState('')
+  const [form, setForm] = useState({ title: '', bucket: 'Battle Card', description: '', link: '' })
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('collaterals').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    setItems(data || [])
+  }, [userId])
+
+  useEffect(() => { load() }, [load])
+
+  const save = async () => {
+    await supabase.from('collaterals').insert({ ...form, user_id: userId, usage_count: 0 })
+    setShowModal(false)
+    setForm({ title: '', bucket: 'Battle Card', description: '', link: '' })
+    load()
+  }
+
+  const bump = async (id, count) => {
+    await supabase.from('collaterals').update({ usage_count: count + 1 }).eq('id', id)
+    load()
+  }
+
+  const filtered = items.filter(i => i.title?.toLowerCase().includes(search.toLowerCase()))
+  const bucketColors = { 'Battle Card': 'red', 'Framework': 'purple', 'One-Pager': 'green', 'Template': 'yellow', 'Guide': 'gray', 'Sequence': 'purple', 'Other': 'gray' }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Collaterals</h1>
+          <p style={{ color: S.muted, fontSize: 14 }}>Your enablement asset library</p>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search assets..." style={{ padding: '8px 14px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink }} />
+          <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Asset</Btn>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        {filtered.map(item => (
+          <Card key={item.id}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+              <Badge color={bucketColors[item.bucket] || 'gray'}>{item.bucket}</Badge>
+              <span style={{ fontSize: 12, color: S.muted }}>{item.usage_count || 0} uses</span>
+            </div>
+            <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 6 }}>{item.title}</h3>
+            {item.description && <p style={{ fontSize: 13, color: S.muted, marginBottom: 12 }}>{item.description}</p>}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {item.link && <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none' }}>Open →</a>}
+              <Btn size="sm" variant="ghost" onClick={() => bump(item.id, item.usage_count || 0)}>+1 Use</Btn>
+            </div>
+          </Card>
+        ))}
+        {filtered.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>No collaterals yet. Add your first asset!</div>}
+      </div>
+
+      {showModal && (
+        <Modal title="Add Collateral" onClose={() => setShowModal(false)}>
+          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Asset name" /></Field>
+          <Field label="Type">
+            <Select value={form.bucket} onChange={e => setForm({ ...form, bucket: e.target.value })}>
+              {['Battle Card', 'Framework', 'One-Pager', 'Template', 'Guide', 'Sequence', 'Other'].map(b => <option key={b}>{b}</option>)}
+            </Select>
+          </Field>
+          <Field label="Description"><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What's this asset for?" rows={2} /></Field>
+          <Field label="Link (optional)"><Input value={form.link} onChange={e => setForm({ ...form, link: e.target.value })} placeholder="https://..." /></Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
+            <Btn onClick={save} disabled={!form.title}>Add Asset</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── SESSIONS ─────────────────────────────────────────────────────────────────
+function Sessions({ userId }) {
+  const [sessions, setSessions] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [form, setForm] = useState({ title: '', date: '', type: 'Training', attendees: '' })
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('sessions').select('*').eq('user_id', userId).order('date', { ascending: true })
+    setSessions(data || [])
+  }, [userId])
+
+  useEffect(() => { load() }, [load])
+
+  const save = async () => {
+    await supabase.from('sessions').insert({ ...form, user_id: userId, completed: false })
+    setShowModal(false)
+    setForm({ title: '', date: '', type: 'Training', attendees: '' })
+    load()
+  }
+
+  const markDone = async (id) => {
+    await supabase.from('sessions').update({ completed: true }).eq('id', id)
+    load()
+  }
+
+  const upcoming = sessions.filter(s => !s.completed)
+  const completed = sessions.filter(s => s.completed)
+  const typeColor = { Training: 'purple', Workshop: 'green', Coaching: 'yellow', Certification: 'red', Other: 'gray' }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Sessions</h1>
+          <p style={{ color: S.muted, fontSize: 14 }}>Schedule and track training sessions</p>
+        </div>
+        <Btn onClick={() => setShowModal(true)}><Plus size={16} />Schedule Session</Btn>
+      </div>
+
+      <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 12 }}>Upcoming ({upcoming.length})</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+        {upcoming.map(s => (
+          <Card key={s.id} style={{ padding: '14px 18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{s.title}</span>
+                  <Badge color={typeColor[s.type] || 'gray'}>{s.type}</Badge>
+                </div>
+                <div style={{ display: 'flex', gap: 16, fontSize: 13, color: S.muted }}>
+                  {s.date && <span>📅 {new Date(s.date).toLocaleDateString()}</span>}
+                  {s.attendees && <span>👥 {s.attendees}</span>}
+                </div>
+              </div>
+              <Btn size="sm" onClick={() => markDone(s.id)}>Mark Done</Btn>
+            </div>
+          </Card>
+        ))}
+        {upcoming.length === 0 && <div style={{ color: S.muted, fontSize: 14, padding: '12px 0' }}>No upcoming sessions. Schedule one!</div>}
+      </div>
+
+      <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 12 }}>Completed ({completed.length})</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {completed.map(s => (
+          <Card key={s.id} style={{ padding: '14px 18px', opacity: 0.7 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Check size={16} color={S.success} />
+              <span style={{ fontWeight: 600, fontSize: 14, color: S.ink, textDecoration: 'line-through' }}>{s.title}</span>
+              <Badge color={typeColor[s.type] || 'gray'}>{s.type}</Badge>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {showModal && (
+        <Modal title="Schedule Session" onClose={() => setShowModal(false)}>
+          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Session name" /></Field>
+          <Field label="Date"><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></Field>
+          <Field label="Type">
+            <Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+              {['Training', 'Workshop', 'Coaching', 'Certification', 'Other'].map(t => <option key={t}>{t}</option>)}
+            </Select>
+          </Field>
+          <Field label="Attendees"><Input value={form.attendees} onChange={e => setForm({ ...form, attendees: e.target.value })} placeholder="Who's joining?" /></Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
+            <Btn onClick={save} disabled={!form.title}>Schedule</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── PULSE CHECKS ─────────────────────────────────────────────────────────────
+function PulseChecks({ userId }) {
+  const [pulses, setPulses] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [form, setForm] = useState({ title: '', questions: [''] })
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('pulse_checks').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    setPulses(data || [])
+  }, [userId])
+
+  useEffect(() => { load() }, [load])
+
+  const save = async () => {
+    await supabase.from('pulse_checks').insert({ user_id: userId, title: form.title, questions: form.questions.filter(Boolean), responses: [] })
+    setShowCreate(false)
+    setForm({ title: '', questions: [''] })
+    load()
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Pulse Checks</h1>
+          <p style={{ color: S.muted, fontSize: 14 }}>Track team sentiment and readiness</p>
+        </div>
+        <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Pulse</Btn>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+        {pulses.map(p => (
+          <Card key={p.id} onClick={() => setSelected(p)}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{p.title}</span>
+              <Badge color="purple">{p.questions?.length || 0} Qs</Badge>
+            </div>
+            <div style={{ fontSize: 13, color: S.muted }}>{p.responses?.length || 0} responses</div>
+            <div style={{ fontSize: 12, color: S.muted, marginTop: 4 }}>{new Date(p.created_at).toLocaleDateString()}</div>
+          </Card>
+        ))}
+        {pulses.length === 0 && <div style={{ color: S.muted, padding: 40, textAlign: 'center', gridColumn: '1/-1' }}>No pulse checks yet</div>}
+      </div>
+
+      {selected && (
+        <Modal title={selected.title} onClose={() => setSelected(null)} wide>
+          <div style={{ marginBottom: 16 }}>
+            {(selected.questions || []).map((q, i) => (
+              <div key={i} style={{ marginBottom: 16 }}>
+                <div style={{ color: '#fff', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{i + 1}. {q}</div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <div key={n} style={{ flex: 1, height: 8, background: n <= 3 ? S.primary + '40' : '#3a3550', borderRadius: 4 }} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ color: S.muted, fontSize: 13 }}>Share this pulse check link with your team to collect responses.</div>
+        </Modal>
+      )}
+
+      {showCreate && (
+        <Modal title="Create Pulse Check" onClose={() => setShowCreate(false)}>
+          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Week 3 Readiness Check" /></Field>
+          <Field label="Questions">
+            {form.questions.map((q, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <Input value={q} onChange={e => { const qs = [...form.questions]; qs[i] = e.target.value; setForm({ ...form, questions: qs }) }} placeholder={`Question ${i + 1}`} />
+                {form.questions.length > 1 && <button onClick={() => setForm({ ...form, questions: form.questions.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer' }}><X size={16} /></button>}
+              </div>
+            ))}
+            <Btn size="sm" variant="ghost" onClick={() => setForm({ ...form, questions: [...form.questions, ''] })} style={{ marginTop: 4 }}><Plus size={14} />Add Question</Btn>
+          </Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+            <Btn variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Btn>
+            <Btn onClick={save} disabled={!form.title}>Create</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── WEEKLY PLANNING ──────────────────────────────────────────────────────────
+function WeeklyPlanning({ userId }) {
+  const [todos, setTodos] = useState([])
+  const [adding, setAdding] = useState(null)
+  const [newTask, setNewTask] = useState('')
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('todos').select('*').eq('user_id', userId).order('created_at', { ascending: true })
+    setTodos(data || [])
+  }, [userId])
+
+  useEffect(() => { load() }, [load])
+
+  const addTask = async (bucket) => {
+    if (!newTask.trim()) return
+    await supabase.from('todos').insert({ user_id: userId, title: newTask, bucket, done: false })
+    setNewTask('')
+    setAdding(null)
+    load()
+  }
+
+  const toggle = async (id, done) => {
+    await supabase.from('todos').update({ done: !done }).eq('id', id)
+    load()
+  }
+
+  const del = async (id) => {
+    await supabase.from('todos').delete().eq('id', id)
+    load()
+  }
+
+  const buckets = [
+    { key: 'must', label: 'Must Do', color: S.error, bg: '#fff5f5' },
+    { key: 'should', label: 'Should Do', color: S.warning, bg: '#fffbeb' },
+    { key: 'could', label: 'Could Do', color: S.primary, bg: S.accentBg },
+  ]
+  const total = todos.length
+  const done = todos.filter(t => t.done).length
+
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink, marginBottom: 4 }}>Weekly Planning</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ flex: 1, maxWidth: 300, height: 6, background: S.borderLight, borderRadius: 3 }}>
+            <div style={{ height: '100%', width: `${total ? (done / total) * 100 : 0}%`, background: S.primary, borderRadius: 3, transition: 'width 0.3s' }} />
+          </div>
+          <span style={{ fontSize: 13, color: S.muted }}>{done}/{total} complete</span>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        {buckets.map(b => {
+          const items = todos.filter(t => t.bucket === b.key)
+          return (
+            <div key={b.key} style={{ background: b.bg, border: `1px solid ${b.color}20`, borderRadius: 12, padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <span style={{ fontWeight: 700, fontSize: 14, color: b.color }}>{b.label}</span>
+                <button onClick={() => setAdding(b.key)} style={{ background: 'none', border: 'none', color: b.color, cursor: 'pointer' }}><Plus size={16} /></button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {items.map(t => (
+                  <div key={t.id} style={{ background: '#fff', borderRadius: 8, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${S.borderLight}` }}>
+                    <div onClick={() => toggle(t.id, t.done)} style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${t.done ? b.color : S.border}`, background: t.done ? b.color : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                      {t.done && <Check size={11} color="#fff" strokeWidth={3} />}
+                    </div>
+                    <span style={{ flex: 1, fontSize: 13, color: t.done ? S.muted : S.ink, textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</span>
+                    <button onClick={() => del(t.id)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.5 }}><X size={12} /></button>
+                  </div>
+                ))}
+                {adding === b.key && (
+                  <div style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', border: `1px solid ${b.color}` }}>
+                    <input autoFocus value={newTask} onChange={e => setNewTask(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') addTask(b.key); if (e.key === 'Escape') setAdding(null) }}
+                      placeholder="Add task..." style={{ width: '100%', border: 'none', outline: 'none', fontSize: 13, fontFamily: 'var(--font-body)', color: S.ink }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── FORECASTING ──────────────────────────────────────────────────────────────
+function Forecasting({ userId }) {
+  const [items, setItems] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [form, setForm] = useState({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('forecast').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    setItems(data || [])
+  }, [userId])
+
+  useEffect(() => { load() }, [load])
+
+  const save = async () => {
+    await supabase.from('forecast').insert({ ...form, user_id: userId })
+    setShowModal(false)
+    setForm({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
+    load()
+  }
+
+  const updateStatus = async (id, status) => {
+    await supabase.from('forecast').update({ status }).eq('id', id)
+    load()
+  }
+
+  const stages = ['backlog', 'planned', 'in-progress', 'done']
+  const stageLabels = { backlog: 'Backlog', planned: 'Planned', 'in-progress': 'In Progress', done: 'Done' }
+  const impactColor = { critical: 'red', high: 'yellow', medium: 'purple', low: 'gray' }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Forecasting</h1>
+          <p style={{ color: S.muted, fontSize: 14 }}>Enablement project pipeline</p>
+        </div>
+        <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Project</Btn>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        {stages.map(stage => {
+          const stageItems = items.filter(i => i.status === stage)
+          return (
+            <div key={stage} style={{ background: S.accentBg, borderRadius: 12, padding: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>{stageLabels[stage]}</span>
+                <Badge color="gray">{stageItems.length}</Badge>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {stageItems.map(item => (
+                  <div key={item.id} style={{ background: '#fff', borderRadius: 8, padding: '12px 14px', border: `1px solid ${S.borderLight}` }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 6 }}>{item.title}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Badge color={impactColor[item.impact] || 'gray'}>{item.impact}</Badge>
+                      {item.eta && <span style={{ fontSize: 11, color: S.muted }}>{new Date(item.eta).toLocaleDateString()}</span>}
+                    </div>
+                    <select value={item.status} onChange={e => updateStatus(item.id, e.target.value)} style={{ marginTop: 8, width: '100%', fontSize: 11, border: `1px solid ${S.border}`, borderRadius: 4, padding: '3px 6px', fontFamily: 'var(--font-body)', color: S.inkSecondary, background: '#fff' }}>
+                      {stages.map(s => <option key={s} value={s}>{stageLabels[s]}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {showModal && (
+        <Modal title="Add Project" onClose={() => setShowModal(false)}>
+          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Project name" /></Field>
+          <Field label="Status">
+            <Select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
+              {stages.map(s => <option key={s} value={s}>{stageLabels[s]}</option>)}
+            </Select>
+          </Field>
+          <Field label="Impact">
+            <Select value={form.impact} onChange={e => setForm({ ...form, impact: e.target.value })}>
+              {['critical', 'high', 'medium', 'low'].map(i => <option key={i}>{i}</option>)}
+            </Select>
+          </Field>
+          <Field label="ETA"><Input type="date" value={form.eta} onChange={e => setForm({ ...form, eta: e.target.value })} /></Field>
+          <Field label="Notes"><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Additional context..." rows={2} /></Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
+            <Btn onClick={save} disabled={!form.title}>Add</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── LEADERBOARDS ─────────────────────────────────────────────────────────────
+function Leaderboards({ userId }) {
+  const [boards, setBoards] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [showEntry, setShowEntry] = useState(false)
+  const [form, setForm] = useState({ title: '', type: 'weekly', metric: '' })
+  const [entry, setEntry] = useState({ name: '', value: '', unit: '' })
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('leaderboards').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    setBoards(data || [])
+  }, [userId])
+
+  useEffect(() => { load() }, [load])
+
+  const createBoard = async () => {
+    await supabase.from('leaderboards').insert({ ...form, user_id: userId, entries: [] })
+    setShowCreate(false)
+    setForm({ title: '', type: 'weekly', metric: '' })
+    load()
+  }
+
+  const addEntry = async () => {
+    const updated = [...(selected.entries || []), { ...entry, value: +entry.value }].sort((a, b) => b.value - a.value)
+    await supabase.from('leaderboards').update({ entries: updated }).eq('id', selected.id)
+    setSelected({ ...selected, entries: updated })
+    setShowEntry(false)
+    setEntry({ name: '', value: '', unit: '' })
+    load()
+  }
+
+  const medals = ['🥇', '🥈', '🥉']
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Leaderboards</h1>
+          <p style={{ color: S.muted, fontSize: 14 }}>Track and celebrate rep performance</p>
+        </div>
+        <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Board</Btn>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+        {boards.map(b => (
+          <Card key={b.id} onClick={() => setSelected(b)}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{b.title}</span>
+              <Badge color="purple">{b.type}</Badge>
+            </div>
+            <div style={{ fontSize: 13, color: S.muted, marginBottom: 12 }}>{b.metric}</div>
+            {(b.entries || []).slice(0, 3).map((e, i) => {
+              const max = b.entries[0]?.value || 1
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 16 }}>{medals[i] || '·'}</span>
+                  <span style={{ fontSize: 13, color: S.ink, fontWeight: 600, minWidth: 80 }}>{e.name}</span>
+                  <div style={{ flex: 1, height: 6, background: S.borderLight, borderRadius: 3 }}>
+                    <div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: S.primary, borderRadius: 3 }} />
+                  </div>
+                  <span style={{ fontSize: 12, color: S.primary, fontWeight: 700 }}>{e.value}{e.unit}</span>
+                </div>
+              )
+            })}
+          </Card>
+        ))}
+        {boards.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>No leaderboards yet</div>}
+      </div>
+
+      {selected && (
+        <Modal title={selected.title} onClose={() => setSelected(null)} wide>
+          <div style={{ marginBottom: 16 }}>
+            {(selected.entries || []).map((e, i) => {
+              const max = selected.entries[0]?.value || 1
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, padding: '8px 12px', background: i < 3 ? S.accentBg : 'transparent', borderRadius: 8 }}>
+                  <span style={{ fontSize: 20, minWidth: 28 }}>{medals[i] || `#${i + 1}`}</span>
+                  <span style={{ color: '#fff', fontWeight: 700, minWidth: 100 }}>{e.name}</span>
+                  <div style={{ flex: 1, height: 8, background: '#3a3550', borderRadius: 4 }}>
+                    <div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 4 }} />
+                  </div>
+                  <span style={{ color: S.primaryLight, fontWeight: 700 }}>{e.value}{e.unit}</span>
+                </div>
+              )
+            })}
+          </div>
+          <Btn onClick={() => setShowEntry(true)}><Plus size={14} />Add Entry</Btn>
+        </Modal>
+      )}
+
+      {showCreate && (
+        <Modal title="Create Leaderboard" onClose={() => setShowCreate(false)}>
+          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. This Week's Top Callers" /></Field>
+          <Field label="Metric"><Input value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })} placeholder="e.g. Calls made, Demos booked" /></Field>
+          <Field label="Type">
+            <Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+              {['weekly', 'quarterly', 'ramp', 'collateral'].map(t => <option key={t}>{t}</option>)}
+            </Select>
+          </Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Btn>
+            <Btn onClick={createBoard} disabled={!form.title}>Create</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {showEntry && (
+        <Modal title="Add Entry" onClose={() => setShowEntry(false)}>
+          <Field label="Rep Name"><Input value={entry.name} onChange={e => setEntry({ ...entry, name: e.target.value })} placeholder="Name" /></Field>
+          <Field label="Value"><Input type="number" value={entry.value} onChange={e => setEntry({ ...entry, value: e.target.value })} placeholder="Score or count" /></Field>
+          <Field label="Unit (optional)"><Input value={entry.unit} onChange={e => setEntry({ ...entry, unit: e.target.value })} placeholder="e.g. calls, %" /></Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => setShowEntry(false)}>Cancel</Btn>
+            <Btn onClick={addEntry} disabled={!entry.name || !entry.value}>Add</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────────────────
+function SettingsPanel({ user, onSignOut }) {
+  return (
+    <div>
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Settings</h1>
+        <p style={{ color: S.muted, fontSize: 14 }}>Manage your workspace and preferences</p>
+      </div>
+
+      {[
+        {
+          title: 'Workspace', items: [
+            { label: 'Account Email', value: user?.email },
+            { label: 'Workspace Name', value: 'My Workspace' },
+          ]
+        },
+        {
+          title: 'Integrations', items: [
+            { label: 'CRM (Salesforce/HubSpot)', value: 'Coming soon', badge: 'soon' },
+            { label: 'Gong', value: 'Coming soon', badge: 'soon' },
+            { label: 'Slack', value: 'Coming soon', badge: 'soon' },
+            { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' },
+          ]
+        },
+        {
+          title: 'Platform', items: [
+            { label: 'AI Engine', value: 'Claude Sonnet (Anthropic)' },
+            { label: 'Version', value: 'EnableOS 1.0 Beta' },
+          ]
+        },
+      ].map(group => (
+        <Card key={group.title} style={{ marginBottom: 16 }}>
+          <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}` }}>{group.title}</h3>
+          {group.items.map(item => (
+            <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${S.borderLight}` }}>
+              <span style={{ fontSize: 14, color: S.inkSecondary }}>{item.label}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {item.badge && <Badge color="gray">{item.badge}</Badge>}
+                <span style={{ fontSize: 14, color: S.muted }}>{item.value}</span>
+              </div>
+            </div>
+          ))}
+        </Card>
+      ))}
+
+      <Btn variant="danger" onClick={onSignOut}><LogOut size={16} />Sign Out</Btn>
+    </div>
+  )
+}
+
+// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
+const NAV = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'CORE' },
+  { id: 'intake', label: 'Intake', icon: Inbox, group: 'CORE' },
+  { id: 'ramp', label: 'Ramp & Onboarding', icon: Users, group: 'CORE' },
+  { id: 'notes', label: '1:1 Notes', icon: MessageSquare, group: 'CORE' },
+  { id: 'collaterals', label: 'Collaterals', icon: BookOpen, group: 'CORE' },
+  { id: 'sessions', label: 'Sessions', icon: Video, group: 'CORE' },
+  { id: 'pulse', label: 'Pulse Checks', icon: Activity, group: 'OPERATIONS' },
+  { id: 'planning', label: 'Weekly Planning', icon: Calendar, group: 'OPERATIONS' },
+  { id: 'forecasting', label: 'Forecasting', icon: TrendingUp, group: 'OPERATIONS' },
+  { id: 'leaderboards', label: 'Leaderboards', icon: Trophy, group: 'OPERATIONS' },
+  { id: 'settings', label: 'Settings', icon: Settings, group: null },
+]
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+export default function App() {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('dashboard')
+  const router = useRouter()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push('/login'); return }
+      setUser(user)
+      setLoading(false)
+    })
+  }, [router])
+
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  if (loading) return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: S.canvas }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Zap size={20} color="#fff" />
+        </div>
+        <div style={{ color: S.muted, fontSize: 14 }}>Loading EnableOS...</div>
+      </div>
+    </div>
+  )
+
+  const groups = ['CORE', 'OPERATIONS']
+  const renderView = () => {
+    const props = { userId: user.id }
+    switch (activeTab) {
+      case 'dashboard': return <Dashboard {...props} />
+      case 'intake': return <Intake {...props} />
+      case 'ramp': return <Ramp {...props} />
+      case 'notes': return <Notes {...props} />
+      case 'collaterals': return <Collaterals {...props} />
+      case 'sessions': return <Sessions {...props} />
+      case 'pulse': return <PulseChecks {...props} />
+      case 'planning': return <WeeklyPlanning {...props} />
+      case 'forecasting': return <Forecasting {...props} />
+      case 'leaderboards': return <Leaderboards {...props} />
+      case 'settings': return <SettingsPanel user={user} onSignOut={signOut} />
+      default: return <Dashboard {...props} />
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
+      {/* Sidebar */}
+      <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 24px ${S.primary}40` }}>
-              <Zap size={20} color="#fff" />
+        <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${S.primary}60` }}>
+              <Zap size={16} color="#fff" />
             </div>
-            <span style={{ fontSize: 22, fontFamily: 'var(--font-display)', color: S.ink }}>
-              <span style={{ fontWeight: 400 }}>Enable</span>
-              <span style={{ fontWeight: 700, color: S.primary }}>OS</span>
-            </span>
-          </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink, marginBottom: 6 }}>
-            {mode === 'login' ? 'Welcome back' : 'Create your account'}
-          </h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>
-            {mode === 'login' ? 'Sign in to your workspace' : 'Start your enablement OS today'}
-          </p>
-        </div>
-
-        {/* Card */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 32, border: `1px solid ${S.border}`, boxShadow: '0 4px 32px rgba(124,92,252,0.08)' }}>
-          <form onSubmit={handle}>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: S.inkSecondary, marginBottom: 6 }}>Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                required
-                style={{ width: '100%', padding: '12px 16px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, transition: 'border-color 0.15s', boxSizing: 'border-box' }}
-                onFocus={e => e.target.style.borderColor = S.primary}
-                onBlur={e => e.target.style.borderColor = S.border}
-              />
+            <div>
+              <span style={{ color: '#fff', fontWeight: 400, fontSize: 15, fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>Enable</span>
+              <span style={{ color: S.primaryLight, fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-display)' }}>OS</span>
             </div>
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: S.inkSecondary, marginBottom: 6 }}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-                style={{ width: '100%', padding: '12px 16px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, transition: 'border-color 0.15s', boxSizing: 'border-box' }}
-                onFocus={e => e.target.style.borderColor = S.primary}
-                onBlur={e => e.target.style.borderColor = S.border}
-              />
-            </div>
-
-            {error && (
-              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: S.error }}>
-                {error}
-              </div>
-            )}
-            {success && (
-              <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#065f46' }}>
-                {success}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{ width: '100%', padding: '13px', background: S.ink, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-body)', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.7 : 1, transition: 'all 0.15s' }}
-            >
-              {loading ? <><Loader size={16} />Loading...</> : <>{mode === 'login' ? 'Sign In' : 'Create Account'} <ArrowRight size={16} /></>}
-            </button>
-          </form>
-
-          <div style={{ textAlign: 'center', marginTop: 20, paddingTop: 20, borderTop: `1px solid ${S.border}` }}>
-            <span style={{ fontSize: 14, color: S.muted }}>
-              {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-            </span>
-            <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setSuccess('') }}
-              style={{ background: 'none', border: 'none', color: S.primary, fontWeight: 700, cursor: 'pointer', fontSize: 14, fontFamily: 'var(--font-body)' }}>
-              {mode === 'login' ? 'Sign up' : 'Sign in'}
-            </button>
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 24 }}>
-          <a href="/" style={{ fontSize: 13, color: S.muted, textDecoration: 'none' }}>← Back to home</a>
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: '16px 12px' }}>
+          {groups.map(group => (
+            <div key={group} style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', padding: '0 8px', marginBottom: 6 }}>{group}</div>
+              {NAV.filter(n => n.group === group).map(item => {
+                const active = activeTab === item.id
+                return (
+                  <button key={item.id} onClick={() => setActiveTab(item.id)} style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                    background: active ? `${S.primary}25` : 'transparent',
+                    color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+                    fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)',
+                    marginBottom: 2, transition: 'all 0.15s', textAlign: 'left',
+                    borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent',
+                  }}>
+                    <item.icon size={16} />
+                    {item.label}
+                  </button>
+                )
+              })}
+            </div>
+          ))}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
+            {NAV.filter(n => n.group === null).map(item => {
+              const active = activeTab === item.id
+              return (
+                <button key={item.id} onClick={() => setActiveTab(item.id)} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: active ? `${S.primary}25` : 'transparent',
+                  color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+                  fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)',
+                  transition: 'all 0.15s', textAlign: 'left',
+                  borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent',
+                }}>
+                  <item.icon size={16} />
+                  {item.label}
+                </button>
+              )
+            })}
+          </div>
+        </nav>
+
+        {/* User */}
+        <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>{user?.email?.[0]?.toUpperCase()}</span>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Enablement Manager</div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Main content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px' }}>
+        {renderView()}
       </div>
     </div>
   )
