@@ -1,0 +1,43 @@
+:root {
+  --canvas: #FDFBFF;
+  --primary: #7C5CFC;
+  --primary-hover: #9B7EFF;
+  --primary-light: #BDA9FF;
+  --accent-bg: #F0ECFF;
+  --accent-bg-2: #E8E0FF;
+  --ink: #1a1235;
+  --ink-secondary: #4a4162;
+  --muted: #8b82a0;
+  --border: #E2DCF0;
+  --border-light: #F0ECF8;
+  --sidebar: #1a1235;
+  --success: #059669;
+  --warning: #d97706;
+  --error: #dc2626;
+  --font-display: 'Libre Baskerville', serif;
+  --font-body: 'Sora', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
