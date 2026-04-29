@@ -15,7 +15,7 @@ const sora = Sora({
 
 export const metadata = {
   title: 'EnableOS — The Operating System for Enablement',
-  description: 'Stop managing enablement across 6 different tools. EnableOS is the all-in-one platform built for solo enablement hires at fast-growing startups.',
+  description: 'Stop managing enablement across 6 different tools.',
 }
 
 export default function RootLayout({ children }) {
