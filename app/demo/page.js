@@ -4,8 +4,9 @@ import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
-  Calendar, Settings, LogOut, Plus, X, Check, Sparkles,
-  Star, ThumbsUp, ArrowRight, ChevronRight
+  Video, Activity, Calendar, TrendingUp, Trophy, Settings,
+  LogOut, Plus, X, Check, Sparkles, Target, Star,
+  ThumbsUp, ArrowRight, Zap, ChevronRight
 } from 'lucide-react'
 
 const supabase = createClient()
@@ -39,6 +40,47 @@ const SidebarLogo = () => (
     <text x="222" y="58" fontFamily="Libre Baskerville,Georgia,serif" fontSize="38" fontWeight="700" fill="#BDA9FF">OS</text>
   </svg>
 )
+
+// ── WORKSPACE SWITCHER ────────────────────────────────────────────────────────
+const WORKSPACES = [
+  { id: 'admin', label: 'Admin', path: '/admin', color: '#dc2626', desc: 'Platform overview' },
+  { id: 'personal', label: 'Personal', path: '/app', color: '#7C5CFC', desc: 'My enablement workspace' },
+  { id: 'demo', label: 'Demo', path: '/demo', color: '#059669', desc: 'Sample data & walkthrough' },
+]
+
+function WorkspaceSwitcher({ current }) {
+  const [open, setOpen] = useState(false)
+  const currentWS = WORKSPACES.find(w => w.id === current)
+  return (
+    <div style={{ position: 'relative', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 4, marginBottom: 10 }}>
+      <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', padding: '0 8px', marginBottom: 6 }}>Workspace</div>
+      <button onClick={() => setOpen(!open)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: currentWS?.color, flexShrink: 0 }} />
+        <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: '#fff', textAlign: 'left' }}>{currentWS?.label}</span>
+        <ChevronRight size={12} color="rgba(255,255,255,0.3)" style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: '#2a2040', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 6, marginBottom: 4, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', padding: '6px 8px 8px' }}>Switch workspace</div>
+          {WORKSPACES.map(ws => (
+            <a key={ws.id} href={ws.path} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 7, textDecoration: 'none', background: ws.id === current ? 'rgba(255,255,255,0.08)' : 'transparent', marginBottom: 2 }}
+              onMouseEnter={e => { if (ws.id !== current) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+              onMouseLeave={e => { if (ws.id !== current) e.currentTarget.style.background = 'transparent' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 6, background: ws.color + '25', border: `1px solid ${ws.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: ws.color }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: ws.id === current ? '#fff' : 'rgba(255,255,255,0.6)', marginBottom: 1 }}>{ws.label}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{ws.desc}</div>
+              </div>
+              {ws.id === current && <Check size={12} color="rgba(255,255,255,0.5)" style={{ marginLeft: 'auto' }} />}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ── DEMO DATA ─────────────────────────────────────────────────────────────────
 const DEMO = {
@@ -566,6 +608,7 @@ export default function DemoApp() {
           <button onClick={() => setShowWalkthrough(true)} style={{ width:'100%', background:'rgba(124,92,252,0.15)', border:'1px solid rgba(124,92,252,0.3)', borderRadius:8, padding:'8px 12px', color:'#BDA9FF', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', marginBottom:10, display:'flex', alignItems:'center', gap:7 }}>
             <Sparkles size={13}/>Replay walkthrough
           </button>
+          {user?.email === 'enableos.hq@gmail.com' && <WorkspaceSwitcher current="demo" />}
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
             <div style={{ width:28, height:28, borderRadius:'50%', background:`linear-gradient(135deg,${S.primary},#a78bfa)`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
               <span style={{ color:'#fff', fontSize:11, fontWeight:700 }}>{user?.email?.[0]?.toUpperCase()}</span>
