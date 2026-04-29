@@ -2,6 +2,28 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
+
+const SidebarLogo = () => (
+  <svg width="110" height="34" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="pl1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#BDA9FF"/><stop offset="100%" stopColor="#9B7EFF"/></linearGradient>
+      <linearGradient id="pl2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#9B7EFF"/><stop offset="100%" stopColor="#7C5CFC"/></linearGradient>
+      <linearGradient id="pl3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#7C5CFC"/><stop offset="100%" stopColor="#5B3EDB"/></linearGradient>
+    </defs>
+    <rect x="0" y="12" width="52" height="9" rx="2.5" fill="url(#pl1)" opacity="0.45"/>
+    <rect x="6" y="27" width="52" height="12" rx="2.5" fill="url(#pl2)" opacity="0.75"/>
+    <rect x="12" y="45" width="52" height="16" rx="2.5" fill="url(#pl3)"/>
+    <line x1="6" y1="27" x2="0" y2="21" stroke="#BDA9FF" strokeWidth="0.8" opacity="0.4"/>
+    <line x1="12" y1="45" x2="6" y2="39" stroke="#9B7EFF" strokeWidth="0.8" opacity="0.5"/>
+    <line x1="58" y1="27" x2="52" y2="21" stroke="#BDA9FF" strokeWidth="0.8" opacity="0.4"/>
+    <line x1="64" y1="45" x2="58" y2="39" stroke="#9B7EFF" strokeWidth="0.8" opacity="0.5"/>
+    <circle cx="59" cy="53" r="3" fill="#ffffff" opacity="0.85"/>
+    <circle cx="50" cy="53" r="3" fill="#BDA9FF" opacity="0.7"/>
+    <text x="82" y="58" fontFamily="Libre Baskerville,Georgia,serif" fontSize="38" fontWeight="400" fill="#ffffff">Enable</text>
+    <text x="222" y="58" fontFamily="Libre Baskerville,Georgia,serif" fontSize="38" fontWeight="700" fill="#BDA9FF">OS</text>
+  </svg>
+)
+
 import {
   LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
   Video, Activity, Calendar, TrendingUp, Trophy, Settings,
@@ -1216,7 +1238,109 @@ const NAV = [
   { id: 'forecasting', label: 'Forecasting', icon: TrendingUp, group: 'OPERATIONS' },
   { id: 'leaderboards', label: 'Leaderboards', icon: Trophy, group: 'OPERATIONS' },
   { id: 'settings', label: 'Settings', icon: Settings, group: null },
+  { id: 'featurereqs', label: 'Feature Requests', icon: Star, group: null },
 ]
+
+// ─── FEATURE REQUESTS ─────────────────────────────────────────────────────────
+function FeatureRequests() {
+  const [submitted, setSubmitted] = useState(false)
+  const [voted, setVoted] = useState([])
+  const [votes, setVotes] = useState({ 0:34, 1:28, 2:22, 3:19, 4:17, 5:31, 6:14, 7:26 })
+  const [form, setForm] = useState({ title: '', description: '', category: 'Platform' })
+  const categories = ['Platform', 'Integrations', 'AI', 'Analytics', 'Other']
+
+  const existing = [
+    { title: 'Enablement ROI dashboard — which assets closed which deals', status: 'roadmap', category: 'Analytics' },
+    { title: 'Google Calendar integration', status: 'planned', category: 'Integrations' },
+    { title: 'Slack intake bot — submit requests from Slack', status: 'planned', category: 'Integrations' },
+    { title: 'Salesforce / HubSpot CRM sync', status: 'planned', category: 'Integrations' },
+    { title: 'Gong integration — pull call themes into 1:1 notes', status: 'considering', category: 'Integrations' },
+    { title: 'AI-generated onboarding plans per rep', status: 'considering', category: 'AI' },
+    { title: 'Multi-seat workspaces for larger teams', status: 'roadmap', category: 'Platform' },
+    { title: 'Public-facing hub for reps to self-serve assets', status: 'considering', category: 'Platform' },
+  ]
+
+  const statusStyle = {
+    planned: { bg: '#dbeafe', color: '#1d4ed8', label: 'Planned' },
+    considering: { bg: S.accentBg2, color: S.primary, label: 'Considering' },
+    roadmap: { bg: '#d1fae5', color: '#065f46', label: 'On Roadmap' },
+  }
+
+  const vote = (i) => {
+    if (voted.includes(i)) return
+    setVoted([...voted, i])
+    setVotes({ ...votes, [i]: votes[i] + 1 })
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Feature Requests</h1>
+          <p style={{ color: S.muted, fontSize: 14 }}>Vote on what we build next, or suggest something new</p>
+        </div>
+        <a href="/feature-requests" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none', fontWeight: 600 }}>Public page →</a>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
+        <div>
+          <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 14 }}>Top requests</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {existing.map((f, i) => {
+              const s = statusStyle[f.status]
+              const hasVoted = voted.includes(i)
+              return (
+                <Card key={i} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <button onClick={() => vote(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hasVoted ? S.accentBg2 : S.accentBg, border: `1px solid ${hasVoted ? S.primary : S.border}`, borderRadius: 8, padding: '7px 10px', cursor: hasVoted ? 'default' : 'pointer', minWidth: 48, transition: 'all 0.15s' }}>
+                    <Star size={13} color={hasVoted ? S.primary : S.muted} fill={hasVoted ? S.primary : 'none'} strokeWidth={2}/>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: hasVoted ? S.primary : S.muted }}>{votes[i]}</span>
+                  </button>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 5 }}>{f.title}</div>
+                    <div style={{ display: 'flex', gap: 7 }}>
+                      <span style={{ background: s.bg, color: s.color, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</span>
+                      <span style={{ fontSize: 11, color: S.muted }}>{f.category}</span>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+
+        <div>
+          <Card>
+            <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)' }}>
+              {submitted ? '✓ Thanks!' : 'Suggest a feature'}
+            </h3>
+            {submitted ? (
+              <div>
+                <p style={{ fontSize: 13, color: S.muted, marginBottom: 14, lineHeight: 1.6 }}>We read every request. If it fits the roadmap, it'll show up on the board.</p>
+                <Btn size="sm" variant="ghost" onClick={() => { setSubmitted(false); setForm({ title: '', description: '', category: 'Platform' }) }}>Submit another</Btn>
+              </div>
+            ) : (
+              <div>
+                <Field label="Title"><input value={form.title} onChange={e => setForm({...form,title:e.target.value})} placeholder="What should we build?" style={{ width:'100%',padding:'9px 12px',border:`1px solid ${S.border}`,borderRadius:8,fontSize:13,fontFamily:'var(--font-body)',outline:'none',color:S.ink,background:'#fff' }} onFocus={e=>e.target.style.borderColor=S.primary} onBlur={e=>e.target.style.borderColor=S.border}/></Field>
+                <Field label="Category">
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {categories.map(c => (
+                      <button type="button" key={c} onClick={() => setForm({...form,category:c})}
+                        style={{ padding:'4px 10px',borderRadius:100,border:`1px solid ${form.category===c?S.primary:S.border}`,background:form.category===c?S.accentBg2:'#fff',color:form.category===c?S.primary:S.inkSecondary,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+                <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="What problem does it solve?" rows={3} style={{ width:'100%',padding:'9px 12px',border:`1px solid ${S.border}`,borderRadius:8,fontSize:13,fontFamily:'var(--font-body)',outline:'none',color:S.ink,background:'#fff',resize:'vertical'}} onFocus={e=>e.target.style.borderColor=S.primary} onBlur={e=>e.target.style.borderColor=S.border}/></Field>
+                <Btn onClick={() => form.title && setSubmitted(true)} disabled={!form.title} style={{ width: '100%', justifyContent: 'center' }}>Submit Request</Btn>
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
@@ -1264,6 +1388,7 @@ export default function App() {
       case 'forecasting': return <Forecasting {...props} />
       case 'leaderboards': return <Leaderboards {...props} />
       case 'settings': return <SettingsPanel user={user} onSignOut={signOut} />
+      case 'featurereqs': return <FeatureRequests />
       default: return <Dashboard {...props} />
     }
   }
@@ -1273,16 +1398,8 @@ export default function App() {
       {/* Sidebar */}
       <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
         {/* Logo */}
-        <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${S.primary}60` }}>
-              <Zap size={16} color="#fff" />
-            </div>
-            <div>
-              <span style={{ color: '#fff', fontWeight: 400, fontSize: 15, fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>Enable</span>
-              <span style={{ color: S.primaryLight, fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-display)' }}>OS</span>
-            </div>
-          </div>
+        <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <SidebarLogo />
         </div>
 
         {/* Nav */}
