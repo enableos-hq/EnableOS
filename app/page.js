@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { Zap, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 const S = {
   primary: '#7C5CFC', primaryHover: '#9B7EFF', primaryLight: '#BDA9FF',
@@ -8,6 +8,27 @@ const S = {
   border: '#E2DCF0', accent: '#F0ECFF', accent2: '#E8E0FF',
   canvas: '#FDFBFF', sidebar: '#1a1235',
 }
+
+const Logo = ({ dark, size = 140 }) => (
+  <svg width={size} height={Math.round(size * 0.317)} viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ll1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#BDA9FF"/><stop offset="100%" stopColor="#9B7EFF"/></linearGradient>
+      <linearGradient id="ll2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#9B7EFF"/><stop offset="100%" stopColor="#7C5CFC"/></linearGradient>
+      <linearGradient id="ll3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#7C5CFC"/><stop offset="100%" stopColor="#5B3EDB"/></linearGradient>
+    </defs>
+    <rect x="0" y="12" width="52" height="9" rx="2.5" fill="url(#ll1)" opacity={dark?"0.45":"0.55"}/>
+    <rect x="6" y="27" width="52" height="12" rx="2.5" fill="url(#ll2)" opacity={dark?"0.75":"0.8"}/>
+    <rect x="12" y="45" width="52" height="16" rx="2.5" fill="url(#ll3)"/>
+    <line x1="6" y1="27" x2="0" y2="21" stroke="#BDA9FF" strokeWidth="0.8" opacity="0.5"/>
+    <line x1="12" y1="45" x2="6" y2="39" stroke="#9B7EFF" strokeWidth="0.8" opacity="0.5"/>
+    <line x1="58" y1="27" x2="52" y2="21" stroke="#BDA9FF" strokeWidth="0.8" opacity="0.5"/>
+    <line x1="64" y1="45" x2="58" y2="39" stroke="#9B7EFF" strokeWidth="0.8" opacity="0.5"/>
+    <circle cx="59" cy="53" r="3" fill="#ffffff" opacity={dark?"0.85":"0.9"}/>
+    <circle cx="50" cy="53" r="3" fill="#BDA9FF" opacity={dark?"0.7":"0.6"}/>
+    <text x="82" y="58" fontFamily="Libre Baskerville,Georgia,serif" fontSize="38" fontWeight="400" fill={dark?"#ffffff":"#1a1235"}>Enable</text>
+    <text x="222" y="58" fontFamily="Libre Baskerville,Georgia,serif" fontSize="38" fontWeight="700" fill={dark?"#BDA9FF":"#7C5CFC"}>OS</text>
+  </svg>
+)
 
 const features = [
   { tag: 'Intake', title: 'Auto-prioritize every request', desc: 'Every enablement request gets a priority score based on impact, urgency, and effort — automatically. Stop guessing what to build next.' },
@@ -45,14 +66,10 @@ export default function Landing() {
   return (
     <div style={{ fontFamily: 'var(--font-body)', background: S.canvas, color: S.ink, overflowX: 'hidden' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(253,251,255,0.92)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${S.border}`, padding: '0 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#7C5CFC,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px #7C5CFC60' }}>
-            <Zap size={16} color="#fff" />
-          </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: S.ink }}>Enable<b style={{ color: S.primary }}>OS</b></span>
-        </div>
+        <a href="/" style={{ textDecoration: 'none' }}><Logo size={120} /></a>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <a href="#features" style={{ fontSize: 14, color: S.ink2, textDecoration: 'none', fontWeight: 500 }}>Features</a>
+          <a href="/feature-requests" style={{ fontSize: 14, color: S.ink2, textDecoration: 'none', fontWeight: 500 }}>Roadmap</a>
           <a href="/login" style={{ fontSize: 14, color: S.ink2, textDecoration: 'none', fontWeight: 500 }}>Log in</a>
           <a href="#waitlist" style={{ background: S.ink, color: '#fff', padding: '9px 20px', borderRadius: 100, fontSize: 14, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-body)' }}>Get early access</a>
         </div>
@@ -153,11 +170,10 @@ export default function Landing() {
       </section>
 
       <footer style={{ padding: '32px 48px', borderTop: `1px solid ${S.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#7C5CFC,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Zap size={14} color="#fff" />
-          </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, color: S.ink }}>Enable<b style={{ color: S.primary }}>OS</b></span>
+        <Logo size={100} />
+        <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+          <a href="/submit" style={{ fontSize: 13, color: S.muted, textDecoration: 'none' }}>Submit a request</a>
+          <a href="/feature-requests" style={{ fontSize: 13, color: S.muted, textDecoration: 'none' }}>Roadmap</a>
         </div>
         <p style={{ fontSize: 13, color: S.muted }}>© 2026 EnableOS · Built for enablement, by enablement</p>
       </footer>
