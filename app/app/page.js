@@ -199,6 +199,65 @@ function Textarea({ value, onChange, placeholder, rows = 3, style }) {
   )
 }
 
+// ─── WALKTHROUGH ──────────────────────────────────────────────────────────────
+const WALKTHROUGH_STEPS = [
+  { id: 'dashboard', title: 'Welcome to EnableOS 👋', desc: 'Your command centre. Open requests, ramping reps, must-do tasks, and ramp snapshot — everything in one view. Let\'s take a 60-second tour.' },
+  { id: 'intake', title: 'Intake — your request queue', desc: 'Every enablement request lands here. Impact × Urgency ÷ Effort = auto priority score. No more guessing what to build next. You can also share a public form link so anyone can submit without a login.' },
+  { id: 'ramp', title: 'Ramp & Onboarding', desc: 'Track every rep\'s onboarding across 5 sections. See who\'s ahead, who\'s behind, check off items as they complete them. No more spreadsheet ramp trackers.' },
+  { id: 'notes', title: '1:1 Notes with AI', desc: 'Log private coaching notes and shared agendas per rep. Claude AI analyses sentiment, flags reps at risk, and suggests your next coaching action automatically.' },
+  { id: 'collaterals', title: 'Collateral Library', desc: 'Every asset in one place with usage tracking. See what\'s actually being used and what\'s collecting dust.' },
+  { id: 'planning', title: 'Weekly Planning', desc: 'Must Do / Should Do / Could Do. Kanban for your weekly priorities. Check things off, track your completion rate.' },
+  { id: 'settings', title: 'You\'re all set! 🚀', desc: 'That\'s the core loop. Head to Settings to invite your team, or jump straight in. You can replay this tour anytime from the sidebar.' },
+]
+
+function Walkthrough({ onClose, onNavigate }) {
+  const [step, setStep] = useState(0)
+  const current = WALKTHROUGH_STEPS[step]
+  const isLast = step === WALKTHROUGH_STEPS.length - 1
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,18,53,0.5)', backdropFilter: 'blur(2px)', pointerEvents: 'all' }} onClick={onClose} />
+      <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', width: 480, background: '#fff', borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,53,0.3)', pointerEvents: 'all', overflow: 'hidden' }}>
+        <div style={{ height: 3, background: S.borderLight }}>
+          <div style={{ height: '100%', width: `${((step + 1) / WALKTHROUGH_STEPS.length) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, transition: 'width 0.3s' }} />
+        </div>
+        <div style={{ padding: 28 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: S.accentBg2, color: S.primary, padding: '4px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 10 }}>
+                Step {step + 1} of {WALKTHROUGH_STEPS.length}
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: S.ink, marginBottom: 8 }}>{current.title}</h3>
+              <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.65 }}>{current.desc}</p>
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', flexShrink: 0, marginLeft: 16 }}>
+              <X size={18} />
+            </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
+            <div style={{ display: 'flex', gap: 5 }}>
+              {WALKTHROUGH_STEPS.map((_, i) => (
+                <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i <= step ? S.primary : S.borderLight, transition: 'all 0.3s' }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Skip</button>
+              {step > 0 && (
+                <Btn variant="ghost" size="sm" onClick={() => { setStep(step - 1); onNavigate(WALKTHROUGH_STEPS[step - 1].id) }}>Back</Btn>
+              )}
+              {isLast
+                ? <Btn size="sm" onClick={onClose}>Done — let's go! 🚀</Btn>
+                : <Btn size="sm" onClick={() => { setStep(step + 1); onNavigate(WALKTHROUGH_STEPS[step + 1].id) }}>Next <ChevronRight size={14} /></Btn>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 function Dashboard({ userId }) {
   const [stats, setStats] = useState({ requests: 0, reps: 0, todos: 0 })
@@ -319,7 +378,24 @@ function Intake({ userId }) {
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Intake</h1>
           <p style={{ color: S.muted, fontSize: 14 }}>Manage and prioritize enablement requests</p>
         </div>
-        <Btn onClick={() => setShowModal(true)}><Plus size={16} />New Request</Btn>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            title="Share public intake form link"
+            onClick={() => {
+              const link = `${window.location.origin}/intake-form`
+              navigator.clipboard.writeText(link).then(() => alert(`Link copied!\n\n${link}\n\nAnyone with this link can submit a request — no login needed.`))
+            }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 7, border: `1px solid ${S.border}`, background: 'transparent', cursor: 'pointer', color: S.inkSecondary, transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = S.accentBg; e.currentTarget.style.borderColor = S.primary; e.currentTarget.style.color = S.primary }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = S.border; e.currentTarget.style.color = S.inkSecondary }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+          </button>
+          <Btn onClick={() => setShowModal(true)}><Plus size={16} />New Request</Btn>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -630,7 +706,6 @@ Private notes: ${form.private_notes}`
         <Modal title={`New 1:1 Note — ${selectedRep?.name}`} onClose={() => { setShowModal(false); setAiResult(null) }} wide>
           <Field label="Shared Agenda (rep can see)"><Textarea value={form.shared_agenda} onChange={e => setForm({ ...form, shared_agenda: e.target.value })} placeholder="Topics to cover together..." /></Field>
           <Field label="Private Notes (only you see)"><Textarea value={form.private_notes} onChange={e => setForm({ ...form, private_notes: e.target.value })} placeholder="Your private observations, concerns, coaching notes..." rows={4} /></Field>
-
           {!aiResult ? (
             <Btn variant="ghost" onClick={analyze} disabled={analyzing} style={{ marginBottom: 16, color: S.primary, borderColor: S.primary }}>
               {analyzing ? <><Loader size={14} />Analyzing...</> : <><Sparkles size={14} />Analyze with AI</>}
@@ -646,7 +721,6 @@ Private notes: ${form.private_notes}`
               </div>
             </div>
           )}
-
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <Btn variant="ghost" onClick={() => { setShowModal(false); setAiResult(null) }}>Cancel</Btn>
             <Btn onClick={save}>Save Note</Btn>
@@ -1217,35 +1291,103 @@ function Leaderboards({ userId }) {
 }
 
 // ─── SETTINGS ─────────────────────────────────────────────────────────────────
-function SettingsPanel({ user, onSignOut }) {
+function SettingsPanel({ user, onSignOut, onReplayWalkthrough }) {
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('member')
+  const [inviteStatus, setInviteStatus] = useState('')
+  const [members, setMembers] = useState([
+    { email: user?.email, role: 'admin', status: 'active', isYou: true },
+  ])
+
+  const sendInvite = () => {
+    if (!inviteEmail.trim() || !inviteEmail.includes('@')) { setInviteStatus('error'); return }
+    const already = members.find(m => m.email.toLowerCase() === inviteEmail.trim().toLowerCase())
+    if (already) { setInviteStatus('error'); return }
+    setMembers([...members, { email: inviteEmail.trim().toLowerCase(), role: inviteRole, status: 'pending', isYou: false }])
+    setInviteEmail('')
+    setInviteRole('member')
+    setInviteStatus('sent')
+    setTimeout(() => setInviteStatus(''), 3000)
+  }
+
+  const removeMember = (email) => setMembers(members.filter(m => m.email !== email))
+
   return (
     <div>
-      <div style={{ marginBottom: 32 }}>
+      <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Settings</h1>
-        <p style={{ color: S.muted, fontSize: 14 }}>Manage your workspace and preferences</p>
+        <p style={{ color: S.muted, fontSize: 14 }}>Manage your workspace and team</p>
       </div>
 
+      <Card style={{ marginBottom: 16 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}`, fontFamily: 'var(--font-display)' }}>Team Members</h3>
+        <div style={{ marginBottom: 20 }}>
+          {members.map((m, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: `1px solid ${S.borderLight}` }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>{m.email[0].toUpperCase()}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: S.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {m.email} {m.isYou && <span style={{ fontSize: 11, color: S.muted, fontWeight: 400 }}>(you)</span>}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', background: m.role === 'admin' ? S.accentBg2 : S.borderLight, color: m.role === 'admin' ? S.primary : S.muted }}>{m.role}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', background: m.status === 'active' ? '#d1fae5' : '#fef3c7', color: m.status === 'active' ? S.success : S.warning }}>{m.status}</span>
+                {!m.isYou && (
+                  <button onClick={() => removeMember(m.email)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 2px' }}
+                    onMouseEnter={e => e.currentTarget.style.color = S.error}
+                    onMouseLeave={e => e.currentTarget.style.color = S.muted}
+                  >×</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: S.accentBg, borderRadius: 10, padding: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: S.inkSecondary, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Invite someone</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <input
+              value={inviteEmail}
+              onChange={e => { setInviteEmail(e.target.value); setInviteStatus('') }}
+              onKeyDown={e => e.key === 'Enter' && sendInvite()}
+              placeholder="colleague@company.com"
+              style={{ flex: 1, padding: '9px 12px', border: `1px solid ${inviteStatus === 'error' ? S.error : S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff' }}
+              onFocus={e => e.target.style.borderColor = S.primary}
+              onBlur={e => e.target.style.borderColor = inviteStatus === 'error' ? S.error : S.border}
+            />
+            <select
+              value={inviteRole}
+              onChange={e => setInviteRole(e.target.value)}
+              style={{ padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', cursor: 'pointer' }}
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
+            <Btn onClick={sendInvite}>Invite</Btn>
+          </div>
+          <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.6 }}>
+            <strong>Admin</strong> — full access, can invite & manage members.<br />
+            <strong>Member</strong> — can use all features, cannot change settings.
+          </div>
+          {inviteStatus === 'sent' && (
+            <div style={{ marginTop: 10, padding: '8px 12px', background: '#d1fae5', borderRadius: 7, fontSize: 13, color: S.success, fontWeight: 600 }}>
+              ✓ Invite added — they'll get access when they sign up with that email.
+            </div>
+          )}
+          {inviteStatus === 'error' && (
+            <div style={{ marginTop: 10, padding: '8px 12px', background: '#fee2e2', borderRadius: 7, fontSize: 13, color: S.error, fontWeight: 600 }}>
+              Enter a valid email that isn't already in the workspace.
+            </div>
+          )}
+        </div>
+      </Card>
+
       {[
-        {
-          title: 'Workspace', items: [
-            { label: 'Account Email', value: user?.email },
-            { label: 'Workspace Name', value: 'My Workspace' },
-          ]
-        },
-        {
-          title: 'Integrations', items: [
-            { label: 'CRM (Salesforce/HubSpot)', value: 'Coming soon', badge: 'soon' },
-            { label: 'Gong', value: 'Coming soon', badge: 'soon' },
-            { label: 'Slack', value: 'Coming soon', badge: 'soon' },
-            { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' },
-          ]
-        },
-        {
-          title: 'Platform', items: [
-            { label: 'AI Engine', value: 'Claude Sonnet (Anthropic)' },
-            { label: 'Version', value: 'EnableOS 1.0 Beta' },
-          ]
-        },
+        { title: 'Workspace', items: [{ label: 'Account Email', value: user?.email }, { label: 'Workspace Name', value: 'My Workspace' }] },
+        { title: 'Integrations', items: [{ label: 'CRM (Salesforce/HubSpot)', value: 'Coming soon', badge: 'soon' }, { label: 'Gong', value: 'Coming soon', badge: 'soon' }, { label: 'Slack', value: 'Coming soon', badge: 'soon' }, { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' }] },
+        { title: 'Platform', items: [{ label: 'AI Engine', value: 'Claude Sonnet (Anthropic)' }, { label: 'Version', value: 'EnableOS 1.0 Beta' }] },
       ].map(group => (
         <Card key={group.title} style={{ marginBottom: 16 }}>
           <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}` }}>{group.title}</h3>
@@ -1261,7 +1403,17 @@ function SettingsPanel({ user, onSignOut }) {
         </Card>
       ))}
 
-      <Btn variant="danger" onClick={onSignOut}><LogOut size={16} />Sign Out</Btn>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button
+          onClick={onReplayWalkthrough}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', color: S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}
+        >
+          <Sparkles size={14} />Replay Walkthrough
+        </button>
+        <Btn variant="danger" onClick={onSignOut} style={{ background: '#fef2f2', color: S.error, border: '1px solid #fecaca' }}>
+          <LogOut size={16} />Sign Out
+        </Btn>
+      </div>
     </div>
   )
 }
@@ -1286,7 +1438,7 @@ const NAV = [
 function FeatureRequests() {
   const [submitted, setSubmitted] = useState(false)
   const [voted, setVoted] = useState([])
-  const [votes, setVotes] = useState({ 0:34, 1:28, 2:22, 3:19, 4:17, 5:31, 6:14, 7:26 })
+  const [votes, setVotes] = useState({ 0: 34, 1: 28, 2: 22, 3: 19, 4: 17, 5: 31, 6: 14, 7: 26 })
   const [form, setForm] = useState({ title: '', description: '', category: 'Platform' })
   const categories = ['Platform', 'Integrations', 'AI', 'Analytics', 'Other']
 
@@ -1333,7 +1485,7 @@ function FeatureRequests() {
               return (
                 <Card key={i} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
                   <button onClick={() => vote(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hasVoted ? S.accentBg2 : S.accentBg, border: `1px solid ${hasVoted ? S.primary : S.border}`, borderRadius: 8, padding: '7px 10px', cursor: hasVoted ? 'default' : 'pointer', minWidth: 48, transition: 'all 0.15s' }}>
-                    <Star size={13} color={hasVoted ? S.primary : S.muted} fill={hasVoted ? S.primary : 'none'} strokeWidth={2}/>
+                    <Star size={13} color={hasVoted ? S.primary : S.muted} fill={hasVoted ? S.primary : 'none'} strokeWidth={2} />
                     <span style={{ fontSize: 12, fontWeight: 700, color: hasVoted ? S.primary : S.muted }}>{votes[i]}</span>
                   </button>
                   <div style={{ flex: 1 }}>
@@ -1361,18 +1513,18 @@ function FeatureRequests() {
               </div>
             ) : (
               <div>
-                <Field label="Title"><input value={form.title} onChange={e => setForm({...form,title:e.target.value})} placeholder="What should we build?" style={{ width:'100%',padding:'9px 12px',border:`1px solid ${S.border}`,borderRadius:8,fontSize:13,fontFamily:'var(--font-body)',outline:'none',color:S.ink,background:'#fff' }} onFocus={e=>e.target.style.borderColor=S.primary} onBlur={e=>e.target.style.borderColor=S.border}/></Field>
+                <Field label="Title"><input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What should we build?" style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
                 <Field label="Category">
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {categories.map(c => (
-                      <button type="button" key={c} onClick={() => setForm({...form,category:c})}
-                        style={{ padding:'4px 10px',borderRadius:100,border:`1px solid ${form.category===c?S.primary:S.border}`,background:form.category===c?S.accentBg2:'#fff',color:form.category===c?S.primary:S.inkSecondary,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>
+                      <button type="button" key={c} onClick={() => setForm({ ...form, category: c })}
+                        style={{ padding: '4px 10px', borderRadius: 100, border: `1px solid ${form.category === c ? S.primary : S.border}`, background: form.category === c ? S.accentBg2 : '#fff', color: form.category === c ? S.primary : S.inkSecondary, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                         {c}
                       </button>
                     ))}
                   </div>
                 </Field>
-                <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="What problem does it solve?" rows={3} style={{ width:'100%',padding:'9px 12px',border:`1px solid ${S.border}`,borderRadius:8,fontSize:13,fontFamily:'var(--font-body)',outline:'none',color:S.ink,background:'#fff',resize:'vertical'}} onFocus={e=>e.target.style.borderColor=S.primary} onBlur={e=>e.target.style.borderColor=S.border}/></Field>
+                <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What problem does it solve?" rows={3} style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', resize: 'vertical' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
                 <Btn onClick={() => form.title && setSubmitted(true)} disabled={!form.title} style={{ width: '100%', justifyContent: 'center' }}>Submit Request</Btn>
               </div>
             )}
@@ -1388,6 +1540,7 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [showWalkthrough, setShowWalkthrough] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -1395,6 +1548,11 @@ export default function App() {
       if (!user) { router.push('/login'); return }
       setUser(user)
       setLoading(false)
+      const seen = localStorage.getItem(`eos_walked_${user.id}`)
+      if (!seen) {
+        setTimeout(() => setShowWalkthrough(true), 600)
+        localStorage.setItem(`eos_walked_${user.id}`, '1')
+      }
     })
   }, [router])
 
@@ -1428,7 +1586,7 @@ export default function App() {
       case 'planning': return <WeeklyPlanning {...props} />
       case 'forecasting': return <Forecasting {...props} />
       case 'leaderboards': return <Leaderboards {...props} />
-      case 'settings': return <SettingsPanel user={user} onSignOut={signOut} />
+      case 'settings': return <SettingsPanel user={user} onSignOut={signOut} onReplayWalkthrough={() => setShowWalkthrough(true)} />
       case 'featurereqs': return <FeatureRequests />
       default: return <Dashboard {...props} />
     }
@@ -1436,6 +1594,10 @@ export default function App() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
+      {showWalkthrough && (
+        <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab} />
+      )}
+
       {/* Sidebar */}
       <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
         {/* Logo */}
@@ -1491,6 +1653,12 @@ export default function App() {
         {/* User */}
         <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           {user?.email === ADMIN_EMAIL && <WorkspaceSwitcher current="personal" />}
+          <button
+            onClick={() => setShowWalkthrough(true)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 7, border: 'none', background: 'rgba(124,92,252,0.12)', color: '#BDA9FF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 10 }}
+          >
+            <Sparkles size={12} />Replay walkthrough
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>{user?.email?.[0]?.toUpperCase()}</span>
