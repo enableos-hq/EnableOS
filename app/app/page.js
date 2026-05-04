@@ -4,7 +4,7 @@ import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 
 const SidebarLogo = () => (
-  <svg width="110" height="34" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <svg width="154" height="48" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="pl1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#BDA9FF"/><stop offset="100%" stopColor="#9B7EFF"/></linearGradient>
       <linearGradient id="pl2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#9B7EFF"/><stop offset="100%" stopColor="#7C5CFC"/></linearGradient>
