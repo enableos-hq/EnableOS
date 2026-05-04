@@ -1,939 +1,690 @@
 'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
-import { useRouter } from 'next/navigation'
-
-const SidebarLogo = () => (
-  <svg width="110" height="34" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="pl1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#BDA9FF"/><stop offset="100%" stopColor="#9B7EFF"/></linearGradient>
-      <linearGradient id="pl2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#9B7EFF"/><stop offset="100%" stopColor="#7C5CFC"/></linearGradient>
-      <linearGradient id="pl3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#7C5CFC"/><stop offset="100%" stopColor="#5B3EDB"/></linearGradient>
-    </defs>
-    <rect x="0" y="12" width="52" height="9" rx="2.5" fill="url(#pl1)" opacity="0.45"/>
-    <rect x="6" y="27" width="52" height="12" rx="2.5" fill="url(#pl2)" opacity="0.75"/>
-    <rect x="12" y="45" width="52" height="16" rx="2.5" fill="url(#pl3)"/>
-    <line x1="6" y1="27" x2="0" y2="21" stroke="#BDA9FF" strokeWidth="0.8" opacity="0.4"/>
-    <line x1="12" y1="45" x2="6" y2="39" stroke="#9B7EFF" strokeWidth="0.8" opacity="0.5"/>
-    <line x1="58" y1="27" x2="52" y2="21" stroke="#BDA9FF" strokeWidth="0.8" opacity="0.4"/>
-    <line x1="64" y1="45" x2="58" y2="39" stroke="#9B7EFF" strokeWidth="0.8" opacity="0.5"/>
-    <circle cx="59" cy="53" r="3" fill="#ffffff" opacity="0.85"/>
-    <circle cx="50" cy="53" r="3" fill="#BDA9FF" opacity="0.7"/>
-    <text x="82" y="58" fontFamily="Libre Baskerville,Georgia,serif" fontSize="38" fontWeight="400" fill="#ffffff">Enable</text>
-    <text x="222" y="58" fontFamily="Libre Baskerville,Georgia,serif" fontSize="38" fontWeight="700" fill="#BDA9FF">OS</text>
-  </svg>
-)
-
-const ADMIN_EMAIL = 'enableos.hq@gmail.com'
-const WORKSPACES = [
-  { id: 'admin', label: 'Admin', path: '/admin', color: '#dc2626', desc: 'Platform overview' },
-  { id: 'personal', label: 'Personal', path: '/app', color: '#7C5CFC', desc: 'My enablement workspace' },
-  { id: 'demo', label: 'Demo', path: '/demo', color: '#059669', desc: 'Sample data & walkthrough' },
-]
-
-function WorkspaceSwitcher({ current }) {
-  const [open, setOpen] = useState(false)
-  const currentWS = WORKSPACES.find(w => w.id === current)
-  return (
-    <div style={{ position: 'relative', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 4, marginBottom: 10 }}>
-      <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', padding: '0 8px', marginBottom: 6 }}>Workspace</div>
-      <button onClick={() => setOpen(!open)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: currentWS?.color, flexShrink: 0 }} />
-        <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: '#fff', textAlign: 'left' }}>{currentWS?.label}</span>
-        <ChevronRight size={12} color="rgba(255,255,255,0.3)" style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
-      </button>
-      {open && (
-        <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: '#2a2040', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 6, marginBottom: 4, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', padding: '6px 8px 8px' }}>Switch workspace</div>
-          {WORKSPACES.map(ws => (
-            <a key={ws.id} href={ws.path} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 7, textDecoration: 'none', background: ws.id === current ? 'rgba(255,255,255,0.08)' : 'transparent', marginBottom: 2 }}
-              onMouseEnter={e => { if (ws.id !== current) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-              onMouseLeave={e => { if (ws.id !== current) e.currentTarget.style.background = 'transparent' }}>
-              <div style={{ width: 28, height: 28, borderRadius: 6, background: ws.color + '25', border: `1px solid ${ws.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: ws.color }} />
-              </div>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: ws.id === current ? '#fff' : 'rgba(255,255,255,0.6)', marginBottom: 1 }}>{ws.label}</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{ws.desc}</div>
-              </div>
-              {ws.id === current && <Check size={12} color="rgba(255,255,255,0.5)" style={{ marginLeft: 'auto' }} />}
-            </a>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-import {
-  LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
-  Video, Activity, Calendar, TrendingUp, Trophy, Settings,
-  LogOut, Plus, X, ChevronRight, BarChart2, Zap, Check,
-  AlertCircle, Clock, ArrowUp, ArrowDown, Sparkles, Target,
-  FileText, Star, ChevronDown, Trash2, Edit3, Send, Loader
-} from 'lucide-react'
 
 const supabase = createClient()
 
-// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
-const S = {
-  sidebar: { background: '#1a1235', width: 240 },
-  canvas: '#FDFBFF',
-  primary: '#7C5CFC',
-  primaryHover: '#9B7EFF',
-  primaryLight: '#BDA9FF',
-  accentBg: '#F0ECFF',
-  accentBg2: '#E8E0FF',
-  ink: '#1a1235',
-  inkSecondary: '#4a4162',
-  muted: '#8b82a0',
-  border: '#E2DCF0',
-  borderLight: '#F0ECF8',
-  success: '#059669',
-  warning: '#d97706',
-  error: '#dc2626',
-}
-
-// ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
-function Card({ children, style, onClick }) {
+// ─── LOGO COMPONENT (shared across sidebar + login) ──────────────
+function LogoIcon({ size = 44 }) {
   return (
-    <div onClick={onClick} style={{
-      background: '#fff',
-      border: `1px solid ${S.borderLight}`,
-      borderRadius: 12,
-      padding: 20,
-      transition: 'box-shadow 0.2s, border-color 0.2s',
-      cursor: onClick ? 'pointer' : 'default',
-      ...style,
-    }}
-      onMouseEnter={e => { if (onClick) { e.currentTarget.style.boxShadow = `0 4px 20px rgba(124,92,252,0.12)`; e.currentTarget.style.borderColor = S.border } }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = S.borderLight }}
-    >
-      {children}
+    <div style={{
+      width: `${size}px`, height: `${size}px`,
+      background: 'linear-gradient(135deg, #7C5CFC, #9B7EFF)',
+      borderRadius: `${Math.round(size * 0.27)}px`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 4px 16px rgba(124,92,252,0.45)',
+      flexShrink: 0,
+    }}>
+      <svg width={Math.round(size * 0.59)} height={Math.round(size * 0.59)} viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
     </div>
   )
 }
 
-function Btn({ children, onClick, variant = 'primary', size = 'md', disabled, style }) {
-  const base = {
-    display: 'inline-flex', alignItems: 'center', gap: 6,
-    fontFamily: 'var(--font-body)', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
-    border: 'none', transition: 'all 0.15s', opacity: disabled ? 0.5 : 1,
-    borderRadius: size === 'sm' ? 6 : 8,
-    fontSize: size === 'sm' ? 12 : 14,
-    padding: size === 'sm' ? '6px 12px' : '10px 18px',
-    ...style,
-  }
-  const variants = {
-    primary: { background: S.ink, color: '#fff' },
-    ghost: { background: 'transparent', color: S.inkSecondary, border: `1px solid ${S.border}` },
-    danger: { background: '#fef2f2', color: S.error, border: `1px solid #fecaca` },
-    purple: { background: S.primary, color: '#fff' },
-  }
-  return <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>{children}</button>
-}
+// ─── NAV ITEMS ────────────────────────────────────────────────────
+const NAV = [
+  { id: 'dashboard', label: 'Dashboard', icon: '⊞', section: 'main' },
+  { id: 'intake', label: 'Intake', icon: '📋', section: 'manage' },
+  { id: 'ramp', label: 'Ramp & Onboarding', icon: '🚀', section: 'manage' },
+  { id: 'notes', label: '1:1 Notes', icon: '📝', section: 'manage' },
+  { id: 'collaterals', label: 'Collaterals', icon: '📁', section: 'manage' },
+  { id: 'sessions', label: 'Sessions', icon: '🎯', section: 'manage' },
+  { id: 'pulse', label: 'Pulse Checks', icon: '💓', section: 'performance' },
+  { id: 'planning', label: 'Weekly Planning', icon: '📅', section: 'performance' },
+  { id: 'forecast', label: 'Forecasting', icon: '📈', section: 'performance' },
+  { id: 'leaderboard', label: 'Leaderboard', icon: '🏆', section: 'performance' },
+  { id: 'settings', label: 'Settings', icon: '⚙️', section: 'account' },
+]
 
-function Badge({ children, color = 'purple' }) {
-  const colors = {
-    purple: { bg: S.accentBg2, text: S.primary },
-    green: { bg: '#d1fae5', text: S.success },
-    yellow: { bg: '#fef3c7', text: S.warning },
-    red: { bg: '#fee2e2', text: S.error },
-    gray: { bg: S.borderLight, text: S.muted },
-  }
-  const c = colors[color] || colors.gray
+// ─── SIDEBAR ──────────────────────────────────────────────────────
+function Sidebar({ active, setActive, user, onSignOut }) {
+  const sections = { main: 'Overview', manage: 'Manage', performance: 'Performance', account: 'Account' }
   return (
-    <span style={{
-      background: c.bg, color: c.text, borderRadius: 100,
-      padding: '3px 10px', fontSize: 11, fontWeight: 700,
-      textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-body)',
-    }}>{children}</span>
-  )
-}
-
-function Modal({ title, onClose, children, wide }) {
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(26,18,53,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ background: S.ink, borderRadius: 16, width: '100%', maxWidth: wide ? 680 : 480, maxHeight: '90vh', overflowY: 'auto', border: `1px solid #3a3550` }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #3a3550' }}>
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)' }}>{title}</span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer' }}><X size={18} /></button>
+    <aside className="sidebar">
+      {/* ── LOGO — properly sized ── */}
+      <div className="sidebar-logo">
+        <div className="logo-mark">
+          <LogoIcon size={44} />
+          <div className="logo-text">
+            <div className="logo-name">EnableOS</div>
+            <div className="logo-tagline">Enablement OS</div>
+          </div>
         </div>
-        <div style={{ padding: '24px' }}>{children}</div>
       </div>
-    </div>
+
+      <nav className="sidebar-nav">
+        {Object.entries(sections).map(([key, label]) => {
+          const items = NAV.filter(n => n.section === key)
+          return (
+            <div key={key}>
+              <div className="nav-section-label">{label}</div>
+              {items.map(item => (
+                <button
+                  key={item.id}
+                  className={`nav-item ${active === item.id ? 'active' : ''}`}
+                  onClick={() => setActive(item.id)}
+                >
+                  <span>{item.icon}</span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )
+        })}
+      </nav>
+
+      <div className="sidebar-footer">
+        <div className="user-pill" onClick={onSignOut} title="Click to sign out">
+          <div className="avatar">{user?.email?.[0]?.toUpperCase() || 'U'}</div>
+          <div className="user-info">
+            <div className="user-name">{user?.email?.split('@')[0] || 'User'}</div>
+            <div className="user-role">Sign out</div>
+          </div>
+        </div>
+      </div>
+    </aside>
   )
 }
 
-function Field({ label, children }) {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <label style={{ display: 'block', color: S.muted, fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</label>
-      {children}
-    </div>
-  )
-}
-
-function Input({ value, onChange, placeholder, type = 'text', style }) {
-  return (
-    <input type={type} value={value} onChange={onChange} placeholder={placeholder}
-      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}
-    />
-  )
-}
-
-function Select({ value, onChange, children, style }) {
-  return (
-    <select value={value} onChange={onChange}
-      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}>
-      {children}
-    </select>
-  )
-}
-
-function Textarea({ value, onChange, placeholder, rows = 3, style }) {
-  return (
-    <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
-      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', ...style }}
-    />
-  )
-}
-
-// ─── DASHBOARD ────────────────────────────────────────────────────────────────
-function Dashboard({ userId }) {
-  const [stats, setStats] = useState({ requests: 0, reps: 0, todos: 0 })
-  const [loading, setLoading] = useState(true)
+// ─── DASHBOARD ────────────────────────────────────────────────────
+function Dashboard({ user }) {
+  const [stats, setStats] = useState({ reps: 0, requests: 0, notes: 0, sessions: 0 })
 
   useEffect(() => {
     async function load() {
-      const [{ count: reqCount }, { count: repCount }, { count: todoCount }] = await Promise.all([
-        supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'open'),
-        supabase.from('reps').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('todos').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('done', false),
+      const [repsRes, reqRes, notesRes, sessRes] = await Promise.all([
+        supabase.from('reps').select('id', { count: 'exact' }).eq('user_id', user.id),
+        supabase.from('requests').select('id', { count: 'exact' }).eq('user_id', user.id),
+        supabase.from('notes').select('id', { count: 'exact' }).eq('user_id', user.id),
+        supabase.from('sessions').select('id', { count: 'exact' }).eq('user_id', user.id),
       ])
-      setStats({ requests: reqCount || 0, reps: repCount || 0, todos: todoCount || 0 })
-      setLoading(false)
+      setStats({
+        reps: repsRes.count || 0,
+        requests: reqRes.count || 0,
+        notes: notesRes.count || 0,
+        sessions: sessRes.count || 0,
+      })
     }
     load()
-  }, [userId])
+  }, [user.id])
 
-  const statCards = [
-    { label: 'Open Requests', value: stats.requests, icon: Inbox, color: S.primary },
-    { label: 'Ramping Reps', value: stats.reps, icon: Users, color: S.success },
-    { label: 'Must-Do Tasks', value: stats.todos, icon: Target, color: S.warning },
-    { label: 'Avg Ramp %', value: '68%', icon: TrendingUp, color: '#8b5cf6' },
-  ]
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, color: S.ink, marginBottom: 4 }}>Good morning 👋</h1>
-        <p style={{ color: S.inkSecondary, fontSize: 15 }}>Here's what's happening with your team today.</p>
+    <div className="page-content">
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: '700', color: 'var(--plum)', marginBottom: '6px' }}>
+          {greeting} 👋
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>Here's what's happening with your team today.</p>
       </div>
-      {loading ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
-            {statCards.map(s => (
-              <Card key={s.label}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 8, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <s.icon size={18} color={s.color} />
-                  </div>
-                </div>
-                <div style={{ fontSize: 28, fontWeight: 700, color: S.ink, fontFamily: 'var(--font-display)', marginBottom: 4 }}>{s.value}</div>
-                <div style={{ fontSize: 13, color: S.muted }}>{s.label}</div>
-              </Card>
-            ))}
+
+      <div className="stats-grid">
+        {[
+          { label: 'Active Reps', value: stats.reps, delta: 'in your team' },
+          { label: 'Open Requests', value: stats.requests, delta: 'to prioritise' },
+          { label: 'Coaching Notes', value: stats.notes, delta: 'logged' },
+          { label: 'Sessions Run', value: stats.sessions, delta: 'this quarter' },
+        ].map((s, i) => (
+          <div key={i} className="stat-card">
+            <div className="stat-label">{s.label}</div>
+            <div className="stat-value">{s.value}</div>
+            <div className="stat-delta">{s.delta}</div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Card>
-              <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 15 }}>Priority Queue</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {['Finalize onboarding deck for new cohort', 'Battlecard update — competitor pricing changed', 'Cold outreach sequence refresh'].map((t, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: S.accentBg, borderRadius: 8 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? S.error : i === 1 ? S.warning : S.primary, flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, color: S.inkSecondary }}>{t}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-            <Card>
-              <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 15 }}>Ramp Snapshot</h3>
-              {['Alex Chen', 'Priya Sharma', 'Marcus O.'].map((name, i) => {
-                const pct = [78, 52, 91][i]
-                return (
-                  <div key={name} style={{ marginBottom: 14 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>{name}</span>
-                      <span style={{ fontSize: 13, color: S.primary, fontWeight: 700 }}>{pct}%</span>
-                    </div>
-                    <div style={{ height: 6, background: S.borderLight, borderRadius: 3 }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 3 }} />
-                    </div>
-                  </div>
-                )
-              })}
-            </Card>
+        ))}
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <div className="card-title">Quick Actions</div>
+            <div className="card-subtitle">Jump straight into the most common tasks</div>
           </div>
-        </>
-      )}
-    </div>
-  )
-}
-
-// ─── INTAKE ────────────────────────────────────────────────────────────────────
-function Intake({ userId }) {
-  const [requests, setRequests] = useState([])
-  const [showModal, setShowModal] = useState(false)
-  const [filter, setFilter] = useState('all')
-  const [form, setForm] = useState({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' })
-
-  const load = useCallback(async () => {
-    const { data } = await supabase.from('requests').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    setRequests(data || [])
-  }, [userId])
-
-  useEffect(() => { load() }, [load])
-
-  const save = async () => {
-    const priority = Math.round((form.impact * form.urgency) / form.effort)
-    await supabase.from('requests').insert({ ...form, user_id: userId, priority_score: priority })
-    setShowModal(false)
-    setForm({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' })
-    load()
-  }
-
-  const updateStatus = async (id, status) => {
-    await supabase.from('requests').update({ status }).eq('id', id)
-    load()
-  }
-
-  const buckets = ['all', 'Collateral', 'Training Session', 'Everboarding', 'Onboarding', 'Process', 'Playbook', 'Other']
-  const filtered = filter === 'all' ? requests : requests.filter(r => r.bucket === filter)
-  const statusColor = { open: 'purple', 'in-progress': 'yellow', done: 'green' }
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Intake</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Manage and prioritize enablement requests</p>
         </div>
-        <Btn onClick={() => setShowModal(true)}><Plus size={16} />New Request</Btn>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {buckets.map(b => (
-          <button key={b} onClick={() => setFilter(b)} style={{
-            padding: '6px 14px', borderRadius: 100, border: `1px solid ${filter === b ? S.primary : S.border}`,
-            background: filter === b ? S.accentBg2 : 'transparent', color: filter === b ? S.primary : S.inkSecondary,
-            fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
-          }}>{b === 'all' ? 'All' : b}</button>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {filtered.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>No requests yet. Add your first one!</div>}
-        {filtered.map(r => (
-          <Card key={r.id} style={{ padding: '16px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                  <span style={{ fontWeight: 700, color: S.ink, fontSize: 15 }}>{r.title}</span>
-                  <Badge color={statusColor[r.status] || 'gray'}>{r.status}</Badge>
-                  <Badge color="gray">{r.bucket}</Badge>
-                </div>
-                {r.description && <p style={{ color: S.muted, fontSize: 13, marginBottom: 8 }}>{r.description}</p>}
-                <div style={{ display: 'flex', gap: 16 }}>
-                  <span style={{ fontSize: 12, color: S.muted }}>Impact: <b style={{ color: S.inkSecondary }}>{r.impact}</b></span>
-                  <span style={{ fontSize: 12, color: S.muted }}>Urgency: <b style={{ color: S.inkSecondary }}>{r.urgency}</b></span>
-                  <span style={{ fontSize: 12, color: S.muted }}>Effort: <b style={{ color: S.inkSecondary }}>{r.effort}</b></span>
-                  <span style={{ fontSize: 12, color: S.primary, fontWeight: 700 }}>Priority: {r.priority_score}</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 6, marginLeft: 16 }}>
-                {r.status !== 'done' && (
-                  <Btn size="sm" variant="ghost" onClick={() => updateStatus(r.id, r.status === 'open' ? 'in-progress' : 'done')}>
-                    {r.status === 'open' ? 'Start' : 'Done'}
-                  </Btn>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {showModal && (
-        <Modal title="New Enablement Request" onClose={() => setShowModal(false)}>
-          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What's being requested?" /></Field>
-          <Field label="Bucket">
-            <Select value={form.bucket} onChange={e => setForm({ ...form, bucket: e.target.value })}>
-              {['Collateral', 'Training Session', 'Everboarding', 'Onboarding', 'Process', 'Playbook', 'Other'].map(b => <option key={b} value={b}>{b}</option>)}
-            </Select>
-          </Field>
-          <Field label="Description"><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="More context..." /></Field>
-          {[['impact', 'Impact'], ['urgency', 'Urgency'], ['effort', 'Effort']].map(([key, label]) => (
-            <Field key={key} label={`${label}: ${form[key]}/5`}>
-              <input type="range" min={1} max={5} value={form[key]} onChange={e => setForm({ ...form, [key]: +e.target.value })}
-                style={{ width: '100%', accentColor: S.primary }} />
-            </Field>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          {[
+            { label: '+ Add Rep', action: 'ramp' },
+            { label: '+ Log Note', action: 'notes' },
+            { label: '+ New Request', action: 'intake' },
+            { label: '+ Run Pulse Check', action: 'pulse' },
+          ].map((q, i) => (
+            <button key={i} className="btn btn-ghost btn-sm">{q.label}</button>
           ))}
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
-            <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
-            <Btn onClick={save} disabled={!form.title}>Add Request</Btn>
-          </div>
-        </Modal>
-      )}
+        </div>
+      </div>
     </div>
   )
 }
 
-// ─── RAMP & ONBOARDING ────────────────────────────────────────────────────────
-function Ramp({ userId }) {
+// ─── RAMP & ONBOARDING (with reps bug fix) ───────────────────────
+function RampOnboarding({ user }) {
   const [reps, setReps] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [showAddRep, setShowAddRep] = useState(false)
-  const [newRepName, setNewRepName] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState({ name: '', role: '', start_date: '', region: '', manager: '' })
 
-  const load = useCallback(async () => {
-    const { data } = await supabase.from('reps').select('*').eq('user_id', userId)
+  const loadReps = useCallback(async () => {
+    const { data } = await supabase.from('reps').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
     setReps(data || [])
-    if (data && data.length > 0 && !selected) setSelected(data[0])
-  }, [userId, selected])
+    setLoading(false)
+  }, [user.id])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { loadReps() }, [loadReps])
 
-  const addRep = async () => {
-    if (!newRepName.trim()) return
-    const defaultProgress = {
-      sections: { 'Company & Culture': [false, false, false, false], 'Sales Process': [false, false, false, false], 'Product Deep Dive': [false, false, false, false], 'Outbound Mastery': [false, false, false, false], 'Live Certification': [false, false, false, false] },
-      benchmarks: {}
+  const saveRep = async () => {
+    if (!form.name.trim()) { setError('Name is required'); return }
+    setSaving(true)
+    setError('')
+    // ── BUG FIX: progress is jsonb — send as object, not string ──
+    const payload = {
+      user_id: user.id,
+      name: form.name.trim(),
+      role: form.role.trim() || null,
+      start_date: form.start_date || null,
+      region: form.region.trim() || null,
+      manager: form.manager.trim() || null,
+      status: 'active',
+      progress: { week1: false, week2: false, week3: false, week4: false },
     }
-    await supabase.from('reps').insert({ user_id: userId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() })
-    setNewRepName('')
-    setShowAddRep(false)
-    load()
+    const { error: err } = await supabase.from('reps').insert([payload])
+    if (err) {
+      setError(err.message)
+      setSaving(false)
+      return
+    }
+    setForm({ name: '', role: '', start_date: '', region: '', manager: '' })
+    setShowModal(false)
+    setSaving(false)
+    loadReps()
   }
 
-  const toggleCheck = async (section, idx) => {
-    if (!selected) return
-    const updated = { ...selected.progress }
-    updated.sections[section][idx] = !updated.sections[section][idx]
-    await supabase.from('reps').update({ progress: updated }).eq('id', selected.id)
-    setSelected({ ...selected, progress: updated })
-    load()
-  }
-
-  const sections = ['Company & Culture', 'Sales Process', 'Product Deep Dive', 'Outbound Mastery', 'Live Certification']
-  const sectionItems = {
-    'Company & Culture': ['Company history & mission', 'ICP and buyer personas', 'Competitive landscape', 'Internal tools & tech stack'],
-    'Sales Process': ['Discovery call framework', 'Demo flow walkthrough', 'Objection handling', 'Pipeline management'],
-    'Product Deep Dive': ['Core product features', 'Integration ecosystem', 'Pricing & packaging', 'Customer use cases'],
-    'Outbound Mastery': ['Cold email sequences', 'LinkedIn outreach', 'Cold call framework', 'Social selling tactics'],
-    'Live Certification': ['Discovery call roleplay', 'Demo certification', 'Objection handling test', 'Manager sign-off'],
-  }
-
-  const calcPct = (rep) => {
-    if (!rep?.progress?.sections) return 0
-    const all = Object.values(rep.progress.sections).flat()
-    return Math.round((all.filter(Boolean).length / all.length) * 100)
+  const weeks = (start) => {
+    if (!start) return '—'
+    const diff = Math.floor((new Date() - new Date(start)) / 604800000)
+    return `Week ${diff + 1}`
   }
 
   return (
-    <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 120px)' }}>
-      <div style={{ width: 220, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>Reps</span>
-          <button onClick={() => setShowAddRep(true)} style={{ background: 'none', border: 'none', color: S.primary, cursor: 'pointer' }}><Plus size={16} /></button>
-        </div>
-        {reps.map(r => (
-          <div key={r.id} onClick={() => setSelected(r)} style={{
-            padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
-            background: selected?.id === r.id ? S.accentBg2 : 'transparent',
-            border: `1px solid ${selected?.id === r.id ? S.primary + '40' : 'transparent'}`,
-          }}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 4 }}>{r.name}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ flex: 1, height: 4, background: S.borderLight, borderRadius: 2 }}>
-                <div style={{ height: '100%', width: `${calcPct(r)}%`, background: S.primary, borderRadius: 2 }} />
-              </div>
-              <span style={{ fontSize: 11, color: S.primary, fontWeight: 700 }}>{calcPct(r)}%</span>
-            </div>
+    <div className="page-content">
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <div className="card-title">Ramp & Onboarding</div>
+            <div className="card-subtitle">Track every rep's ramp progress from day one</div>
           </div>
-        ))}
-        {reps.length === 0 && <div style={{ fontSize: 13, color: S.muted, textAlign: 'center', paddingTop: 20 }}>No reps yet</div>}
-      </div>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ Add Rep</button>
+        </div>
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        {!selected ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: S.muted }}>Select a rep or add one</div>
+        {loading ? (
+          <div className="loading"><div className="spinner" /></div>
+        ) : reps.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🚀</div>
+            <div className="empty-title">No reps yet</div>
+            <div className="empty-desc">Add your first rep to start tracking their ramp.</div>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add First Rep</button>
+          </div>
         ) : (
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <div>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>{selected.name}</h1>
-                <p style={{ color: S.muted, fontSize: 14 }}>{calcPct(selected)}% complete · Started {selected.start_date ? new Date(selected.start_date).toLocaleDateString() : 'recently'}</p>
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {sections.map(section => {
-                const checks = selected.progress?.sections?.[section] || [false, false, false, false]
-                const done = checks.filter(Boolean).length
-                return (
-                  <Card key={section}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                      <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{section}</h3>
-                      <Badge color={done === 4 ? 'green' : 'gray'}>{done}/4</Badge>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {sectionItems[section].map((item, i) => (
-                        <div key={i} onClick={() => toggleCheck(section, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '6px 8px', borderRadius: 6, transition: 'background 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = S.accentBg}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checks[i] ? S.primary : S.border}`, background: checks[i] ? S.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
-                            {checks[i] && <Check size={11} color="#fff" strokeWidth={3} />}
-                          </div>
-                          <span style={{ fontSize: 14, color: checks[i] ? S.muted : S.inkSecondary, textDecoration: checks[i] ? 'line-through' : 'none' }}>{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                )
-              })}
-            </div>
-          </>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Region</th>
+                  <th>Manager</th>
+                  <th>Start Date</th>
+                  <th>Week</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reps.map(rep => (
+                  <tr key={rep.id}>
+                    <td style={{ fontWeight: 600 }}>{rep.name}</td>
+                    <td>{rep.role || '—'}</td>
+                    <td>{rep.region || '—'}</td>
+                    <td>{rep.manager || '—'}</td>
+                    <td>{rep.start_date ? new Date(rep.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
+                    <td>{weeks(rep.start_date)}</td>
+                    <td><span className={`badge badge-${rep.status === 'active' ? 'green' : 'gray'}`}>{rep.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {showAddRep && (
-        <Modal title="Add Rep" onClose={() => setShowAddRep(false)}>
-          <Field label="Name"><Input value={newRepName} onChange={e => setNewRepName(e.target.value)} placeholder="Rep's name" /></Field>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <Btn variant="ghost" onClick={() => setShowAddRep(false)}>Cancel</Btn>
-            <Btn onClick={addRep} disabled={!newRepName.trim()}>Add Rep</Btn>
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Add New Rep</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            {error && <div className="alert alert-error">{error}</div>}
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Full Name *</label>
+                <input className="form-input" placeholder="Sarah Chen" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Role</label>
+                <input className="form-input" placeholder="SDR" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Start Date</label>
+                <input className="form-input" type="date" value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Region</label>
+                <input className="form-input" placeholder="EMEA / NAM / APAC" value={form.region} onChange={e => setForm({ ...form, region: e.target.value })} />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="form-label">Manager</label>
+                <input className="form-input" placeholder="Manager name" value={form.manager} onChange={e => setForm({ ...form, manager: e.target.value })} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' }}>
+              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={saveRep} disabled={saving}>{saving ? 'Saving…' : 'Add Rep'}</button>
+            </div>
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   )
 }
 
-// ─── 1:1 NOTES ────────────────────────────────────────────────────────────────
-function Notes({ userId }) {
-  const [reps, setReps] = useState([])
-  const [selectedRep, setSelectedRep] = useState(null)
-  const [notes, setNotes] = useState([])
+// ─── INTAKE ───────────────────────────────────────────────────────
+function Intake({ user }) {
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [form, setForm] = useState({ shared_agenda: '', private_notes: '' })
-  const [analyzing, setAnalyzing] = useState(false)
-  const [aiResult, setAiResult] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ title: '', requester: '', category: '', impact: 3, urgency: 3, effort: 3, notes: '' })
 
-  useEffect(() => {
-    supabase.from('reps').select('*').eq('user_id', userId).then(({ data }) => {
-      setReps(data || [])
-      if (data && data.length > 0) setSelectedRep(data[0])
-    })
-  }, [userId])
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+    setRequests(data || [])
+    setLoading(false)
+  }, [user.id])
 
-  useEffect(() => {
-    if (!selectedRep) return
-    supabase.from('notes').select('*').eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data }) => setNotes(data || []))
-  }, [selectedRep, userId])
+  useEffect(() => { load() }, [load])
+
+  const priorityScore = (impact, urgency, effort) => Math.round((impact * urgency) / effort)
+  const priorityLabel = (score) => score >= 5 ? 'High' : score >= 3 ? 'Medium' : 'Low'
+  const priorityClass = (score) => score >= 5 ? 'priority-high' : score >= 3 ? 'priority-medium' : 'priority-low'
 
   const save = async () => {
-    await supabase.from('notes').insert({ ...form, user_id: userId, rep_id: selectedRep.id, date: new Date().toISOString() })
+    if (!form.title.trim()) return
+    setSaving(true)
+    const score = priorityScore(form.impact, form.urgency, form.effort)
+    await supabase.from('requests').insert([{
+      user_id: user.id,
+      title: form.title.trim(),
+      requester: form.requester.trim() || null,
+      category: form.category || null,
+      impact: form.impact,
+      urgency: form.urgency,
+      effort: form.effort,
+      priority_score: score,
+      notes: form.notes.trim() || null,
+      status: 'open',
+    }])
+    setForm({ title: '', requester: '', category: '', impact: 3, urgency: 3, effort: 3, notes: '' })
     setShowModal(false)
-    setForm({ shared_agenda: '', private_notes: '' })
-    setAiResult(null)
-    supabase.from('notes').select('*').eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data }) => setNotes(data || []))
+    setSaving(false)
+    load()
   }
-
-  const analyze = async () => {
-    if (!form.private_notes && !form.shared_agenda) return
-    setAnalyzing(true)
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `Analyze this 1:1 note from a sales enablement manager. Return ONLY a JSON object with: sentiment ("positive"|"neutral"|"concern"), action (1 suggested next action as string), theme (1-2 word tag), session (suggested session topic).
-Shared agenda: ${form.shared_agenda}
-Private notes: ${form.private_notes}`
-          }]
-        })
-      })
-      const data = await res.json()
-      const text = data.content?.[0]?.text || '{}'
-      const clean = text.replace(/```json|```/g, '').trim()
-      setAiResult(JSON.parse(clean))
-    } catch { setAiResult({ sentiment: 'neutral', action: 'Follow up next session', theme: 'General', session: 'Discovery practice' }) }
-    setAnalyzing(false)
-  }
-
-  const sentimentColor = { positive: 'green', neutral: 'gray', concern: 'red' }
 
   return (
-    <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 120px)' }}>
-      <div style={{ width: 200, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 13, color: S.ink, marginBottom: 14 }}>Reps</div>
-        {reps.map(r => (
-          <div key={r.id} onClick={() => setSelectedRep(r)} style={{
-            padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
-            background: selectedRep?.id === r.id ? S.accentBg2 : 'transparent',
-            border: `1px solid ${selectedRep?.id === r.id ? S.primary + '40' : 'transparent'}`,
-          }}>
-            <span style={{ fontWeight: 600, fontSize: 13, color: S.ink }}>{r.name}</span>
-          </div>
-        ))}
-        {reps.length === 0 && <div style={{ fontSize: 13, color: S.muted }}>Add reps in Ramp & Onboarding first</div>}
-      </div>
-
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <div className="page-content">
+      <div className="card">
+        <div className="card-header">
           <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>1:1 Notes</h1>
-            <p style={{ color: S.muted, fontSize: 14 }}>{selectedRep ? `Notes for ${selectedRep.name}` : 'Select a rep'}</p>
+            <div className="card-title">Intake & Prioritization</div>
+            <div className="card-subtitle">Score every request by Impact × Urgency ÷ Effort</div>
           </div>
-          {selectedRep && <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Note</Btn>}
+          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ New Request</button>
         </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {notes.map(n => (
-            <Card key={n.id}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: S.muted }}>{new Date(n.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                {n.sentiment && <Badge color={sentimentColor[n.sentiment] || 'gray'}>{n.sentiment}</Badge>}
-              </div>
-              {n.shared_agenda && (
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Shared Agenda</div>
-                  <p style={{ fontSize: 14, color: S.inkSecondary }}>{n.shared_agenda}</p>
-                </div>
-              )}
-              {n.ai_action && (
-                <div style={{ marginTop: 12, padding: '10px 14px', background: S.accentBg, borderRadius: 8, borderLeft: `3px solid ${S.primary}` }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: S.primary, marginBottom: 4 }}>✦ AI Suggestion</div>
-                  <p style={{ fontSize: 13, color: S.inkSecondary }}>{n.ai_action}</p>
-                </div>
-              )}
-            </Card>
-          ))}
-          {notes.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>No notes yet for this rep</div>}
-        </div>
+        {loading ? <div className="loading"><div className="spinner" /></div> : requests.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📋</div>
+            <div className="empty-title">No requests yet</div>
+            <div className="empty-desc">Log your first enablement request to start prioritising.</div>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Request</button>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead><tr><th>Request</th><th>From</th><th>Category</th><th>Score</th><th>Priority</th><th>Status</th></tr></thead>
+              <tbody>
+                {requests.map(r => {
+                  const score = r.priority_score || priorityScore(r.impact, r.urgency, r.effort)
+                  return (
+                    <tr key={r.id}>
+                      <td style={{ fontWeight: 600 }}>{r.title}</td>
+                      <td>{r.requester || '—'}</td>
+                      <td>{r.category || '—'}</td>
+                      <td><strong>{score}</strong></td>
+                      <td><span className={`badge ${priorityClass(score)}`}>{priorityLabel(score)}</span></td>
+                      <td><span className="badge badge-purple">{r.status}</span></td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {showModal && (
-        <Modal title={`New 1:1 Note — ${selectedRep?.name}`} onClose={() => { setShowModal(false); setAiResult(null) }} wide>
-          <Field label="Shared Agenda (rep can see)"><Textarea value={form.shared_agenda} onChange={e => setForm({ ...form, shared_agenda: e.target.value })} placeholder="Topics to cover together..." /></Field>
-          <Field label="Private Notes (only you see)"><Textarea value={form.private_notes} onChange={e => setForm({ ...form, private_notes: e.target.value })} placeholder="Your private observations, concerns, coaching notes..." rows={4} /></Field>
-
-          {!aiResult ? (
-            <Btn variant="ghost" onClick={analyze} disabled={analyzing} style={{ marginBottom: 16, color: S.primary, borderColor: S.primary }}>
-              {analyzing ? <><Loader size={14} />Analyzing...</> : <><Sparkles size={14} />Analyze with AI</>}
-            </Btn>
-          ) : (
-            <div style={{ background: '#2a2445', borderRadius: 10, padding: 16, marginBottom: 16, border: '1px solid #3a3550' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: S.primaryLight, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><Sparkles size={12} />AI Analysis</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Sentiment</div><Badge color={sentimentColor[aiResult.sentiment] || 'gray'}>{aiResult.sentiment}</Badge></div>
-                <div><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Theme</div><span style={{ fontSize: 13, color: '#fff', fontWeight: 600 }}>{aiResult.theme}</span></div>
-                <div style={{ gridColumn: '1/-1' }}><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Suggested Action</div><p style={{ fontSize: 13, color: '#ddd' }}>{aiResult.action}</p></div>
-                <div style={{ gridColumn: '1/-1' }}><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Session Idea</div><p style={{ fontSize: 13, color: S.primaryLight }}>{aiResult.session}</p></div>
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">New Enablement Request</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Request Title *</label>
+              <input className="form-input" placeholder="e.g. Cold email sequence for enterprise" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Requested By</label>
+                <input className="form-input" placeholder="Name or team" value={form.requester} onChange={e => setForm({ ...form, requester: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Category</label>
+                <select className="form-input" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+                  <option value="">Select…</option>
+                  <option>Playbook</option>
+                  <option>Training</option>
+                  <option>Collateral</option>
+                  <option>Process</option>
+                  <option>Tool</option>
+                  <option>Other</option>
+                </select>
               </div>
             </div>
-          )}
-
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <Btn variant="ghost" onClick={() => { setShowModal(false); setAiResult(null) }}>Cancel</Btn>
-            <Btn onClick={save}>Save Note</Btn>
+            <div className="grid-3">
+              {['impact', 'urgency', 'effort'].map(field => (
+                <div key={field} className="form-group">
+                  <label className="form-label">{field.charAt(0).toUpperCase() + field.slice(1)} (1-5)</label>
+                  <input className="form-input" type="number" min="1" max="5" value={form[field]} onChange={e => setForm({ ...form, [field]: parseInt(e.target.value) || 1 })} />
+                </div>
+              ))}
+            </div>
+            <div style={{ background: 'var(--lavender-pale)', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', fontSize: '13.5px' }}>
+              Priority Score: <strong>{priorityScore(form.impact, form.urgency, form.effort)}</strong> →{' '}
+              <span className={`badge ${priorityClass(priorityScore(form.impact, form.urgency, form.effort))}`}>
+                {priorityLabel(priorityScore(form.impact, form.urgency, form.effort))}
+              </span>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Notes</label>
+              <textarea className="form-input" placeholder="Additional context…" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Add Request'}</button>
+            </div>
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   )
 }
 
-// ─── COLLATERALS ───────────────────────────────────────────────────────────────
-function Collaterals({ userId }) {
-  const [items, setItems] = useState([])
+// ─── NOTES ────────────────────────────────────────────────────────
+function Notes({ user }) {
+  const [notes, setNotes] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [search, setSearch] = useState('')
-  const [form, setForm] = useState({ title: '', bucket: 'Battle Card', description: '', link: '' })
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ rep_name: '', session_date: '', content: '', action_items: '' })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('collaterals').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    setItems(data || [])
-  }, [userId])
+    const { data } = await supabase.from('notes').select('*').eq('user_id', user.id).order('session_date', { ascending: false })
+    setNotes(data || [])
+    setLoading(false)
+  }, [user.id])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('collaterals').insert({ ...form, user_id: userId, usage_count: 0 })
+    if (!form.rep_name.trim() || !form.content.trim()) return
+    setSaving(true)
+    await supabase.from('notes').insert([{
+      user_id: user.id,
+      rep_name: form.rep_name.trim(),
+      session_date: form.session_date || new Date().toISOString().split('T')[0],
+      content: form.content.trim(),
+      action_items: form.action_items.trim() || null,
+    }])
+    setForm({ rep_name: '', session_date: '', content: '', action_items: '' })
     setShowModal(false)
-    setForm({ title: '', bucket: 'Battle Card', description: '', link: '' })
+    setSaving(false)
     load()
   }
-
-  const bump = async (id, count) => {
-    await supabase.from('collaterals').update({ usage_count: count + 1 }).eq('id', id)
-    load()
-  }
-
-  const filtered = items.filter(i => i.title?.toLowerCase().includes(search.toLowerCase()))
-  const bucketColors = { 'Battle Card': 'red', 'Framework': 'purple', 'One-Pager': 'green', 'Template': 'yellow', 'Guide': 'gray', 'Sequence': 'purple', 'Other': 'gray' }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Collaterals</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Your enablement asset library</p>
-        </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search assets..." style={{ padding: '8px 14px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink }} />
-          <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Asset</Btn>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-        {filtered.map(item => (
-          <Card key={item.id}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-              <Badge color={bucketColors[item.bucket] || 'gray'}>{item.bucket}</Badge>
-              <span style={{ fontSize: 12, color: S.muted }}>{item.usage_count || 0} uses</span>
-            </div>
-            <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 6 }}>{item.title}</h3>
-            {item.description && <p style={{ fontSize: 13, color: S.muted, marginBottom: 12 }}>{item.description}</p>}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              {item.link && <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none' }}>Open →</a>}
-              <Btn size="sm" variant="ghost" onClick={() => bump(item.id, item.usage_count || 0)}>+1 Use</Btn>
-            </div>
-          </Card>
-        ))}
-        {filtered.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>No collaterals yet. Add your first asset!</div>}
-      </div>
-
-      {showModal && (
-        <Modal title="Add Collateral" onClose={() => setShowModal(false)}>
-          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Asset name" /></Field>
-          <Field label="Type">
-            <Select value={form.bucket} onChange={e => setForm({ ...form, bucket: e.target.value })}>
-              {['Battle Card', 'Framework', 'One-Pager', 'Template', 'Guide', 'Sequence', 'Other'].map(b => <option key={b}>{b}</option>)}
-            </Select>
-          </Field>
-          <Field label="Description"><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What's this asset for?" rows={2} /></Field>
-          <Field label="Link (optional)"><Input value={form.link} onChange={e => setForm({ ...form, link: e.target.value })} placeholder="https://..." /></Field>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
-            <Btn onClick={save} disabled={!form.title}>Add Asset</Btn>
+    <div className="page-content">
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <div className="card-title">1:1 Notes</div>
+            <div className="card-subtitle">Log coaching sessions and track action items</div>
           </div>
-        </Modal>
-      )}
-    </div>
-  )
-}
-
-// ─── SESSIONS ─────────────────────────────────────────────────────────────────
-function Sessions({ userId }) {
-  const [sessions, setSessions] = useState([])
-  const [showModal, setShowModal] = useState(false)
-  const [form, setForm] = useState({ title: '', date: '', type: 'Training', attendees: '' })
-
-  const load = useCallback(async () => {
-    const { data } = await supabase.from('sessions').select('*').eq('user_id', userId).order('date', { ascending: true })
-    setSessions(data || [])
-  }, [userId])
-
-  useEffect(() => { load() }, [load])
-
-  const save = async () => {
-    await supabase.from('sessions').insert({ ...form, user_id: userId, completed: false })
-    setShowModal(false)
-    setForm({ title: '', date: '', type: 'Training', attendees: '' })
-    load()
-  }
-
-  const markDone = async (id) => {
-    await supabase.from('sessions').update({ completed: true }).eq('id', id)
-    load()
-  }
-
-  const upcoming = sessions.filter(s => !s.completed)
-  const completed = sessions.filter(s => s.completed)
-  const typeColor = { Training: 'purple', Workshop: 'green', Coaching: 'yellow', Certification: 'red', Other: 'gray' }
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Sessions</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Schedule and track training sessions</p>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ Log Note</button>
         </div>
-        <Btn onClick={() => setShowModal(true)}><Plus size={16} />Schedule Session</Btn>
-      </div>
-
-      <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 12 }}>Upcoming ({upcoming.length})</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-        {upcoming.map(s => (
-          <Card key={s.id} style={{ padding: '14px 18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{s.title}</span>
-                  <Badge color={typeColor[s.type] || 'gray'}>{s.type}</Badge>
-                </div>
-                <div style={{ display: 'flex', gap: 16, fontSize: 13, color: S.muted }}>
-                  {s.date && <span>📅 {new Date(s.date).toLocaleDateString()}</span>}
-                  {s.attendees && <span>👥 {s.attendees}</span>}
-                </div>
-              </div>
-              <Btn size="sm" onClick={() => markDone(s.id)}>Mark Done</Btn>
-            </div>
-          </Card>
-        ))}
-        {upcoming.length === 0 && <div style={{ color: S.muted, fontSize: 14, padding: '12px 0' }}>No upcoming sessions. Schedule one!</div>}
-      </div>
-
-      <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 12 }}>Completed ({completed.length})</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {completed.map(s => (
-          <Card key={s.id} style={{ padding: '14px 18px', opacity: 0.7 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Check size={16} color={S.success} />
-              <span style={{ fontWeight: 600, fontSize: 14, color: S.ink, textDecoration: 'line-through' }}>{s.title}</span>
-              <Badge color={typeColor[s.type] || 'gray'}>{s.type}</Badge>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {showModal && (
-        <Modal title="Schedule Session" onClose={() => setShowModal(false)}>
-          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Session name" /></Field>
-          <Field label="Date"><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></Field>
-          <Field label="Type">
-            <Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-              {['Training', 'Workshop', 'Coaching', 'Certification', 'Other'].map(t => <option key={t}>{t}</option>)}
-            </Select>
-          </Field>
-          <Field label="Attendees"><Input value={form.attendees} onChange={e => setForm({ ...form, attendees: e.target.value })} placeholder="Who's joining?" /></Field>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
-            <Btn onClick={save} disabled={!form.title}>Schedule</Btn>
+        {loading ? <div className="loading"><div className="spinner" /></div> : notes.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📝</div>
+            <div className="empty-title">No notes yet</div>
+            <div className="empty-desc">Start logging your 1:1 coaching sessions.</div>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Log First Note</button>
           </div>
-        </Modal>
-      )}
-    </div>
-  )
-}
-
-// ─── PULSE CHECKS ─────────────────────────────────────────────────────────────
-function PulseChecks({ userId }) {
-  const [pulses, setPulses] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [showCreate, setShowCreate] = useState(false)
-  const [form, setForm] = useState({ title: '', questions: [''] })
-
-  const load = useCallback(async () => {
-    const { data } = await supabase.from('pulse_checks').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    setPulses(data || [])
-  }, [userId])
-
-  useEffect(() => { load() }, [load])
-
-  const save = async () => {
-    await supabase.from('pulse_checks').insert({ user_id: userId, title: form.title, questions: form.questions.filter(Boolean), responses: [] })
-    setShowCreate(false)
-    setForm({ title: '', questions: [''] })
-    load()
-  }
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Pulse Checks</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Track team sentiment and readiness</p>
-        </div>
-        <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Pulse</Btn>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-        {pulses.map(p => (
-          <Card key={p.id} onClick={() => setSelected(p)}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{p.title}</span>
-              <Badge color="purple">{p.questions?.length || 0} Qs</Badge>
-            </div>
-            <div style={{ fontSize: 13, color: S.muted }}>{p.responses?.length || 0} responses</div>
-            <div style={{ fontSize: 12, color: S.muted, marginTop: 4 }}>{new Date(p.created_at).toLocaleDateString()}</div>
-          </Card>
-        ))}
-        {pulses.length === 0 && <div style={{ color: S.muted, padding: 40, textAlign: 'center', gridColumn: '1/-1' }}>No pulse checks yet</div>}
-      </div>
-
-      {selected && (
-        <Modal title={selected.title} onClose={() => setSelected(null)} wide>
-          <div style={{ marginBottom: 16 }}>
-            {(selected.questions || []).map((q, i) => (
-              <div key={i} style={{ marginBottom: 16 }}>
-                <div style={{ color: '#fff', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{i + 1}. {q}</div>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  {[1, 2, 3, 4, 5].map(n => (
-                    <div key={n} style={{ flex: 1, height: 8, background: n <= 3 ? S.primary + '40' : '#3a3550', borderRadius: 4 }} />
-                  ))}
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {notes.map(n => (
+              <div key={n.id} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--plum)' }}>{n.rep_name}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    {n.session_date ? new Date(n.session_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                  </div>
                 </div>
+                <p style={{ fontSize: '14px', color: 'var(--text)', lineHeight: '1.6', marginBottom: '10px' }}>{n.content}</p>
+                {n.action_items && (
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+                    <strong>Action items:</strong> {n.action_items}
+                  </div>
+                )}
               </div>
             ))}
           </div>
-          <div style={{ color: S.muted, fontSize: 13 }}>Share this pulse check link with your team to collect responses.</div>
-        </Modal>
-      )}
+        )}
+      </div>
 
-      {showCreate && (
-        <Modal title="Create Pulse Check" onClose={() => setShowCreate(false)}>
-          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Week 3 Readiness Check" /></Field>
-          <Field label="Questions">
-            {form.questions.map((q, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <Input value={q} onChange={e => { const qs = [...form.questions]; qs[i] = e.target.value; setForm({ ...form, questions: qs }) }} placeholder={`Question ${i + 1}`} />
-                {form.questions.length > 1 && <button onClick={() => setForm({ ...form, questions: form.questions.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer' }}><X size={16} /></button>}
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Log 1:1 Note</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Rep Name *</label>
+                <input className="form-input" placeholder="Sarah Chen" value={form.rep_name} onChange={e => setForm({ ...form, rep_name: e.target.value })} />
               </div>
-            ))}
-            <Btn size="sm" variant="ghost" onClick={() => setForm({ ...form, questions: [...form.questions, ''] })} style={{ marginTop: 4 }}><Plus size={14} />Add Question</Btn>
-          </Field>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
-            <Btn variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Btn>
-            <Btn onClick={save} disabled={!form.title}>Create</Btn>
+              <div className="form-group">
+                <label className="form-label">Session Date</label>
+                <input className="form-input" type="date" value={form.session_date} onChange={e => setForm({ ...form, session_date: e.target.value })} />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Notes *</label>
+              <textarea className="form-input" style={{ minHeight: '120px' }} placeholder="What was discussed…" value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Action Items</label>
+              <textarea className="form-input" placeholder="Follow-ups and commitments…" value={form.action_items} onChange={e => setForm({ ...form, action_items: e.target.value })} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save Note'}</button>
+            </div>
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   )
 }
 
-// ─── WEEKLY PLANNING ──────────────────────────────────────────────────────────
-function WeeklyPlanning({ userId }) {
+// ─── PULSE CHECKS ─────────────────────────────────────────────────
+function PulseChecks({ user }) {
+  const [checks, setChecks] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ rep_name: '', week: '', confidence: 3, blockers: '', wins: '' })
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('pulse_checks').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+    setChecks(data || [])
+    setLoading(false)
+  }, [user.id])
+
+  useEffect(() => { load() }, [load])
+
+  const save = async () => {
+    if (!form.rep_name.trim()) return
+    setSaving(true)
+    await supabase.from('pulse_checks').insert([{
+      user_id: user.id,
+      rep_name: form.rep_name.trim(),
+      week: form.week.trim() || null,
+      confidence_score: form.confidence,
+      blockers: form.blockers.trim() || null,
+      wins: form.wins.trim() || null,
+    }])
+    setForm({ rep_name: '', week: '', confidence: 3, blockers: '', wins: '' })
+    setShowModal(false)
+    setSaving(false)
+    load()
+  }
+
+  const confColor = (score) => score >= 4 ? 'badge-green' : score >= 3 ? 'badge-amber' : 'badge-red'
+
+  return (
+    <div className="page-content">
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <div className="card-title">Pulse Checks</div>
+            <div className="card-subtitle">Weekly rep confidence and blocker tracking</div>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ Add Check</button>
+        </div>
+        {loading ? <div className="loading"><div className="spinner" /></div> : checks.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">💓</div>
+            <div className="empty-title">No pulse checks yet</div>
+            <div className="empty-desc">Run your first pulse check to track rep sentiment.</div>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Check</button>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead><tr><th>Rep</th><th>Week</th><th>Confidence</th><th>Blockers</th><th>Wins</th></tr></thead>
+              <tbody>
+                {checks.map(c => (
+                  <tr key={c.id}>
+                    <td style={{ fontWeight: 600 }}>{c.rep_name}</td>
+                    <td>{c.week || '—'}</td>
+                    <td><span className={`badge ${confColor(c.confidence_score)}`}>{c.confidence_score}/5</span></td>
+                    <td style={{ maxWidth: '200px', fontSize: '13px' }}>{c.blockers || '—'}</td>
+                    <td style={{ maxWidth: '200px', fontSize: '13px' }}>{c.wins || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Pulse Check</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Rep Name *</label>
+                <input className="form-input" placeholder="Sarah Chen" value={form.rep_name} onChange={e => setForm({ ...form, rep_name: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Week</label>
+                <input className="form-input" placeholder="e.g. Week 3" value={form.week} onChange={e => setForm({ ...form, week: e.target.value })} />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Confidence Score (1-5)</label>
+              <input className="form-input" type="number" min="1" max="5" value={form.confidence} onChange={e => setForm({ ...form, confidence: parseInt(e.target.value) || 1 })} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Blockers</label>
+              <textarea className="form-input" placeholder="What's slowing them down?" value={form.blockers} onChange={e => setForm({ ...form, blockers: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Wins</label>
+              <textarea className="form-input" placeholder="What went well this week?" value={form.wins} onChange={e => setForm({ ...form, wins: e.target.value })} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save Check'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── WEEKLY PLANNING ──────────────────────────────────────────────
+function WeeklyPlanning({ user }) {
   const [todos, setTodos] = useState([])
-  const [adding, setAdding] = useState(null)
-  const [newTask, setNewTask] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [newItem, setNewItem] = useState({ text: '', priority: 'must' })
+  const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('todos').select('*').eq('user_id', userId).order('created_at', { ascending: true })
+    const { data } = await supabase.from('todos').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
     setTodos(data || [])
-  }, [userId])
+    setLoading(false)
+  }, [user.id])
 
   useEffect(() => { load() }, [load])
 
-  const addTask = async (bucket) => {
-    if (!newTask.trim()) return
-    await supabase.from('todos').insert({ user_id: userId, title: newTask, bucket, done: false })
-    setNewTask('')
-    setAdding(null)
+  const add = async () => {
+    if (!newItem.text.trim() || saving) return
+    setSaving(true)
+    await supabase.from('todos').insert([{ user_id: user.id, text: newItem.text.trim(), priority: newItem.priority, done: false }])
+    setNewItem({ text: '', priority: 'must' })
+    setSaving(false)
     load()
   }
 
@@ -942,570 +693,657 @@ function WeeklyPlanning({ userId }) {
     load()
   }
 
-  const del = async (id) => {
-    await supabase.from('todos').delete().eq('id', id)
-    load()
-  }
-
-  const buckets = [
-    { key: 'must', label: 'Must Do', color: S.error, bg: '#fff5f5' },
-    { key: 'should', label: 'Should Do', color: S.warning, bg: '#fffbeb' },
-    { key: 'could', label: 'Could Do', color: S.primary, bg: S.accentBg },
-  ]
-  const total = todos.length
-  const done = todos.filter(t => t.done).length
+  const columns = ['must', 'should', 'could']
+  const labels = { must: '🔴 Must Do', should: '🟡 Should Do', could: '🟢 Could Do' }
 
   return (
-    <div>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink, marginBottom: 4 }}>Weekly Planning</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ flex: 1, maxWidth: 300, height: 6, background: S.borderLight, borderRadius: 3 }}>
-            <div style={{ height: '100%', width: `${total ? (done / total) * 100 : 0}%`, background: S.primary, borderRadius: 3, transition: 'width 0.3s' }} />
-          </div>
-          <span style={{ fontSize: 13, color: S.muted }}>{done}/{total} complete</span>
+    <div className="page-content">
+      <div className="card" style={{ marginBottom: '20px' }}>
+        <div className="card-title" style={{ marginBottom: '16px' }}>Add Task</div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input className="form-input" placeholder="What needs to get done this week?" value={newItem.text}
+            onChange={e => setNewItem({ ...newItem, text: e.target.value })}
+            onKeyDown={e => e.key === 'Enter' && add()}
+            style={{ flex: 1, marginBottom: 0 }} />
+          <select className="form-input" value={newItem.priority} onChange={e => setNewItem({ ...newItem, priority: e.target.value })} style={{ width: '140px', marginBottom: 0 }}>
+            <option value="must">Must Do</option>
+            <option value="should">Should Do</option>
+            <option value="could">Could Do</option>
+          </select>
+          <button className="btn btn-primary" onClick={add} disabled={saving}>Add</button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-        {buckets.map(b => {
-          const items = todos.filter(t => t.bucket === b.key)
-          return (
-            <div key={b.key} style={{ background: b.bg, border: `1px solid ${b.color}20`, borderRadius: 12, padding: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <span style={{ fontWeight: 700, fontSize: 14, color: b.color }}>{b.label}</span>
-                <button onClick={() => setAdding(b.key)} style={{ background: 'none', border: 'none', color: b.color, cursor: 'pointer' }}><Plus size={16} /></button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {items.map(t => (
-                  <div key={t.id} style={{ background: '#fff', borderRadius: 8, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${S.borderLight}` }}>
-                    <div onClick={() => toggle(t.id, t.done)} style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${t.done ? b.color : S.border}`, background: t.done ? b.color : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                      {t.done && <Check size={11} color="#fff" strokeWidth={3} />}
+      {loading ? <div className="loading"><div className="spinner" /></div> : (
+        <div className="grid-3">
+          {columns.map(col => (
+            <div key={col} className="card">
+              <div className="card-title" style={{ marginBottom: '16px' }}>{labels[col]}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {todos.filter(t => t.priority === col).length === 0 ? (
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '8px 0' }}>Nothing here yet</div>
+                ) : todos.filter(t => t.priority === col).map(t => (
+                  <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => toggle(t.id, t.done)}>
+                    <div style={{
+                      width: '18px', height: '18px', borderRadius: '5px', flexShrink: 0,
+                      border: `2px solid ${t.done ? 'var(--lavender)' : 'var(--border)'}`,
+                      background: t.done ? 'var(--lavender)' : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {t.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
                     </div>
-                    <span style={{ flex: 1, fontSize: 13, color: t.done ? S.muted : S.ink, textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</span>
-                    <button onClick={() => del(t.id)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.5 }}><X size={12} /></button>
+                    <span style={{ fontSize: '13.5px', textDecoration: t.done ? 'line-through' : 'none', color: t.done ? 'var(--text-muted)' : 'var(--text)' }}>{t.text}</span>
                   </div>
                 ))}
-                {adding === b.key && (
-                  <div style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', border: `1px solid ${b.color}` }}>
-                    <input autoFocus value={newTask} onChange={e => setNewTask(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') addTask(b.key); if (e.key === 'Escape') setAdding(null) }}
-                      placeholder="Add task..." style={{ width: '100%', border: 'none', outline: 'none', fontSize: 13, fontFamily: 'var(--font-body)', color: S.ink }} />
-                  </div>
-                )}
               </div>
             </div>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── FORECASTING ──────────────────────────────────────────────────────────────
-function Forecasting({ userId }) {
+// ─── COLLATERALS ──────────────────────────────────────────────────
+function Collaterals({ user }) {
   const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [form, setForm] = useState({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ title: '', category: '', url: '', description: '' })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('forecast').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    const { data } = await supabase.from('collaterals').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
     setItems(data || [])
-  }, [userId])
+    setLoading(false)
+  }, [user.id])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('forecast').insert({ ...form, user_id: userId })
+    if (!form.title.trim()) return
+    setSaving(true)
+    await supabase.from('collaterals').insert([{ user_id: user.id, title: form.title.trim(), category: form.category || null, url: form.url.trim() || null, description: form.description.trim() || null }])
+    setForm({ title: '', category: '', url: '', description: '' })
     setShowModal(false)
-    setForm({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
+    setSaving(false)
     load()
   }
-
-  const updateStatus = async (id, status) => {
-    await supabase.from('forecast').update({ status }).eq('id', id)
-    load()
-  }
-
-  const stages = ['backlog', 'planned', 'in-progress', 'done']
-  const stageLabels = { backlog: 'Backlog', planned: 'Planned', 'in-progress': 'In Progress', done: 'Done' }
-  const impactColor = { critical: 'red', high: 'yellow', medium: 'purple', low: 'gray' }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Forecasting</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Enablement project pipeline</p>
+    <div className="page-content">
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <div className="card-title">Collaterals</div>
+            <div className="card-subtitle">All your playbooks, decks, and resources in one place</div>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ Add Collateral</button>
         </div>
-        <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Project</Btn>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-        {stages.map(stage => {
-          const stageItems = items.filter(i => i.status === stage)
-          return (
-            <div key={stage} style={{ background: S.accentBg, borderRadius: 12, padding: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>{stageLabels[stage]}</span>
-                <Badge color="gray">{stageItems.length}</Badge>
+        {loading ? <div className="loading"><div className="spinner" /></div> : items.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📁</div>
+            <div className="empty-title">No collaterals yet</div>
+            <div className="empty-desc">Start adding your playbooks and resources.</div>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Collateral</button>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
+            {items.map(c => (
+              <div key={c.id} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--plum)' }}>{c.title}</div>
+                  {c.category && <span className="badge badge-purple">{c.category}</span>}
+                </div>
+                {c.description && <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '10px', lineHeight: '1.5' }}>{c.description}</div>}
+                {c.url && <a href={c.url} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" style={{ fontSize: '12px' }}>Open ↗</a>}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {stageItems.map(item => (
-                  <div key={item.id} style={{ background: '#fff', borderRadius: 8, padding: '12px 14px', border: `1px solid ${S.borderLight}` }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 6 }}>{item.title}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Badge color={impactColor[item.impact] || 'gray'}>{item.impact}</Badge>
-                      {item.eta && <span style={{ fontSize: 11, color: S.muted }}>{new Date(item.eta).toLocaleDateString()}</span>}
-                    </div>
-                    <select value={item.status} onChange={e => updateStatus(item.id, e.target.value)} style={{ marginTop: 8, width: '100%', fontSize: 11, border: `1px solid ${S.border}`, borderRadius: 4, padding: '3px 6px', fontFamily: 'var(--font-body)', color: S.inkSecondary, background: '#fff' }}>
-                      {stages.map(s => <option key={s} value={s}>{stageLabels[s]}</option>)}
-                    </select>
-                  </div>
-                ))}
+            ))}
+          </div>
+        )}
+      </div>
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Add Collateral</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Title *</label>
+              <input className="form-input" placeholder="e.g. Enterprise Cold Email Playbook" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Category</label>
+                <select className="form-input" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+                  <option value="">Select…</option>
+                  <option>Playbook</option><option>Deck</option><option>Template</option><option>Guide</option><option>Video</option><option>Other</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">URL / Link</label>
+                <input className="form-input" placeholder="https://…" value={form.url} onChange={e => setForm({ ...form, url: e.target.value })} />
               </div>
             </div>
-          )
-        })}
-      </div>
-
-      {showModal && (
-        <Modal title="Add Project" onClose={() => setShowModal(false)}>
-          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Project name" /></Field>
-          <Field label="Status">
-            <Select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
-              {stages.map(s => <option key={s} value={s}>{stageLabels[s]}</option>)}
-            </Select>
-          </Field>
-          <Field label="Impact">
-            <Select value={form.impact} onChange={e => setForm({ ...form, impact: e.target.value })}>
-              {['critical', 'high', 'medium', 'low'].map(i => <option key={i}>{i}</option>)}
-            </Select>
-          </Field>
-          <Field label="ETA"><Input type="date" value={form.eta} onChange={e => setForm({ ...form, eta: e.target.value })} /></Field>
-          <Field label="Notes"><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Additional context..." rows={2} /></Field>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
-            <Btn onClick={save} disabled={!form.title}>Add</Btn>
+            <div className="form-group">
+              <label className="form-label">Description</label>
+              <textarea className="form-input" placeholder="What is this and when to use it?" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Add'}</button>
+            </div>
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   )
 }
 
-// ─── LEADERBOARDS ─────────────────────────────────────────────────────────────
-function Leaderboards({ userId }) {
-  const [boards, setBoards] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [showCreate, setShowCreate] = useState(false)
-  const [showEntry, setShowEntry] = useState(false)
-  const [form, setForm] = useState({ title: '', type: 'weekly', metric: '' })
-  const [entry, setEntry] = useState({ name: '', value: '', unit: '' })
+// ─── SESSIONS ─────────────────────────────────────────────────────
+function Sessions({ user }) {
+  const [sessions, setSessions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ title: '', session_date: '', attendees: '', notes: '', recording_url: '' })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('leaderboards').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    setBoards(data || [])
-  }, [userId])
+    const { data } = await supabase.from('sessions').select('*').eq('user_id', user.id).order('session_date', { ascending: false })
+    setSessions(data || [])
+    setLoading(false)
+  }, [user.id])
 
   useEffect(() => { load() }, [load])
 
-  const createBoard = async () => {
-    await supabase.from('leaderboards').insert({ ...form, user_id: userId, entries: [] })
-    setShowCreate(false)
-    setForm({ title: '', type: 'weekly', metric: '' })
+  const save = async () => {
+    if (!form.title.trim()) return
+    setSaving(true)
+    await supabase.from('sessions').insert([{
+      user_id: user.id,
+      title: form.title.trim(),
+      session_date: form.session_date || new Date().toISOString().split('T')[0],
+      attendees: form.attendees.trim() ? form.attendees.split(',').map(s => s.trim()) : [],
+      notes: form.notes.trim() || null,
+      recording_url: form.recording_url.trim() || null,
+    }])
+    setForm({ title: '', session_date: '', attendees: '', notes: '', recording_url: '' })
+    setShowModal(false)
+    setSaving(false)
     load()
   }
 
-  const addEntry = async () => {
-    const updated = [...(selected.entries || []), { ...entry, value: +entry.value }].sort((a, b) => b.value - a.value)
-    await supabase.from('leaderboards').update({ entries: updated }).eq('id', selected.id)
-    setSelected({ ...selected, entries: updated })
-    setShowEntry(false)
-    setEntry({ name: '', value: '', unit: '' })
+  return (
+    <div className="page-content">
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <div className="card-title">Sessions</div>
+            <div className="card-subtitle">Training sessions, workshops, and team enablement</div>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ Add Session</button>
+        </div>
+        {loading ? <div className="loading"><div className="spinner" /></div> : sessions.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🎯</div>
+            <div className="empty-title">No sessions logged</div>
+            <div className="empty-desc">Log your first training session or workshop.</div>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Session</button>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead><tr><th>Session</th><th>Date</th><th>Attendees</th><th>Recording</th></tr></thead>
+              <tbody>
+                {sessions.map(s => (
+                  <tr key={s.id}>
+                    <td style={{ fontWeight: 600 }}>{s.title}</td>
+                    <td>{s.session_date ? new Date(s.session_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
+                    <td style={{ fontSize: '13px' }}>{Array.isArray(s.attendees) ? s.attendees.join(', ') : s.attendees || '—'}</td>
+                    <td>{s.recording_url ? <a href={s.recording_url} target="_blank" rel="noreferrer" style={{ color: 'var(--lavender)', fontSize: '13px', fontWeight: 600 }}>Watch ↗</a> : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Log Session</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Session Title *</label>
+              <input className="form-input" placeholder="e.g. Cold call objection handling workshop" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Date</label>
+                <input className="form-input" type="date" value={form.session_date} onChange={e => setForm({ ...form, session_date: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Attendees (comma-separated)</label>
+                <input className="form-input" placeholder="Sarah, Mike, Priya" value={form.attendees} onChange={e => setForm({ ...form, attendees: e.target.value })} />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Recording URL</label>
+              <input className="form-input" placeholder="https://…" value={form.recording_url} onChange={e => setForm({ ...form, recording_url: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Notes</label>
+              <textarea className="form-input" placeholder="Key takeaways, gaps identified…" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Log Session'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── FORECASTING ──────────────────────────────────────────────────
+function Forecasting({ user }) {
+  const [forecasts, setForecasts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ rep_name: '', period: '', target: '', committed: '', best_case: '', notes: '' })
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('forecast').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+    setForecasts(data || [])
+    setLoading(false)
+  }, [user.id])
+
+  useEffect(() => { load() }, [load])
+
+  const save = async () => {
+    if (!form.rep_name.trim()) return
+    setSaving(true)
+    await supabase.from('forecast').insert([{
+      user_id: user.id,
+      rep_name: form.rep_name.trim(),
+      period: form.period.trim() || null,
+      target: parseFloat(form.target) || 0,
+      committed: parseFloat(form.committed) || 0,
+      best_case: parseFloat(form.best_case) || 0,
+      notes: form.notes.trim() || null,
+    }])
+    setForm({ rep_name: '', period: '', target: '', committed: '', best_case: '', notes: '' })
+    setShowModal(false)
+    setSaving(false)
     load()
   }
 
-  const medals = ['🥇', '🥈', '🥉']
+  const attainment = (committed, target) => target ? Math.round((committed / target) * 100) : 0
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Leaderboards</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Track and celebrate rep performance</p>
+    <div className="page-content">
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <div className="card-title">Forecasting</div>
+            <div className="card-subtitle">Track rep targets, committed pipeline, and best-case</div>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ Add Forecast</button>
         </div>
-        <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Board</Btn>
+        {loading ? <div className="loading"><div className="spinner" /></div> : forecasts.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📈</div>
+            <div className="empty-title">No forecasts yet</div>
+            <div className="empty-desc">Add rep targets to start tracking pipeline.</div>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Forecast</button>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead><tr><th>Rep</th><th>Period</th><th>Target</th><th>Committed</th><th>Best Case</th><th>Attainment</th></tr></thead>
+              <tbody>
+                {forecasts.map(f => {
+                  const pct = attainment(f.committed, f.target)
+                  return (
+                    <tr key={f.id}>
+                      <td style={{ fontWeight: 600 }}>{f.rep_name}</td>
+                      <td>{f.period || '—'}</td>
+                      <td>${(f.target || 0).toLocaleString()}</td>
+                      <td>${(f.committed || 0).toLocaleString()}</td>
+                      <td>${(f.best_case || 0).toLocaleString()}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div className="progress-bar" style={{ width: '80px' }}>
+                            <div className="progress-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
+                          </div>
+                          <span style={{ fontSize: '13px', fontWeight: 600 }}>{pct}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-        {boards.map(b => (
-          <Card key={b.id} onClick={() => setSelected(b)}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{b.title}</span>
-              <Badge color="purple">{b.type}</Badge>
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Add Forecast Entry</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
             </div>
-            <div style={{ fontSize: 13, color: S.muted, marginBottom: 12 }}>{b.metric}</div>
-            {(b.entries || []).slice(0, 3).map((e, i) => {
-              const max = b.entries[0]?.value || 1
-              return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 16 }}>{medals[i] || '·'}</span>
-                  <span style={{ fontSize: 13, color: S.ink, fontWeight: 600, minWidth: 80 }}>{e.name}</span>
-                  <div style={{ flex: 1, height: 6, background: S.borderLight, borderRadius: 3 }}>
-                    <div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: S.primary, borderRadius: 3 }} />
-                  </div>
-                  <span style={{ fontSize: 12, color: S.primary, fontWeight: 700 }}>{e.value}{e.unit}</span>
-                </div>
-              )
-            })}
-          </Card>
-        ))}
-        {boards.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>No leaderboards yet</div>}
-      </div>
-
-      {selected && (
-        <Modal title={selected.title} onClose={() => setSelected(null)} wide>
-          <div style={{ marginBottom: 16 }}>
-            {(selected.entries || []).map((e, i) => {
-              const max = selected.entries[0]?.value || 1
-              return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, padding: '8px 12px', background: i < 3 ? S.accentBg : 'transparent', borderRadius: 8 }}>
-                  <span style={{ fontSize: 20, minWidth: 28 }}>{medals[i] || `#${i + 1}`}</span>
-                  <span style={{ color: '#fff', fontWeight: 700, minWidth: 100 }}>{e.name}</span>
-                  <div style={{ flex: 1, height: 8, background: '#3a3550', borderRadius: 4 }}>
-                    <div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 4 }} />
-                  </div>
-                  <span style={{ color: S.primaryLight, fontWeight: 700 }}>{e.value}{e.unit}</span>
-                </div>
-              )
-            })}
-          </div>
-          <Btn onClick={() => setShowEntry(true)}><Plus size={14} />Add Entry</Btn>
-        </Modal>
-      )}
-
-      {showCreate && (
-        <Modal title="Create Leaderboard" onClose={() => setShowCreate(false)}>
-          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. This Week's Top Callers" /></Field>
-          <Field label="Metric"><Input value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })} placeholder="e.g. Calls made, Demos booked" /></Field>
-          <Field label="Type">
-            <Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-              {['weekly', 'quarterly', 'ramp', 'collateral'].map(t => <option key={t}>{t}</option>)}
-            </Select>
-          </Field>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <Btn variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Btn>
-            <Btn onClick={createBoard} disabled={!form.title}>Create</Btn>
-          </div>
-        </Modal>
-      )}
-
-      {showEntry && (
-        <Modal title="Add Entry" onClose={() => setShowEntry(false)}>
-          <Field label="Rep Name"><Input value={entry.name} onChange={e => setEntry({ ...entry, name: e.target.value })} placeholder="Name" /></Field>
-          <Field label="Value"><Input type="number" value={entry.value} onChange={e => setEntry({ ...entry, value: e.target.value })} placeholder="Score or count" /></Field>
-          <Field label="Unit (optional)"><Input value={entry.unit} onChange={e => setEntry({ ...entry, unit: e.target.value })} placeholder="e.g. calls, %" /></Field>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <Btn variant="ghost" onClick={() => setShowEntry(false)}>Cancel</Btn>
-            <Btn onClick={addEntry} disabled={!entry.name || !entry.value}>Add</Btn>
-          </div>
-        </Modal>
-      )}
-    </div>
-  )
-}
-
-// ─── SETTINGS ─────────────────────────────────────────────────────────────────
-function SettingsPanel({ user, onSignOut }) {
-  return (
-    <div>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Settings</h1>
-        <p style={{ color: S.muted, fontSize: 14 }}>Manage your workspace and preferences</p>
-      </div>
-
-      {[
-        {
-          title: 'Workspace', items: [
-            { label: 'Account Email', value: user?.email },
-            { label: 'Workspace Name', value: 'My Workspace' },
-          ]
-        },
-        {
-          title: 'Integrations', items: [
-            { label: 'CRM (Salesforce/HubSpot)', value: 'Coming soon', badge: 'soon' },
-            { label: 'Gong', value: 'Coming soon', badge: 'soon' },
-            { label: 'Slack', value: 'Coming soon', badge: 'soon' },
-            { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' },
-          ]
-        },
-        {
-          title: 'Platform', items: [
-            { label: 'AI Engine', value: 'Claude Sonnet (Anthropic)' },
-            { label: 'Version', value: 'EnableOS 1.0 Beta' },
-          ]
-        },
-      ].map(group => (
-        <Card key={group.title} style={{ marginBottom: 16 }}>
-          <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}` }}>{group.title}</h3>
-          {group.items.map(item => (
-            <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${S.borderLight}` }}>
-              <span style={{ fontSize: 14, color: S.inkSecondary }}>{item.label}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {item.badge && <Badge color="gray">{item.badge}</Badge>}
-                <span style={{ fontSize: 14, color: S.muted }}>{item.value}</span>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Rep Name *</label>
+                <input className="form-input" placeholder="Sarah Chen" value={form.rep_name} onChange={e => setForm({ ...form, rep_name: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Period</label>
+                <input className="form-input" placeholder="Q2 2025" value={form.period} onChange={e => setForm({ ...form, period: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Target ($)</label>
+                <input className="form-input" type="number" placeholder="50000" value={form.target} onChange={e => setForm({ ...form, target: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Committed ($)</label>
+                <input className="form-input" type="number" placeholder="35000" value={form.committed} onChange={e => setForm({ ...form, committed: e.target.value })} />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="form-label">Best Case ($)</label>
+                <input className="form-input" type="number" placeholder="45000" value={form.best_case} onChange={e => setForm({ ...form, best_case: e.target.value })} />
               </div>
             </div>
-          ))}
-        </Card>
-      ))}
-
-      <Btn variant="danger" onClick={onSignOut}><LogOut size={16} />Sign Out</Btn>
+            <div className="form-group">
+              <label className="form-label">Notes</label>
+              <textarea className="form-input" placeholder="Any context on the forecast…" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Add'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
-const NAV = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'CORE' },
-  { id: 'intake', label: 'Intake', icon: Inbox, group: 'CORE' },
-  { id: 'ramp', label: 'Ramp & Onboarding', icon: Users, group: 'CORE' },
-  { id: 'notes', label: '1:1 Notes', icon: MessageSquare, group: 'CORE' },
-  { id: 'collaterals', label: 'Collaterals', icon: BookOpen, group: 'CORE' },
-  { id: 'sessions', label: 'Sessions', icon: Video, group: 'CORE' },
-  { id: 'pulse', label: 'Pulse Checks', icon: Activity, group: 'OPERATIONS' },
-  { id: 'planning', label: 'Weekly Planning', icon: Calendar, group: 'OPERATIONS' },
-  { id: 'forecasting', label: 'Forecasting', icon: TrendingUp, group: 'OPERATIONS' },
-  { id: 'leaderboards', label: 'Leaderboards', icon: Trophy, group: 'OPERATIONS' },
-  { id: 'settings', label: 'Settings', icon: Settings, group: null },
-  { id: 'featurereqs', label: 'Feature Requests', icon: Star, group: null },
-]
+// ─── LEADERBOARD ──────────────────────────────────────────────────
+function Leaderboard({ user }) {
+  const [entries, setEntries] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ rep_name: '', metric: '', value: '', period: '', presidents_club: false })
 
-// ─── FEATURE REQUESTS ─────────────────────────────────────────────────────────
-function FeatureRequests() {
-  const [submitted, setSubmitted] = useState(false)
-  const [voted, setVoted] = useState([])
-  const [votes, setVotes] = useState({ 0:34, 1:28, 2:22, 3:19, 4:17, 5:31, 6:14, 7:26 })
-  const [form, setForm] = useState({ title: '', description: '', category: 'Platform' })
-  const categories = ['Platform', 'Integrations', 'AI', 'Analytics', 'Other']
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('leaderboards').select('*').eq('user_id', user.id).order('value', { ascending: false })
+    setEntries(data || [])
+    setLoading(false)
+  }, [user.id])
 
-  const existing = [
-    { title: 'Enablement ROI dashboard — which assets closed which deals', status: 'roadmap', category: 'Analytics' },
-    { title: 'Google Calendar integration', status: 'planned', category: 'Integrations' },
-    { title: 'Slack intake bot — submit requests from Slack', status: 'planned', category: 'Integrations' },
-    { title: 'Salesforce / HubSpot CRM sync', status: 'planned', category: 'Integrations' },
-    { title: 'Gong integration — pull call themes into 1:1 notes', status: 'considering', category: 'Integrations' },
-    { title: 'AI-generated onboarding plans per rep', status: 'considering', category: 'AI' },
-    { title: 'Multi-seat workspaces for larger teams', status: 'roadmap', category: 'Platform' },
-    { title: 'Public-facing hub for reps to self-serve assets', status: 'considering', category: 'Platform' },
-  ]
+  useEffect(() => { load() }, [load])
 
-  const statusStyle = {
-    planned: { bg: '#dbeafe', color: '#1d4ed8', label: 'Planned' },
-    considering: { bg: S.accentBg2, color: S.primary, label: 'Considering' },
-    roadmap: { bg: '#d1fae5', color: '#065f46', label: 'On Roadmap' },
-  }
-
-  const vote = (i) => {
-    if (voted.includes(i)) return
-    setVoted([...voted, i])
-    setVotes({ ...votes, [i]: votes[i] + 1 })
+  const save = async () => {
+    if (!form.rep_name.trim()) return
+    setSaving(true)
+    await supabase.from('leaderboards').insert([{
+      user_id: user.id,
+      rep_name: form.rep_name.trim(),
+      metric: form.metric.trim() || null,
+      value: parseFloat(form.value) || 0,
+      period: form.period.trim() || null,
+      presidents_club: form.presidents_club,
+    }])
+    setForm({ rep_name: '', metric: '', value: '', period: '', presidents_club: false })
+    setShowModal(false)
+    setSaving(false)
+    load()
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Feature Requests</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Vote on what we build next, or suggest something new</p>
+    <div className="page-content">
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <div className="card-title">Leaderboard 🏆</div>
+            <div className="card-subtitle">Rep performance rankings and President's Club tracker</div>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ Add Entry</button>
         </div>
-        <a href="/feature-requests" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none', fontWeight: 600 }}>Public page →</a>
+        {loading ? <div className="loading"><div className="spinner" /></div> : entries.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🏆</div>
+            <div className="empty-title">Leaderboard is empty</div>
+            <div className="empty-desc">Start adding rep performance data.</div>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Entry</button>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead><tr><th>#</th><th>Rep</th><th>Metric</th><th>Value</th><th>Period</th><th>President's Club</th></tr></thead>
+              <tbody>
+                {entries.map((e, i) => (
+                  <tr key={e.id}>
+                    <td style={{ fontWeight: 700, color: i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#d97706' : 'var(--text-muted)' }}>
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                    </td>
+                    <td style={{ fontWeight: 600 }}>{e.rep_name}</td>
+                    <td>{e.metric || '—'}</td>
+                    <td style={{ fontWeight: 700 }}>{e.value?.toLocaleString()}</td>
+                    <td>{e.period || '—'}</td>
+                    <td>{e.presidents_club ? '⭐ Yes' : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Add Leaderboard Entry</div>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Rep Name *</label>
+                <input className="form-input" placeholder="Sarah Chen" value={form.rep_name} onChange={e => setForm({ ...form, rep_name: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Metric</label>
+                <input className="form-input" placeholder="Meetings Booked / Pipeline / Quota %" value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Value</label>
+                <input className="form-input" type="number" placeholder="191" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Period</label>
+                <input className="form-input" placeholder="Q2 2025" value={form.period} onChange={e => setForm({ ...form, period: e.target.value })} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+              <input type="checkbox" id="pc" checked={form.presidents_club} onChange={e => setForm({ ...form, presidents_club: e.target.checked })} style={{ width: '16px', height: '16px', accentColor: 'var(--lavender)' }} />
+              <label htmlFor="pc" style={{ fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>President's Club</label>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Add'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
-        <div>
-          <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 14 }}>Top requests</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {existing.map((f, i) => {
-              const s = statusStyle[f.status]
-              const hasVoted = voted.includes(i)
-              return (
-                <Card key={i} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <button onClick={() => vote(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hasVoted ? S.accentBg2 : S.accentBg, border: `1px solid ${hasVoted ? S.primary : S.border}`, borderRadius: 8, padding: '7px 10px', cursor: hasVoted ? 'default' : 'pointer', minWidth: 48, transition: 'all 0.15s' }}>
-                    <Star size={13} color={hasVoted ? S.primary : S.muted} fill={hasVoted ? S.primary : 'none'} strokeWidth={2}/>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: hasVoted ? S.primary : S.muted }}>{votes[i]}</span>
-                  </button>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 5 }}>{f.title}</div>
-                    <div style={{ display: 'flex', gap: 7 }}>
-                      <span style={{ background: s.bg, color: s.color, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</span>
-                      <span style={{ fontSize: 11, color: S.muted }}>{f.category}</span>
-                    </div>
-                  </div>
-                </Card>
-              )
-            })}
+// ─── SETTINGS ─────────────────────────────────────────────────────
+function Settings({ user, onSignOut }) {
+  return (
+    <div className="page-content">
+      <div className="card" style={{ maxWidth: '600px' }}>
+        <div className="card-title" style={{ marginBottom: '24px' }}>Account Settings</div>
+        <div style={{ marginBottom: '20px' }}>
+          <div className="form-label">Email</div>
+          <div style={{ fontSize: '15px', color: 'var(--text)', padding: '10px 14px', background: 'var(--bg)', borderRadius: '10px', border: '1.5px solid var(--border)' }}>{user?.email}</div>
+        </div>
+        <div style={{ marginBottom: '28px' }}>
+          <div className="form-label">Plan</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span className="badge badge-purple">Early Access</span>
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Free — first 20 users</span>
+          </div>
+        </div>
+        <button className="btn btn-ghost" onClick={onSignOut}>Sign Out</button>
+      </div>
+    </div>
+  )
+}
+
+// ─── PLACEHOLDER ──────────────────────────────────────────────────
+function Placeholder({ title }) {
+  return (
+    <div className="page-content">
+      <div className="empty-state">
+        <div className="empty-icon">🚧</div>
+        <div className="empty-title">{title}</div>
+        <div className="empty-desc">This feature is coming soon.</div>
+      </div>
+    </div>
+  )
+}
+
+// ─── LOGIN PAGE ───────────────────────────────────────────────────
+function LoginPage({ onAuth }) {
+  const [mode, setMode] = useState('login')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [msg, setMsg] = useState('')
+
+  const handle = async () => {
+    if (!email || !password) { setError('Please fill in all fields'); return }
+    setLoading(true)
+    setError('')
+    setMsg('')
+    const fn = mode === 'login'
+      ? supabase.auth.signInWithPassword({ email, password })
+      : supabase.auth.signUp({ email, password })
+    const { data, error: err } = await fn
+    if (err) { setError(err.message); setLoading(false); return }
+    if (mode === 'signup') { setMsg('Account created! You can now sign in.'); setMode('login'); setLoading(false); return }
+    onAuth(data.user)
+    setLoading(false)
+  }
+
+  return (
+    <div className="login-page">
+      <div className="login-card">
+        {/* ── LOGIN LOGO — properly sized ── */}
+        <div className="login-logo">
+          <LogoIcon size={52} />
+          <div className="login-logo-text">
+            <div className="logo-name">EnableOS</div>
+            <div className="logo-tagline">The OS for Enablement</div>
           </div>
         </div>
 
-        <div>
-          <Card>
-            <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)' }}>
-              {submitted ? '✓ Thanks!' : 'Suggest a feature'}
-            </h3>
-            {submitted ? (
-              <div>
-                <p style={{ fontSize: 13, color: S.muted, marginBottom: 14, lineHeight: 1.6 }}>We read every request. If it fits the roadmap, it'll show up on the board.</p>
-                <Btn size="sm" variant="ghost" onClick={() => { setSubmitted(false); setForm({ title: '', description: '', category: 'Platform' }) }}>Submit another</Btn>
-              </div>
-            ) : (
-              <div>
-                <Field label="Title"><input value={form.title} onChange={e => setForm({...form,title:e.target.value})} placeholder="What should we build?" style={{ width:'100%',padding:'9px 12px',border:`1px solid ${S.border}`,borderRadius:8,fontSize:13,fontFamily:'var(--font-body)',outline:'none',color:S.ink,background:'#fff' }} onFocus={e=>e.target.style.borderColor=S.primary} onBlur={e=>e.target.style.borderColor=S.border}/></Field>
-                <Field label="Category">
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {categories.map(c => (
-                      <button type="button" key={c} onClick={() => setForm({...form,category:c})}
-                        style={{ padding:'4px 10px',borderRadius:100,border:`1px solid ${form.category===c?S.primary:S.border}`,background:form.category===c?S.accentBg2:'#fff',color:form.category===c?S.primary:S.inkSecondary,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </Field>
-                <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="What problem does it solve?" rows={3} style={{ width:'100%',padding:'9px 12px',border:`1px solid ${S.border}`,borderRadius:8,fontSize:13,fontFamily:'var(--font-body)',outline:'none',color:S.ink,background:'#fff',resize:'vertical'}} onFocus={e=>e.target.style.borderColor=S.primary} onBlur={e=>e.target.style.borderColor=S.border}/></Field>
-                <Btn onClick={() => form.title && setSubmitted(true)} disabled={!form.title} style={{ width: '100%', justifyContent: 'center' }}>Submit Request</Btn>
-              </div>
-            )}
-          </Card>
+        <div className="login-heading">{mode === 'login' ? 'Welcome back' : 'Create your account'}</div>
+        <div className="login-sub">{mode === 'login' ? 'Sign in to your EnableOS dashboard' : 'Start running enablement like a pro'}</div>
+
+        {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}>{error}</div>}
+        {msg && <div className="alert alert-success" style={{ marginBottom: '16px' }}>{msg}</div>}
+
+        <input className="login-input" type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+        <input className="login-input" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handle()} />
+        <button className="login-btn" onClick={handle} disabled={loading}>
+          {loading ? 'Loading…' : mode === 'login' ? 'Sign in' : 'Create Account'}
+        </button>
+
+        <div className="login-switch">
+          {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
+          <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setMsg('') }}>
+            {mode === 'login' ? 'Sign up' : 'Sign in'}
+          </button>
         </div>
       </div>
     </div>
   )
 }
 
-// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+// ─── ROOT APP ─────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('dashboard')
-  const router = useRouter()
+  const [active, setActive] = useState('dashboard')
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { router.push('/login'); return }
-      setUser(user)
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user || null)
       setLoading(false)
     })
-  }, [router])
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user || null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   const signOut = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    setUser(null)
   }
 
   if (loading) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: S.canvas }}>
+    <div style={{ minHeight: '100vh', background: 'var(--plum)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Zap size={20} color="#fff" />
-        </div>
-        <div style={{ color: S.muted, fontSize: 14 }}>Loading EnableOS...</div>
+        <LogoIcon size={56} />
+        <div style={{ marginTop: '16px', color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-body)', fontSize: '14px' }}>Loading…</div>
       </div>
     </div>
   )
 
-  const groups = ['CORE', 'OPERATIONS']
-  const renderView = () => {
-    const props = { userId: user.id }
-    switch (activeTab) {
-      case 'dashboard': return <Dashboard {...props} />
-      case 'intake': return <Intake {...props} />
-      case 'ramp': return <Ramp {...props} />
-      case 'notes': return <Notes {...props} />
-      case 'collaterals': return <Collaterals {...props} />
-      case 'sessions': return <Sessions {...props} />
-      case 'pulse': return <PulseChecks {...props} />
-      case 'planning': return <WeeklyPlanning {...props} />
-      case 'forecasting': return <Forecasting {...props} />
-      case 'leaderboards': return <Leaderboards {...props} />
-      case 'settings': return <SettingsPanel user={user} onSignOut={signOut} />
-      case 'featurereqs': return <FeatureRequests />
-      default: return <Dashboard {...props} />
-    }
+  if (!user) return <LoginPage onAuth={setUser} />
+
+  const pages = {
+    dashboard: <Dashboard user={user} />,
+    intake: <Intake user={user} />,
+    ramp: <RampOnboarding user={user} />,
+    notes: <Notes user={user} />,
+    collaterals: <Collaterals user={user} />,
+    sessions: <Sessions user={user} />,
+    pulse: <PulseChecks user={user} />,
+    planning: <WeeklyPlanning user={user} />,
+    forecast: <Forecasting user={user} />,
+    leaderboard: <Leaderboard user={user} />,
+    settings: <Settings user={user} onSignOut={signOut} />,
   }
 
+  const currentNav = NAV.find(n => n.id === active)
+
   return (
-    <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
-      {/* Sidebar */}
-      <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-        {/* Logo */}
-        <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <SidebarLogo />
-        </div>
-
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '16px 12px' }}>
-          {groups.map(group => (
-            <div key={group} style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', padding: '0 8px', marginBottom: 6 }}>{group}</div>
-              {NAV.filter(n => n.group === group).map(item => {
-                const active = activeTab === item.id
-                return (
-                  <button key={item.id} onClick={() => setActiveTab(item.id)} style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                    background: active ? `${S.primary}25` : 'transparent',
-                    color: active ? '#fff' : 'rgba(255,255,255,0.5)',
-                    fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)',
-                    marginBottom: 2, transition: 'all 0.15s', textAlign: 'left',
-                    borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent',
-                  }}>
-                    <item.icon size={16} />
-                    {item.label}
-                  </button>
-                )
-              })}
-            </div>
-          ))}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
-            {NAV.filter(n => n.group === null).map(item => {
-              const active = activeTab === item.id
-              return (
-                <button key={item.id} onClick={() => setActiveTab(item.id)} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: active ? `${S.primary}25` : 'transparent',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.5)',
-                  fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)',
-                  transition: 'all 0.15s', textAlign: 'left',
-                  borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent',
-                }}>
-                  <item.icon size={16} />
-                  {item.label}
-                </button>
-              )
-            })}
-          </div>
-        </nav>
-
-        {/* User */}
-        <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          {user?.email === ADMIN_EMAIL && <WorkspaceSwitcher current="personal" />}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>{user?.email?.[0]?.toUpperCase()}</span>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Enablement Manager</div>
-            </div>
+    <div style={{ display: 'flex' }}>
+      <Sidebar active={active} setActive={setActive} user={user} onSignOut={signOut} />
+      <div className="main-content">
+        <div className="topbar">
+          <div className="topbar-title">{currentNav?.icon} {currentNav?.label}</div>
+          <div className="topbar-right">
+            <div className="avatar">{user?.email?.[0]?.toUpperCase() || 'U'}</div>
           </div>
         </div>
-      </div>
-
-      {/* Main content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px' }}>
-        {renderView()}
+        {pages[active] || <Placeholder title={currentNav?.label} />}
       </div>
     </div>
   )
