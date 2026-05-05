@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
   Video, Activity, Calendar, TrendingUp, Trophy, Settings,
   LogOut, Plus, X, Check, Sparkles, Target, Star,
-  ThumbsUp, ArrowRight, Zap, ChevronRight
+  ThumbsUp, ChevronRight, Zap
 } from 'lucide-react'
 
 const supabase = createClient()
@@ -98,14 +98,45 @@ const DEMO = {
   notes: [
     { id:1, rep:'Alex Chen', date:'April 21, 2026', sentiment:'concern', agenda:'Pipeline review, demo prep for Acme call', action:'Run discovery call roleplay before next pipeline review', theme:'Confidence Gap', session:'Live objection handling workshop' },
     { id:2, rep:'Priya Sharma', date:'April 14, 2026', sentiment:'positive', agenda:'Q2 goals, first MQL celebration', action:'Give more autonomy — she\'s ready for solo demos', theme:'Momentum', session:'Advanced demo certification' },
+    { id:3, rep:'Marcus O.', date:'April 7, 2026', sentiment:'neutral', agenda:'Pipeline hygiene, CRM update review', action:'Shadow next enterprise discovery call', theme:'Process', session:'CRM and pipeline management' },
   ],
   collaterals: [
-    { id:1, title:'CompX Battle Card', type:'Battle Card', uses:23, desc:'Competitive positioning vs CompX', c:'red' },
-    { id:2, title:'Discovery Call Framework', type:'Framework', uses:41, desc:'MEDDIC-based discovery for AEs', c:'purple' },
-    { id:3, title:'Product One-Pager', type:'One-Pager', uses:18, desc:'Single-page overview for champions', c:'green' },
-    { id:4, title:'Cold Email Sequence', type:'Sequence', uses:67, desc:'8-touch sequence with LinkedIn + email + call', c:'purple' },
-    { id:5, title:'Onboarding Checklist', type:'Template', uses:12, desc:'New hire 30-60-90 day tracking', c:'yellow' },
-    { id:6, title:'Objection Handling Guide', type:'Guide', uses:29, desc:'Top 15 objections with responses', c:'gray' },
+    { id:1, title:'CompX Battle Card', type:'Battle Card', uses:23, desc:'Competitive positioning vs CompX', color:'red' },
+    { id:2, title:'Discovery Call Framework', type:'Framework', uses:41, desc:'MEDDIC-based discovery for AEs', color:'purple' },
+    { id:3, title:'Product One-Pager', type:'One-Pager', uses:18, desc:'Single-page overview for champions', color:'green' },
+    { id:4, title:'Cold Email Sequence', type:'Sequence', uses:67, desc:'8-touch sequence with LinkedIn + email + call', color:'purple' },
+    { id:5, title:'Onboarding Checklist', type:'Template', uses:12, desc:'New hire 30-60-90 day tracking', color:'yellow' },
+    { id:6, title:'Objection Handling Guide', type:'Guide', uses:29, desc:'Top 15 objections with responses', color:'gray' },
+  ],
+  sessions: [
+    { id:1, title:'Cold call objection handling', type:'Workshop', date:'May 8, 2026', attendees:'Alex, Priya, Marcus', completed: false },
+    { id:2, title:'Discovery call certification', type:'Certification', date:'May 15, 2026', attendees:'Marcus O.', completed: false },
+    { id:3, title:'Q1 enablement retrospective', type:'Training', date:'Apr 30, 2026', attendees:'Full SDR team', completed: true },
+  ],
+  pulses: [
+    { id:1, title:'Week 3 Readiness Check', questions:['How confident are you in your product knowledge?','How comfortable are you running a full discovery call?','How well do you understand our ICP?'], responses: 3 },
+    { id:2, title:'Monthly Sentiment Check', questions:['How supported do you feel by the enablement team?','How clear are your quarterly targets?'], responses: 3 },
+  ],
+  todos: [
+    { id:1, title:'Finish battlecard draft', bucket:'must', done:true },
+    { id:2, title:'Run Alex discovery roleplay', bucket:'must', done:false },
+    { id:3, title:'Send week 4 pulse check', bucket:'must', done:false },
+    { id:4, title:'Update onboarding tracker', bucket:'should', done:false },
+    { id:5, title:'Schedule Q2 sessions', bucket:'should', done:false },
+    { id:6, title:'Review collateral usage stats', bucket:'should', done:true },
+    { id:7, title:'Draft LinkedIn post', bucket:'could', done:false },
+    { id:8, title:'Research AI coaching tools', bucket:'could', done:false },
+  ],
+  forecast: [
+    { id:1, title:'Battlecard refresh', status:'in-progress', impact:'critical', eta:'May 10' },
+    { id:2, title:'Q2 onboarding deck', status:'in-progress', impact:'high', eta:'May 1' },
+    { id:3, title:'New email sequence', status:'planned', impact:'medium', eta:'May 20' },
+    { id:4, title:'Objection handling workshop', status:'backlog', impact:'medium', eta:'' },
+  ],
+  leaderboards: [
+    { name:'Marcus O.', value:91, unit:'%', label:'Ramp progress' },
+    { name:'Alex Chen', value:78, unit:'%', label:'Ramp progress' },
+    { name:'Priya Sharma', value:52, unit:'%', label:'Ramp progress' },
   ],
   featureRequests: [
     { title: 'Enablement ROI dashboard', votes: 34, status: 'roadmap', category: 'Analytics' },
@@ -116,61 +147,51 @@ const DEMO = {
     { title: 'Multi-seat workspaces', votes: 17, status: 'roadmap', category: 'Platform' },
     { title: 'Gong integration — call themes into 1:1 notes', votes: 14, status: 'considering', category: 'Integrations' },
   ],
-  todos: [
-    { id:1, title:'Finish battlecard draft', bucket:'must', done:true },
-    { id:2, title:'Run Alex discovery roleplay', bucket:'must', done:false },
-    { id:3, title:'Send week 4 pulse check', bucket:'must', done:false },
-    { id:4, title:'Update onboarding tracker', bucket:'should', done:false },
-    { id:5, title:'Schedule Q2 sessions', bucket:'should', done:false },
-    { id:6, title:'Review collateral usage stats', bucket:'should', done:false },
-    { id:7, title:'Draft LinkedIn post', bucket:'could', done:false },
-    { id:8, title:'Research AI coaching tools', bucket:'could', done:false },
-  ],
 }
 
 // ── SHARED UI ─────────────────────────────────────────────────────────────────
-function Card({ children, style }) {
-  return <div style={{ background:'#fff', border:`1px solid ${S.borderLight}`, borderRadius:12, padding:20, ...style }}>{children}</div>
+function Card({ children, style, onClick }) {
+  return (
+    <div onClick={onClick} style={{ background:'#fff', border:`1px solid ${S.borderLight}`, borderRadius:12, padding:20, cursor: onClick ? 'pointer' : 'default', ...style }}
+      onMouseEnter={e => { if(onClick) e.currentTarget.style.background = S.accentBg }}
+      onMouseLeave={e => { if(onClick) e.currentTarget.style.background = '#fff' }}
+    >{children}</div>
+  )
 }
+
 function Badge({ children, color='purple' }) {
   const colors = { purple:{bg:S.accentBg2,text:S.primary}, green:{bg:'#d1fae5',text:S.success}, yellow:{bg:'#fef3c7',text:S.warning}, red:{bg:'#fee2e2',text:S.error}, gray:{bg:S.borderLight,text:S.muted} }
   const c = colors[color]||colors.gray
   return <span style={{ background:c.bg, color:c.text, borderRadius:100, padding:'3px 10px', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.05em' }}>{children}</span>
 }
-function Btn({ children, onClick, variant='primary', size='md', disabled, style }) {
-  const base = { display:'inline-flex', alignItems:'center', gap:6, fontFamily:'var(--font-body)', fontWeight:600, cursor:disabled?'not-allowed':'pointer', border:'none', transition:'all 0.15s', opacity:disabled?0.5:1, borderRadius:size==='sm'?6:8, fontSize:size==='sm'?12:14, padding:size==='sm'?'6px 12px':'10px 18px', ...style }
-  const variants = { primary:{background:S.ink,color:'#fff'}, ghost:{background:'transparent',color:S.inkSecondary,border:`1px solid ${S.border}`}, purple:{background:S.primary,color:'#fff'} }
-  return <button onClick={onClick} disabled={disabled} style={{...base,...variants[variant]}}>{children}</button>
-}
 
 // ── WALKTHROUGH ───────────────────────────────────────────────────────────────
 const STEPS = [
-  { id:'dashboard', title:'Welcome to EnableOS 👋', desc:'This is your command centre. See open requests, ramping reps, must-do tasks, and ramp progress at a glance. Everything you need in one view.', highlight:'Dashboard' },
-  { id:'intake', title:'Intake — your request queue', desc:'Every enablement request comes here. Impact × Urgency ÷ Effort = auto priority score. No more guessing what to build next. You can also share a public link so reps submit directly.', highlight:'Intake' },
-  { id:'ramp', title:'Ramp & Onboarding', desc:'Track every rep\'s onboarding progress across 5 sections. See who\'s ahead, who\'s behind, check off items as they complete them. No more spreadsheet ramp trackers.', highlight:'Ramp & Onboarding' },
-  { id:'notes', title:'1:1 Notes with AI', desc:'Write your private coaching notes and shared agendas. Claude AI analyzes sentiment, flags reps at risk, and suggests your next coaching action automatically.', highlight:'1:1 Notes' },
-  { id:'collaterals', title:'Collateral library', desc:'Every asset in one place with usage tracking. See what\'s actually being used and what\'s collecting dust. Add impact stories to prove ROI.', highlight:'Collaterals' },
-  { id:'planning', title:'Weekly planning board', desc:'Must Do / Should Do / Could Do. Simple kanban for your weekly priorities. Check things off as you go, track your completion rate.', highlight:'Weekly Planning' },
+  { id:'dashboard', title:'Welcome to EnableOS 👋', desc:'This is your command centre. See open requests, ramping reps, must-do tasks, and ramp progress at a glance. Everything you need in one view.' },
+  { id:'intake', title:'Intake — your request queue', desc:'Every enablement request comes here. Impact × Urgency ÷ Effort = auto priority score. No more guessing what to build next.' },
+  { id:'ramp', title:'Ramp & Onboarding', desc:'Track every rep\'s onboarding progress across 5 sections. See who\'s ahead, who\'s behind, check off items as they complete them.' },
+  { id:'notes', title:'1:1 Notes with AI', desc:'Write your private coaching notes and shared agendas. Claude AI analyzes sentiment, flags reps at risk, and suggests your next coaching action.' },
+  { id:'collaterals', title:'Collateral library', desc:'Every asset in one place with usage tracking. See what\'s actually being used and what\'s collecting dust.' },
+  { id:'planning', title:'Weekly planning board', desc:'Must Do / Should Do / Could Do. Simple kanban for your weekly priorities. Check things off as you go.' },
+  { id:'pulse', title:'Pulse Checks', desc:'Create readiness checks for your reps. Track team sentiment week by week and spot confidence gaps early.' },
+  { id:'forecasting', title:'Forecasting', desc:'Kanban board for your enablement projects — Backlog, Planned, In Progress, Done. Never lose track of what\'s being worked on.' },
+  { id:'leaderboards', title:'Leaderboards', desc:'Track and celebrate rep performance. Create boards for any metric — meetings booked, ramp progress, quota attainment.' },
 ]
 
 function Walkthrough({ onClose, onNavigate }) {
   const [step, setStep] = useState(0)
   const current = STEPS[step]
   const isLast = step === STEPS.length - 1
-
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000, pointerEvents:'none' }}>
-      {/* Overlay */}
       <div style={{ position:'absolute', inset:0, background:'rgba(26,18,53,0.5)', backdropFilter:'blur(2px)', pointerEvents:'all' }} onClick={onClose} />
-      {/* Card */}
       <div style={{ position:'absolute', bottom:32, left:'50%', transform:'translateX(-50%)', width:480, background:'#fff', borderRadius:16, boxShadow:'0 24px 64px rgba(26,18,53,0.3)', pointerEvents:'all', overflow:'hidden' }}>
-        {/* Progress bar */}
         <div style={{ height:3, background:S.borderLight }}>
           <div style={{ height:'100%', width:`${((step+1)/STEPS.length)*100}%`, background:`linear-gradient(90deg,${S.primary},${S.primaryHover})`, transition:'width 0.3s' }} />
         </div>
         <div style={{ padding:28 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 }}>
-            <div>
+            <div style={{ flex:1 }}>
               <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:S.accentBg2, color:S.primary, padding:'4px 10px', borderRadius:100, fontSize:11, fontWeight:700, marginBottom:10 }}>
                 Step {step+1} of {STEPS.length}
               </div>
@@ -180,16 +201,19 @@ function Walkthrough({ onClose, onNavigate }) {
             <button onClick={onClose} style={{ background:'none', border:'none', color:S.muted, cursor:'pointer', flexShrink:0, marginLeft:16 }}><X size={18}/></button>
           </div>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:20 }}>
-            <div style={{ display:'flex', gap:6 }}>
+            <div style={{ display:'flex', gap:5 }}>
               {STEPS.map((_,i) => (
                 <div key={i} style={{ width:i===step?20:6, height:6, borderRadius:3, background:i<=step?S.primary:S.borderLight, transition:'all 0.3s' }} />
               ))}
             </div>
-            <div style={{ display:'flex', gap:10 }}>
-              {step > 0 && <Btn variant="ghost" size="sm" onClick={() => { setStep(step-1); onNavigate(STEPS[step-1].id) }}>Back</Btn>}
+            <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+              <button onClick={onClose} style={{ background:'none', border:'none', color:S.muted, fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)' }}>Skip</button>
+              {step > 0 && (
+                <button onClick={() => { setStep(step-1); onNavigate(STEPS[step-1].id) }} style={{ padding:'6px 12px', borderRadius:6, border:`1px solid ${S.border}`, background:'transparent', color:S.inkSecondary, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Back</button>
+              )}
               {isLast
-                ? <Btn size="sm" onClick={onClose}>Done — let's go! 🚀</Btn>
-                : <Btn size="sm" onClick={() => { setStep(step+1); onNavigate(STEPS[step+1].id) }}>Next <ChevronRight size={14}/></Btn>
+                ? <button onClick={onClose} style={{ padding:'6px 14px', borderRadius:6, border:'none', background:S.ink, color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Done 🚀</button>
+                : <button onClick={() => { setStep(step+1); onNavigate(STEPS[step+1].id) }} style={{ padding:'6px 14px', borderRadius:6, border:'none', background:S.ink, color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', display:'flex', alignItems:'center', gap:4 }}>Next <ChevronRight size={14}/></button>
               }
             </div>
           </div>
@@ -202,10 +226,10 @@ function Walkthrough({ onClose, onNavigate }) {
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
 function Dashboard() {
   const stats = [
-    { label:'Open Requests', value:3, color:S.primary, icon:'📥' },
-    { label:'Ramping Reps', value:3, color:S.success, icon:'👥' },
-    { label:'Must-Do Tasks', value:2, color:S.warning, icon:'🎯' },
-    { label:'Avg Ramp', value:'74%', color:'#8b5cf6', icon:'📈' },
+    { label:'Open Requests', value:3, icon:'📥', color:S.primary },
+    { label:'Ramping Reps', value:3, icon:'👥', color:S.success },
+    { label:'Must-Do Tasks', value:2, icon:'🎯', color:S.warning },
+    { label:'Avg Ramp', value:'74%', icon:'📈', color:'#8b5cf6' },
   ]
   return (
     <div>
@@ -261,9 +285,6 @@ function Intake() {
     <div>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
         <div><h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Intake</h1><p style={{ color:S.muted, fontSize:14 }}>Demo workspace — sample requests</p></div>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <a href="/submit" target="_blank" style={{ fontSize:13, color:S.primary, textDecoration:'none', fontWeight:600, border:`1px solid ${S.primary}`, padding:'7px 14px', borderRadius:8 }}>Share public form →</a>
-        </div>
       </div>
       <div style={{ display:'flex', gap:7, marginBottom:16, flexWrap:'wrap' }}>
         {buckets.map(b => (
@@ -362,8 +383,9 @@ function Notes() {
         ))}
       </div>
       <div style={{ flex:1, overflowY:'auto' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-          <div><h1 style={{ fontFamily:'var(--font-display)', fontSize:22, fontWeight:700, color:S.ink }}>1:1 Notes</h1><p style={{ color:S.muted, fontSize:13 }}>Notes for {selected.rep}</p></div>
+        <div style={{ marginBottom:20 }}>
+          <h1 style={{ fontFamily:'var(--font-display)', fontSize:22, fontWeight:700, color:S.ink }}>1:1 Notes</h1>
+          <p style={{ color:S.muted, fontSize:13 }}>Notes for {selected.rep}</p>
         </div>
         <Card style={{ marginBottom:12 }}>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
@@ -394,8 +416,9 @@ function Collaterals() {
   const typeColors = { 'Battle Card':'red', 'Framework':'purple', 'One-Pager':'green', 'Template':'yellow', 'Guide':'gray', 'Sequence':'purple' }
   return (
     <div>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-        <div><h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Collaterals</h1><p style={{ color:S.muted, fontSize:14 }}>Demo asset library</p></div>
+      <div style={{ marginBottom:20 }}>
+        <h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Collaterals</h1>
+        <p style={{ color:S.muted, fontSize:14 }}>Demo asset library</p>
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:14 }}>
         {DEMO.collaterals.map(item => (
@@ -409,6 +432,92 @@ function Collaterals() {
           </Card>
         ))}
       </div>
+    </div>
+  )
+}
+
+function Sessions() {
+  const upcoming = DEMO.sessions.filter(s => !s.completed)
+  const completed = DEMO.sessions.filter(s => s.completed)
+  const typeColor = { Training:'purple', Workshop:'green', Coaching:'yellow', Certification:'red', Other:'gray' }
+  return (
+    <div>
+      <div style={{ marginBottom:20 }}>
+        <h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Sessions</h1>
+        <p style={{ color:S.muted, fontSize:14 }}>Scheduled training sessions and workshops</p>
+      </div>
+      <h3 style={{ fontWeight:700, fontSize:14, color:S.ink, marginBottom:12 }}>Upcoming ({upcoming.length})</h3>
+      <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:24 }}>
+        {upcoming.map(s => (
+          <Card key={s.id} style={{ padding:'14px 18px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <div>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
+                  <span style={{ fontWeight:700, fontSize:14, color:S.ink }}>{s.title}</span>
+                  <Badge color={typeColor[s.type]||'gray'}>{s.type}</Badge>
+                </div>
+                <div style={{ display:'flex', gap:14, fontSize:13, color:S.muted }}>
+                  <span>📅 {s.date}</span>
+                  <span>👥 {s.attendees}</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+      <h3 style={{ fontWeight:700, fontSize:14, color:S.ink, marginBottom:12 }}>Completed ({completed.length})</h3>
+      {completed.map(s => (
+        <Card key={s.id} style={{ padding:'14px 18px', opacity:0.7, marginBottom:8 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <Check size={16} color={S.success}/>
+            <span style={{ fontWeight:600, fontSize:14, color:S.ink, textDecoration:'line-through' }}>{s.title}</span>
+            <Badge color={typeColor[s.type]||'gray'}>{s.type}</Badge>
+          </div>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+function PulseChecks() {
+  const [selected, setSelected] = useState(null)
+  return (
+    <div>
+      <div style={{ marginBottom:20 }}>
+        <h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Pulse Checks</h1>
+        <p style={{ color:S.muted, fontSize:14 }}>Team sentiment and readiness tracking</p>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:16 }}>
+        {DEMO.pulses.map(p => (
+          <Card key={p.id} onClick={() => setSelected(selected?.id===p.id?null:p)}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
+              <span style={{ fontWeight:700, fontSize:15, color:S.ink }}>{p.title}</span>
+              <Badge color="purple">{p.questions.length} Qs</Badge>
+            </div>
+            <div style={{ fontSize:13, color:S.muted }}>{p.responses} responses</div>
+          </Card>
+        ))}
+      </div>
+      {selected && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(26,18,53,0.6)', backdropFilter:'blur(4px)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+          <div style={{ background:S.ink, borderRadius:16, width:'100%', maxWidth:480, border:'1px solid #3a3550', padding:24 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+              <span style={{ color:'#fff', fontWeight:700, fontSize:16, fontFamily:'var(--font-display)' }}>{selected.title}</span>
+              <button onClick={() => setSelected(null)} style={{ background:'none', border:'none', color:S.muted, cursor:'pointer' }}><X size={18}/></button>
+            </div>
+            {selected.questions.map((q,i) => (
+              <div key={i} style={{ marginBottom:16 }}>
+                <div style={{ color:'#fff', fontWeight:600, marginBottom:8, fontSize:14 }}>{i+1}. {q}</div>
+                <div style={{ display:'flex', gap:4 }}>
+                  {[1,2,3,4,5].map(n => (
+                    <div key={n} style={{ flex:1, height:8, background:n<=3?S.primary+'40':'#3a3550', borderRadius:4 }} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -449,6 +558,69 @@ function Planning() {
   )
 }
 
+function Forecasting() {
+  const stages = ['backlog','planned','in-progress','done']
+  const stageLabels = { backlog:'Backlog', planned:'Planned', 'in-progress':'In Progress', done:'Done' }
+  const impactColor = { critical:'red', high:'yellow', medium:'purple', low:'gray' }
+  return (
+    <div>
+      <div style={{ marginBottom:20 }}>
+        <h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Forecasting</h1>
+        <p style={{ color:S.muted, fontSize:14 }}>Enablement project pipeline</p>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14 }}>
+        {stages.map(stage => {
+          const items = DEMO.forecast.filter(i=>i.status===stage)
+          return (
+            <div key={stage} style={{ background:S.accentBg, borderRadius:12, padding:14 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                <span style={{ fontWeight:700, fontSize:13, color:S.ink }}>{stageLabels[stage]}</span>
+                <Badge color="gray">{items.length}</Badge>
+              </div>
+              {items.map(item => (
+                <div key={item.id} style={{ background:'#fff', borderRadius:8, padding:'12px 14px', border:`1px solid ${S.borderLight}`, marginBottom:8 }}>
+                  <div style={{ fontWeight:600, fontSize:13, color:S.ink, marginBottom:6 }}>{item.title}</div>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <Badge color={impactColor[item.impact]||'gray'}>{item.impact}</Badge>
+                    {item.eta && <span style={{ fontSize:11, color:S.muted }}>{item.eta}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function Leaderboards() {
+  const medals = ['🥇','🥈','🥉']
+  const max = DEMO.leaderboards[0]?.value || 1
+  return (
+    <div>
+      <div style={{ marginBottom:20 }}>
+        <h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Leaderboards</h1>
+        <p style={{ color:S.muted, fontSize:14 }}>Rep performance rankings</p>
+      </div>
+      <Card>
+        <h3 style={{ fontWeight:700, fontSize:15, color:S.ink, marginBottom:6, fontFamily:'var(--font-display)' }}>Ramp Progress</h3>
+        <div style={{ fontSize:12, color:S.muted, marginBottom:20 }}>% onboarding complete</div>
+        {DEMO.leaderboards.map((e,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16, padding:'10px 14px', background:i<3?S.accentBg:'transparent', borderRadius:8 }}>
+            <span style={{ fontSize:22, minWidth:32 }}>{medals[i]||`#${i+1}`}</span>
+            <span style={{ fontWeight:700, fontSize:14, color:S.ink, minWidth:120 }}>{e.name}</span>
+            <div style={{ flex:1, height:8, background:S.borderLight, borderRadius:4 }}>
+              <div style={{ height:'100%', width:`${(e.value/max)*100}%`, background:`linear-gradient(90deg,${S.primary},${S.primaryHover})`, borderRadius:4 }} />
+            </div>
+            <span style={{ fontSize:14, fontWeight:700, color:S.primary }}>{e.value}{e.unit}</span>
+          </div>
+        ))}
+      </Card>
+    </div>
+  )
+}
+
 function FeatureRequestsView() {
   const [voted, setVoted] = useState([])
   const [votes, setVotes] = useState(Object.fromEntries(DEMO.featureRequests.map((f,i)=>[i,f.votes])))
@@ -464,9 +636,9 @@ function FeatureRequestsView() {
   }
   return (
     <div>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-        <div><h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Feature Requests</h1><p style={{ color:S.muted, fontSize:14 }}>Real votes from the EnableOS community</p></div>
-        <a href="/feature-requests" target="_blank" style={{ fontSize:13, color:S.primary, textDecoration:'none', fontWeight:600 }}>Public page →</a>
+      <div style={{ marginBottom:20 }}>
+        <h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink }}>Feature Requests</h1>
+        <p style={{ color:S.muted, fontSize:14 }}>Vote on what we build next</p>
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
         {DEMO.featureRequests.map((f,i) => {
@@ -500,7 +672,11 @@ const NAV = [
   { id:'ramp', label:'Ramp & Onboarding', icon:Users, group:'CORE' },
   { id:'notes', label:'1:1 Notes', icon:MessageSquare, group:'CORE' },
   { id:'collaterals', label:'Collaterals', icon:BookOpen, group:'CORE' },
+  { id:'sessions', label:'Sessions', icon:Video, group:'CORE' },
+  { id:'pulse', label:'Pulse Checks', icon:Activity, group:'OPERATIONS' },
   { id:'planning', label:'Weekly Planning', icon:Calendar, group:'OPERATIONS' },
+  { id:'forecasting', label:'Forecasting', icon:TrendingUp, group:'OPERATIONS' },
+  { id:'leaderboards', label:'Leaderboards', icon:Trophy, group:'OPERATIONS' },
   { id:'featurereqs', label:'Feature Requests', icon:Star, group:null },
   { id:'settings', label:'Settings', icon:Settings, group:null },
 ]
@@ -518,7 +694,6 @@ export default function DemoApp() {
       if (!user || user.email !== DEMO_EMAIL) { router.push('/login?next=/demo'); return }
       setUser(user)
       setLoading(false)
-      // Show walkthrough on first visit
       const seen = localStorage.getItem('eos_demo_walked')
       if (!seen) { setShowWalkthrough(true); localStorage.setItem('eos_demo_walked','1') }
     })
@@ -542,13 +717,17 @@ export default function DemoApp() {
       case 'ramp': return <Ramp/>
       case 'notes': return <Notes/>
       case 'collaterals': return <Collaterals/>
+      case 'sessions': return <Sessions/>
+      case 'pulse': return <PulseChecks/>
       case 'planning': return <Planning/>
+      case 'forecasting': return <Forecasting/>
+      case 'leaderboards': return <Leaderboards/>
       case 'featurereqs': return <FeatureRequestsView/>
       case 'settings': return (
         <div>
           <h1 style={{ fontFamily:'var(--font-display)', fontSize:24, fontWeight:700, color:S.ink, marginBottom:4 }}>Settings</h1>
           <p style={{ color:S.muted, fontSize:14, marginBottom:24 }}>Demo workspace — read only</p>
-          <Card style={{ marginBottom:14 }}>
+          <div style={{ background:'#fff', border:`1px solid ${S.borderLight}`, borderRadius:12, padding:20, marginBottom:14 }}>
             <div style={{ fontWeight:700, fontSize:13, color:S.ink, marginBottom:14 }}>Workspace</div>
             <div style={{ display:'flex', justifyContent:'space-between', padding:'9px 0', borderBottom:`1px solid ${S.borderLight}` }}>
               <span style={{ fontSize:13, color:S.inkSecondary }}>Account</span>
@@ -556,10 +735,12 @@ export default function DemoApp() {
             </div>
             <div style={{ display:'flex', justifyContent:'space-between', padding:'9px 0' }}>
               <span style={{ fontSize:13, color:S.inkSecondary }}>Workspace type</span>
-              <Badge color="purple">Demo</Badge>
+              <Badge color="green">Demo</Badge>
             </div>
-          </Card>
-          <Btn variant="danger" onClick={signOut} style={{ background:'#fef2f2', color:S.error, border:'1px solid #fecaca' }}><LogOut size={14}/>Sign Out</Btn>
+          </div>
+          <button onClick={signOut} style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'9px 16px', borderRadius:8, border:'1px solid #fecaca', background:'#fef2f2', color:S.error, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>
+            <LogOut size={14}/>Sign Out
+          </button>
         </div>
       )
       default: return <Dashboard/>
@@ -570,15 +751,15 @@ export default function DemoApp() {
     <div style={{ display:'flex', height:'100vh', background:S.canvas, overflow:'hidden' }}>
       {showWalkthrough && <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab}/>}
 
-      {/* Sidebar */}
       <div style={{ width:220, background:S.sidebar, display:'flex', flexDirection:'column', flexShrink:0, overflowY:'auto' }}>
         <div style={{ padding:'20px 16px 16px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
           <SidebarLogo/>
-          <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:5, background:'rgba(124,92,252,0.2)', border:'1px solid rgba(124,92,252,0.3)', borderRadius:100, padding:'3px 10px' }}>
-            <div style={{ width:6, height:6, borderRadius:'50%', background:'#a78bfa' }}/>
-            <span style={{ fontSize:10, fontWeight:700, color:'#BDA9FF', letterSpacing:'0.08em' }}>DEMO WORKSPACE</span>
+          <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:5, background:'rgba(5,150,105,0.2)', border:'1px solid rgba(5,150,105,0.3)', borderRadius:100, padding:'3px 10px' }}>
+            <div style={{ width:6, height:6, borderRadius:'50%', background:'#6ee7b7' }}/>
+            <span style={{ fontSize:10, fontWeight:700, color:'#6ee7b7', letterSpacing:'0.08em' }}>DEMO WORKSPACE</span>
           </div>
         </div>
+
         <nav style={{ flex:1, padding:'14px 10px' }}>
           {['CORE','OPERATIONS'].map(group => (
             <div key={group} style={{ marginBottom:20 }}>
@@ -604,11 +785,12 @@ export default function DemoApp() {
             })}
           </div>
         </nav>
+
         <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.06)' }}>
           <button onClick={() => setShowWalkthrough(true)} style={{ width:'100%', background:'rgba(124,92,252,0.15)', border:'1px solid rgba(124,92,252,0.3)', borderRadius:8, padding:'8px 12px', color:'#BDA9FF', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', marginBottom:10, display:'flex', alignItems:'center', gap:7 }}>
             <Sparkles size={13}/>Replay walkthrough
           </button>
-          {user?.email === 'enableos.hq@gmail.com' && <WorkspaceSwitcher current="demo" />}
+          <WorkspaceSwitcher current="demo" />
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
             <div style={{ width:28, height:28, borderRadius:'50%', background:`linear-gradient(135deg,${S.primary},#a78bfa)`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
               <span style={{ color:'#fff', fontSize:11, fontWeight:700 }}>{user?.email?.[0]?.toUpperCase()}</span>
@@ -621,7 +803,6 @@ export default function DemoApp() {
         </div>
       </div>
 
-      {/* Main */}
       <div style={{ flex:1, overflowY:'auto', padding:'28px 32px' }}>
         {renderView()}
       </div>
