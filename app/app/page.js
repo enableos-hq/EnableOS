@@ -68,87 +68,41 @@ function WorkspaceSwitcher({ current }) {
 import {
   LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
   Video, Activity, Calendar, TrendingUp, Trophy, Settings,
-  LogOut, Plus, X, ChevronRight, BarChart2, Zap, Check,
-  AlertCircle, Clock, ArrowUp, ArrowDown, Sparkles, Target,
-  FileText, Star, ChevronDown, Trash2, Edit3, Send, Loader
+  LogOut, Plus, X, ChevronRight, Zap, Check,
+  Sparkles, Target, Star, Loader
 } from 'lucide-react'
 
 const supabase = createClient()
 
-// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const S = {
   sidebar: { background: '#1a1235', width: 240 },
-  canvas: '#FDFBFF',
-  primary: '#7C5CFC',
-  primaryHover: '#9B7EFF',
-  primaryLight: '#BDA9FF',
-  accentBg: '#F0ECFF',
-  accentBg2: '#E8E0FF',
-  ink: '#1a1235',
-  inkSecondary: '#4a4162',
-  muted: '#8b82a0',
-  border: '#E2DCF0',
-  borderLight: '#F0ECF8',
-  success: '#059669',
-  warning: '#d97706',
-  error: '#dc2626',
+  canvas: '#FDFBFF', primary: '#7C5CFC', primaryHover: '#9B7EFF',
+  primaryLight: '#BDA9FF', accentBg: '#F0ECFF', accentBg2: '#E8E0FF',
+  ink: '#1a1235', inkSecondary: '#4a4162', muted: '#8b82a0',
+  border: '#E2DCF0', borderLight: '#F0ECF8',
+  success: '#059669', warning: '#d97706', error: '#dc2626',
 }
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 function Card({ children, style, onClick }) {
   return (
-    <div onClick={onClick} style={{
-      background: '#fff',
-      border: `1px solid ${S.borderLight}`,
-      borderRadius: 12,
-      padding: 20,
-      transition: 'box-shadow 0.2s, border-color 0.2s',
-      cursor: onClick ? 'pointer' : 'default',
-      ...style,
-    }}
+    <div onClick={onClick} style={{ background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 20, transition: 'box-shadow 0.2s, border-color 0.2s', cursor: onClick ? 'pointer' : 'default', ...style }}
       onMouseEnter={e => { if (onClick) { e.currentTarget.style.boxShadow = `0 4px 20px rgba(124,92,252,0.12)`; e.currentTarget.style.borderColor = S.border } }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = S.borderLight }}
-    >
-      {children}
-    </div>
+    >{children}</div>
   )
 }
 
 function Btn({ children, onClick, variant = 'primary', size = 'md', disabled, style }) {
-  const base = {
-    display: 'inline-flex', alignItems: 'center', gap: 6,
-    fontFamily: 'var(--font-body)', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
-    border: 'none', transition: 'all 0.15s', opacity: disabled ? 0.5 : 1,
-    borderRadius: size === 'sm' ? 6 : 8,
-    fontSize: size === 'sm' ? 12 : 14,
-    padding: size === 'sm' ? '6px 12px' : '10px 18px',
-    ...style,
-  }
-  const variants = {
-    primary: { background: S.ink, color: '#fff' },
-    ghost: { background: 'transparent', color: S.inkSecondary, border: `1px solid ${S.border}` },
-    danger: { background: '#fef2f2', color: S.error, border: `1px solid #fecaca` },
-    purple: { background: S.primary, color: '#fff' },
-  }
+  const base = { display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer', border: 'none', transition: 'all 0.15s', opacity: disabled ? 0.5 : 1, borderRadius: size === 'sm' ? 6 : 8, fontSize: size === 'sm' ? 12 : 14, padding: size === 'sm' ? '6px 12px' : '10px 18px', ...style }
+  const variants = { primary: { background: S.ink, color: '#fff' }, ghost: { background: 'transparent', color: S.inkSecondary, border: `1px solid ${S.border}` }, danger: { background: '#fef2f2', color: S.error, border: `1px solid #fecaca` }, purple: { background: S.primary, color: '#fff' } }
   return <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>{children}</button>
 }
 
 function Badge({ children, color = 'purple' }) {
-  const colors = {
-    purple: { bg: S.accentBg2, text: S.primary },
-    green: { bg: '#d1fae5', text: S.success },
-    yellow: { bg: '#fef3c7', text: S.warning },
-    red: { bg: '#fee2e2', text: S.error },
-    gray: { bg: S.borderLight, text: S.muted },
-  }
+  const colors = { purple: { bg: S.accentBg2, text: S.primary }, green: { bg: '#d1fae5', text: S.success }, yellow: { bg: '#fef3c7', text: S.warning }, red: { bg: '#fee2e2', text: S.error }, gray: { bg: S.borderLight, text: S.muted } }
   const c = colors[color] || colors.gray
-  return (
-    <span style={{
-      background: c.bg, color: c.text, borderRadius: 100,
-      padding: '3px 10px', fontSize: 11, fontWeight: 700,
-      textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-body)',
-    }}>{children}</span>
-  )
+  return <span style={{ background: c.bg, color: c.text, borderRadius: 100, padding: '3px 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-body)' }}>{children}</span>
 }
 
 function Modal({ title, onClose, children, wide }) {
@@ -175,46 +129,32 @@ function Field({ label, children }) {
 }
 
 function Input({ value, onChange, placeholder, type = 'text', style }) {
-  return (
-    <input type={type} value={value} onChange={onChange} placeholder={placeholder}
-      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}
-    />
-  )
+  return <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }} />
 }
 
 function Select({ value, onChange, children, style }) {
-  return (
-    <select value={value} onChange={onChange}
-      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}>
-      {children}
-    </select>
-  )
+  return <select value={value} onChange={onChange} style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}>{children}</select>
 }
 
 function Textarea({ value, onChange, placeholder, rows = 3, style }) {
-  return (
-    <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
-      style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', ...style }}
-    />
-  )
+  return <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows} style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', ...style }} />
 }
 
 // ─── WALKTHROUGH ──────────────────────────────────────────────────────────────
 const WALKTHROUGH_STEPS = [
   { id: 'dashboard', title: 'Welcome to EnableOS 👋', desc: 'Your command centre. Open requests, ramping reps, must-do tasks, and ramp snapshot — everything in one view. Let\'s take a 60-second tour.' },
-  { id: 'intake', title: 'Intake — your request queue', desc: 'Every enablement request lands here. Impact × Urgency ÷ Effort = auto priority score. No more guessing what to build next. You can also share a public form link so anyone can submit without a login.' },
-  { id: 'ramp', title: 'Ramp & Onboarding', desc: 'Track every rep\'s onboarding across 5 sections. See who\'s ahead, who\'s behind, check off items as they complete them. No more spreadsheet ramp trackers.' },
-  { id: 'notes', title: '1:1 Notes with AI', desc: 'Log private coaching notes and shared agendas per rep. Claude AI analyses sentiment, flags reps at risk, and suggests your next coaching action automatically.' },
+  { id: 'intake', title: 'Intake — your request queue', desc: 'Every enablement request lands here. Impact × Urgency ÷ Effort = auto priority score. No more guessing what to build next. Share the public form link so anyone can submit without a login.' },
+  { id: 'ramp', title: 'Ramp & Onboarding', desc: 'Track every rep\'s onboarding across 5 sections. See who\'s ahead, who\'s behind, check off items as they complete them.' },
+  { id: 'notes', title: '1:1 Notes with AI', desc: 'Log private coaching notes and shared agendas per rep. Claude AI analyses sentiment, flags reps at risk, and suggests your next coaching action. Only you can see your notes.' },
   { id: 'collaterals', title: 'Collateral Library', desc: 'Every asset in one place with usage tracking. See what\'s actually being used and what\'s collecting dust.' },
   { id: 'planning', title: 'Weekly Planning', desc: 'Must Do / Should Do / Could Do. Kanban for your weekly priorities. Check things off, track your completion rate.' },
-  { id: 'settings', title: 'You\'re all set! 🚀', desc: 'That\'s the core loop. Head to Settings to invite your team, or jump straight in. You can replay this tour anytime from the sidebar.' },
+  { id: 'settings', title: 'You\'re all set! 🚀', desc: 'That\'s the core loop. Head to Settings to invite your team. Your 1:1 notes are private to you — everything else is shared with your workspace.' },
 ]
 
 function Walkthrough({ onClose, onNavigate }) {
   const [step, setStep] = useState(0)
   const current = WALKTHROUGH_STEPS[step]
   const isLast = step === WALKTHROUGH_STEPS.length - 1
-
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, pointerEvents: 'none' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,18,53,0.5)', backdropFilter: 'blur(2px)', pointerEvents: 'all' }} onClick={onClose} />
@@ -225,27 +165,19 @@ function Walkthrough({ onClose, onNavigate }) {
         <div style={{ padding: 28 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: S.accentBg2, color: S.primary, padding: '4px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 10 }}>
-                Step {step + 1} of {WALKTHROUGH_STEPS.length}
-              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: S.accentBg2, color: S.primary, padding: '4px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Step {step + 1} of {WALKTHROUGH_STEPS.length}</div>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: S.ink, marginBottom: 8 }}>{current.title}</h3>
               <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.65 }}>{current.desc}</p>
             </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', flexShrink: 0, marginLeft: 16 }}>
-              <X size={18} />
-            </button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', flexShrink: 0, marginLeft: 16 }}><X size={18} /></button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
             <div style={{ display: 'flex', gap: 5 }}>
-              {WALKTHROUGH_STEPS.map((_, i) => (
-                <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i <= step ? S.primary : S.borderLight, transition: 'all 0.3s' }} />
-              ))}
+              {WALKTHROUGH_STEPS.map((_, i) => <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i <= step ? S.primary : S.borderLight, transition: 'all 0.3s' }} />)}
             </div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Skip</button>
-              {step > 0 && (
-                <Btn variant="ghost" size="sm" onClick={() => { setStep(step - 1); onNavigate(WALKTHROUGH_STEPS[step - 1].id) }}>Back</Btn>
-              )}
+              {step > 0 && <Btn variant="ghost" size="sm" onClick={() => { setStep(step - 1); onNavigate(WALKTHROUGH_STEPS[step - 1].id) }}>Back</Btn>}
               {isLast
                 ? <Btn size="sm" onClick={onClose}>Done — let's go! 🚀</Btn>
                 : <Btn size="sm" onClick={() => { setStep(step + 1); onNavigate(WALKTHROUGH_STEPS[step + 1].id) }}>Next <ChevronRight size={14} /></Btn>
@@ -259,22 +191,23 @@ function Walkthrough({ onClose, onNavigate }) {
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
-function Dashboard({ userId }) {
+function Dashboard({ userId, workspaceId }) {
   const [stats, setStats] = useState({ requests: 0, reps: 0, todos: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!workspaceId) return
     async function load() {
       const [{ count: reqCount }, { count: repCount }, { count: todoCount }] = await Promise.all([
-        supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'open'),
-        supabase.from('reps').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('todos').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('done', false),
+        supabase.from('requests').select('*', { count: 'exact', head: true }).eq('workspace_id', workspaceId).eq('status', 'open'),
+        supabase.from('reps').select('*', { count: 'exact', head: true }).eq('workspace_id', workspaceId),
+        supabase.from('todos').select('*', { count: 'exact', head: true }).eq('workspace_id', workspaceId).eq('user_id', userId).eq('done', false),
       ])
       setStats({ requests: reqCount || 0, reps: repCount || 0, todos: todoCount || 0 })
       setLoading(false)
     }
     load()
-  }, [userId])
+  }, [userId, workspaceId])
 
   const statCards = [
     { label: 'Open Requests', value: stats.requests, icon: Inbox, color: S.primary },
@@ -294,10 +227,8 @@ function Dashboard({ userId }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
             {statCards.map(s => (
               <Card key={s.label}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 8, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <s.icon size={18} color={s.color} />
-                  </div>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                  <s.icon size={18} color={s.color} />
                 </div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: S.ink, fontFamily: 'var(--font-display)', marginBottom: 4 }}>{s.value}</div>
                 <div style={{ fontSize: 13, color: S.muted }}>{s.label}</div>
@@ -341,22 +272,23 @@ function Dashboard({ userId }) {
 }
 
 // ─── INTAKE ────────────────────────────────────────────────────────────────────
-function Intake({ userId }) {
+function Intake({ userId, workspaceId }) {
   const [requests, setRequests] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [filter, setFilter] = useState('all')
   const [form, setForm] = useState({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('requests').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    if (!workspaceId) return
+    const { data } = await supabase.from('requests').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
     setRequests(data || [])
-  }, [userId])
+  }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
     const priority = Math.round((form.impact * form.urgency) / form.effort)
-    await supabase.from('requests').insert({ ...form, user_id: userId, priority_score: priority })
+    await supabase.from('requests').insert({ ...form, user_id: userId, workspace_id: workspaceId, priority_score: priority })
     setShowModal(false)
     setForm({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' })
     load()
@@ -400,11 +332,7 @@ function Intake({ userId }) {
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {buckets.map(b => (
-          <button key={b} onClick={() => setFilter(b)} style={{
-            padding: '6px 14px', borderRadius: 100, border: `1px solid ${filter === b ? S.primary : S.border}`,
-            background: filter === b ? S.accentBg2 : 'transparent', color: filter === b ? S.primary : S.inkSecondary,
-            fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
-          }}>{b === 'all' ? 'All' : b}</button>
+          <button key={b} onClick={() => setFilter(b)} style={{ padding: '6px 14px', borderRadius: 100, border: `1px solid ${filter === b ? S.primary : S.border}`, background: filter === b ? S.accentBg2 : 'transparent', color: filter === b ? S.primary : S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{b === 'all' ? 'All' : b}</button>
         ))}
       </div>
 
@@ -450,8 +378,7 @@ function Intake({ userId }) {
           <Field label="Description"><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="More context..." /></Field>
           {[['impact', 'Impact'], ['urgency', 'Urgency'], ['effort', 'Effort']].map(([key, label]) => (
             <Field key={key} label={`${label}: ${form[key]}/5`}>
-              <input type="range" min={1} max={5} value={form[key]} onChange={e => setForm({ ...form, [key]: +e.target.value })}
-                style={{ width: '100%', accentColor: S.primary }} />
+              <input type="range" min={1} max={5} value={form[key]} onChange={e => setForm({ ...form, [key]: +e.target.value })} style={{ width: '100%', accentColor: S.primary }} />
             </Field>
           ))}
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
@@ -465,27 +392,25 @@ function Intake({ userId }) {
 }
 
 // ─── RAMP & ONBOARDING ────────────────────────────────────────────────────────
-function Ramp({ userId }) {
+function Ramp({ userId, workspaceId }) {
   const [reps, setReps] = useState([])
   const [selected, setSelected] = useState(null)
   const [showAddRep, setShowAddRep] = useState(false)
   const [newRepName, setNewRepName] = useState('')
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('reps').select('*').eq('user_id', userId)
+    if (!workspaceId) return
+    const { data } = await supabase.from('reps').select('*').eq('workspace_id', workspaceId)
     setReps(data || [])
     if (data && data.length > 0 && !selected) setSelected(data[0])
-  }, [userId, selected])
+  }, [workspaceId, selected])
 
   useEffect(() => { load() }, [load])
 
   const addRep = async () => {
     if (!newRepName.trim()) return
-    const defaultProgress = {
-      sections: { 'Company & Culture': [false, false, false, false], 'Sales Process': [false, false, false, false], 'Product Deep Dive': [false, false, false, false], 'Outbound Mastery': [false, false, false, false], 'Live Certification': [false, false, false, false] },
-      benchmarks: {}
-    }
-    await supabase.from('reps').insert({ user_id: userId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() })
+    const defaultProgress = { sections: { 'Company & Culture': [false,false,false,false], 'Sales Process': [false,false,false,false], 'Product Deep Dive': [false,false,false,false], 'Outbound Mastery': [false,false,false,false], 'Live Certification': [false,false,false,false] }, benchmarks: {} }
+    await supabase.from('reps').insert({ user_id: userId, workspace_id: workspaceId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() })
     setNewRepName('')
     setShowAddRep(false)
     load()
@@ -523,11 +448,7 @@ function Ramp({ userId }) {
           <button onClick={() => setShowAddRep(true)} style={{ background: 'none', border: 'none', color: S.primary, cursor: 'pointer' }}><Plus size={16} /></button>
         </div>
         {reps.map(r => (
-          <div key={r.id} onClick={() => setSelected(r)} style={{
-            padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
-            background: selected?.id === r.id ? S.accentBg2 : 'transparent',
-            border: `1px solid ${selected?.id === r.id ? S.primary + '40' : 'transparent'}`,
-          }}>
+          <div key={r.id} onClick={() => setSelected(r)} style={{ padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer', background: selected?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selected?.id === r.id ? S.primary + '40' : 'transparent'}` }}>
             <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 4 }}>{r.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ flex: 1, height: 4, background: S.borderLight, borderRadius: 2 }}>
@@ -545,11 +466,9 @@ function Ramp({ userId }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: S.muted }}>Select a rep or add one</div>
         ) : (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <div>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>{selected.name}</h1>
-                <p style={{ color: S.muted, fontSize: 14 }}>{calcPct(selected)}% complete · Started {selected.start_date ? new Date(selected.start_date).toLocaleDateString() : 'recently'}</p>
-              </div>
+            <div style={{ marginBottom: 24 }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>{selected.name}</h1>
+              <p style={{ color: S.muted, fontSize: 14 }}>{calcPct(selected)}% complete · Started {selected.start_date ? new Date(selected.start_date).toLocaleDateString() : 'recently'}</p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {sections.map(section => {
@@ -566,7 +485,7 @@ function Ramp({ userId }) {
                         <div key={i} onClick={() => toggleCheck(section, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '6px 8px', borderRadius: 6, transition: 'background 0.15s' }}
                           onMouseEnter={e => e.currentTarget.style.background = S.accentBg}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checks[i] ? S.primary : S.border}`, background: checks[i] ? S.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                          <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checks[i] ? S.primary : S.border}`, background: checks[i] ? S.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             {checks[i] && <Check size={11} color="#fff" strokeWidth={3} />}
                           </div>
                           <span style={{ fontSize: 14, color: checks[i] ? S.muted : S.inkSecondary, textDecoration: checks[i] ? 'line-through' : 'none' }}>{item}</span>
@@ -594,7 +513,7 @@ function Ramp({ userId }) {
   )
 }
 
-// ─── 1:1 NOTES ────────────────────────────────────────────────────────────────
+// ─── 1:1 NOTES (private — scoped to user_id only) ─────────────────────────────
 function Notes({ userId }) {
   const [reps, setReps] = useState([])
   const [selectedRep, setSelectedRep] = useState(null)
@@ -605,6 +524,7 @@ function Notes({ userId }) {
   const [aiResult, setAiResult] = useState(null)
 
   useEffect(() => {
+    // Load reps from auth user's own reps (no workspace filter — notes are private)
     supabase.from('reps').select('*').eq('user_id', userId).then(({ data }) => {
       setReps(data || [])
       if (data && data.length > 0) setSelectedRep(data[0])
@@ -634,18 +554,12 @@ function Notes({ userId }) {
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `Analyze this 1:1 note from a sales enablement manager. Return ONLY a JSON object with: sentiment ("positive"|"neutral"|"concern"), action (1 suggested next action as string), theme (1-2 word tag), session (suggested session topic).
-Shared agenda: ${form.shared_agenda}
-Private notes: ${form.private_notes}`
-          }]
+          messages: [{ role: 'user', content: `Analyze this 1:1 note from a sales enablement manager. Return ONLY a JSON object with: sentiment ("positive"|"neutral"|"concern"), action (1 suggested next action as string), theme (1-2 word tag), session (suggested session topic).\nShared agenda: ${form.shared_agenda}\nPrivate notes: ${form.private_notes}` }]
         })
       })
       const data = await res.json()
       const text = data.content?.[0]?.text || '{}'
-      const clean = text.replace(/```json|```/g, '').trim()
-      setAiResult(JSON.parse(clean))
+      setAiResult(JSON.parse(text.replace(/```json|```/g, '').trim()))
     } catch { setAiResult({ sentiment: 'neutral', action: 'Follow up next session', theme: 'General', session: 'Discovery practice' }) }
     setAnalyzing(false)
   }
@@ -657,11 +571,7 @@ Private notes: ${form.private_notes}`
       <div style={{ width: 200, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
         <div style={{ fontWeight: 700, fontSize: 13, color: S.ink, marginBottom: 14 }}>Reps</div>
         {reps.map(r => (
-          <div key={r.id} onClick={() => setSelectedRep(r)} style={{
-            padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
-            background: selectedRep?.id === r.id ? S.accentBg2 : 'transparent',
-            border: `1px solid ${selectedRep?.id === r.id ? S.primary + '40' : 'transparent'}`,
-          }}>
+          <div key={r.id} onClick={() => setSelectedRep(r)} style={{ padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer', background: selectedRep?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selectedRep?.id === r.id ? S.primary + '40' : 'transparent'}` }}>
             <span style={{ fontWeight: 600, fontSize: 13, color: S.ink }}>{r.name}</span>
           </div>
         ))}
@@ -672,11 +582,13 @@ Private notes: ${form.private_notes}`
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>1:1 Notes</h1>
-            <p style={{ color: S.muted, fontSize: 14 }}>{selectedRep ? `Notes for ${selectedRep.name}` : 'Select a rep'}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <p style={{ color: S.muted, fontSize: 14 }}>{selectedRep ? `Notes for ${selectedRep.name}` : 'Select a rep'}</p>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: '#fef3c7', color: S.warning }}>🔒 Private to you</span>
+            </div>
           </div>
           {selectedRep && <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Note</Btn>}
         </div>
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {notes.map(n => (
             <Card key={n.id}>
@@ -731,22 +643,23 @@ Private notes: ${form.private_notes}`
   )
 }
 
-// ─── COLLATERALS ───────────────────────────────────────────────────────────────
-function Collaterals({ userId }) {
+// ─── COLLATERALS ──────────────────────────────────────────────────────────────
+function Collaterals({ userId, workspaceId }) {
   const [items, setItems] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [search, setSearch] = useState('')
   const [form, setForm] = useState({ title: '', bucket: 'Battle Card', description: '', link: '' })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('collaterals').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    if (!workspaceId) return
+    const { data } = await supabase.from('collaterals').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
     setItems(data || [])
-  }, [userId])
+  }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('collaterals').insert({ ...form, user_id: userId, usage_count: 0 })
+    await supabase.from('collaterals').insert({ ...form, user_id: userId, workspace_id: workspaceId, usage_count: 0 })
     setShowModal(false)
     setForm({ title: '', bucket: 'Battle Card', description: '', link: '' })
     load()
@@ -772,7 +685,6 @@ function Collaterals({ userId }) {
           <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Asset</Btn>
         </div>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
         {filtered.map(item => (
           <Card key={item.id}>
@@ -790,7 +702,6 @@ function Collaterals({ userId }) {
         ))}
         {filtered.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>No collaterals yet. Add your first asset!</div>}
       </div>
-
       {showModal && (
         <Modal title="Add Collateral" onClose={() => setShowModal(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Asset name" /></Field>
@@ -812,20 +723,21 @@ function Collaterals({ userId }) {
 }
 
 // ─── SESSIONS ─────────────────────────────────────────────────────────────────
-function Sessions({ userId }) {
+function Sessions({ userId, workspaceId }) {
   const [sessions, setSessions] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ title: '', date: '', type: 'Training', attendees: '' })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('sessions').select('*').eq('user_id', userId).order('date', { ascending: true })
+    if (!workspaceId) return
+    const { data } = await supabase.from('sessions').select('*').eq('workspace_id', workspaceId).order('date', { ascending: true })
     setSessions(data || [])
-  }, [userId])
+  }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('sessions').insert({ ...form, user_id: userId, completed: false })
+    await supabase.from('sessions').insert({ ...form, user_id: userId, workspace_id: workspaceId, completed: false })
     setShowModal(false)
     setForm({ title: '', date: '', type: 'Training', attendees: '' })
     load()
@@ -849,7 +761,6 @@ function Sessions({ userId }) {
         </div>
         <Btn onClick={() => setShowModal(true)}><Plus size={16} />Schedule Session</Btn>
       </div>
-
       <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 12 }}>Upcoming ({upcoming.length})</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
         {upcoming.map(s => (
@@ -871,7 +782,6 @@ function Sessions({ userId }) {
         ))}
         {upcoming.length === 0 && <div style={{ color: S.muted, fontSize: 14, padding: '12px 0' }}>No upcoming sessions. Schedule one!</div>}
       </div>
-
       <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 12 }}>Completed ({completed.length})</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {completed.map(s => (
@@ -884,7 +794,6 @@ function Sessions({ userId }) {
           </Card>
         ))}
       </div>
-
       {showModal && (
         <Modal title="Schedule Session" onClose={() => setShowModal(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Session name" /></Field>
@@ -906,21 +815,22 @@ function Sessions({ userId }) {
 }
 
 // ─── PULSE CHECKS ─────────────────────────────────────────────────────────────
-function PulseChecks({ userId }) {
+function PulseChecks({ userId, workspaceId }) {
   const [pulses, setPulses] = useState([])
   const [selected, setSelected] = useState(null)
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ title: '', questions: [''] })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('pulse_checks').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    if (!workspaceId) return
+    const { data } = await supabase.from('pulse_checks').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
     setPulses(data || [])
-  }, [userId])
+  }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('pulse_checks').insert({ user_id: userId, title: form.title, questions: form.questions.filter(Boolean), responses: [] })
+    await supabase.from('pulse_checks').insert({ user_id: userId, workspace_id: workspaceId, title: form.title, questions: form.questions.filter(Boolean), responses: [] })
     setShowCreate(false)
     setForm({ title: '', questions: [''] })
     load()
@@ -935,7 +845,6 @@ function PulseChecks({ userId }) {
         </div>
         <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Pulse</Btn>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
         {pulses.map(p => (
           <Card key={p.id} onClick={() => setSelected(p)}>
@@ -949,7 +858,6 @@ function PulseChecks({ userId }) {
         ))}
         {pulses.length === 0 && <div style={{ color: S.muted, padding: 40, textAlign: 'center', gridColumn: '1/-1' }}>No pulse checks yet</div>}
       </div>
-
       {selected && (
         <Modal title={selected.title} onClose={() => setSelected(null)} wide>
           <div style={{ marginBottom: 16 }}>
@@ -957,9 +865,7 @@ function PulseChecks({ userId }) {
               <div key={i} style={{ marginBottom: 16 }}>
                 <div style={{ color: '#fff', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{i + 1}. {q}</div>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  {[1, 2, 3, 4, 5].map(n => (
-                    <div key={n} style={{ flex: 1, height: 8, background: n <= 3 ? S.primary + '40' : '#3a3550', borderRadius: 4 }} />
-                  ))}
+                  {[1, 2, 3, 4, 5].map(n => <div key={n} style={{ flex: 1, height: 8, background: n <= 3 ? S.primary + '40' : '#3a3550', borderRadius: 4 }} />)}
                 </div>
               </div>
             ))}
@@ -967,7 +873,6 @@ function PulseChecks({ userId }) {
           <div style={{ color: S.muted, fontSize: 13 }}>Share this pulse check link with your team to collect responses.</div>
         </Modal>
       )}
-
       {showCreate && (
         <Modal title="Create Pulse Check" onClose={() => setShowCreate(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Week 3 Readiness Check" /></Field>
@@ -991,21 +896,22 @@ function PulseChecks({ userId }) {
 }
 
 // ─── WEEKLY PLANNING ──────────────────────────────────────────────────────────
-function WeeklyPlanning({ userId }) {
+function WeeklyPlanning({ userId, workspaceId }) {
   const [todos, setTodos] = useState([])
   const [adding, setAdding] = useState(null)
   const [newTask, setNewTask] = useState('')
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('todos').select('*').eq('user_id', userId).order('created_at', { ascending: true })
+    if (!workspaceId) return
+    const { data } = await supabase.from('todos').select('*').eq('workspace_id', workspaceId).eq('user_id', userId).order('created_at', { ascending: true })
     setTodos(data || [])
-  }, [userId])
+  }, [workspaceId, userId])
 
   useEffect(() => { load() }, [load])
 
   const addTask = async (bucket) => {
     if (!newTask.trim()) return
-    await supabase.from('todos').insert({ user_id: userId, title: newTask, bucket, done: false })
+    await supabase.from('todos').insert({ user_id: userId, workspace_id: workspaceId, title: newTask, bucket, done: false })
     setNewTask('')
     setAdding(null)
     load()
@@ -1040,7 +946,6 @@ function WeeklyPlanning({ userId }) {
           <span style={{ fontSize: 13, color: S.muted }}>{done}/{total} complete</span>
         </div>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {buckets.map(b => {
           const items = todos.filter(t => t.bucket === b.key)
@@ -1077,20 +982,21 @@ function WeeklyPlanning({ userId }) {
 }
 
 // ─── FORECASTING ──────────────────────────────────────────────────────────────
-function Forecasting({ userId }) {
+function Forecasting({ userId, workspaceId }) {
   const [items, setItems] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('forecast').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    if (!workspaceId) return
+    const { data } = await supabase.from('forecast').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
     setItems(data || [])
-  }, [userId])
+  }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('forecast').insert({ ...form, user_id: userId })
+    await supabase.from('forecast').insert({ ...form, user_id: userId, workspace_id: workspaceId })
     setShowModal(false)
     setForm({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
     load()
@@ -1114,7 +1020,6 @@ function Forecasting({ userId }) {
         </div>
         <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Project</Btn>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
         {stages.map(stage => {
           const stageItems = items.filter(i => i.status === stage)
@@ -1142,7 +1047,6 @@ function Forecasting({ userId }) {
           )
         })}
       </div>
-
       {showModal && (
         <Modal title="Add Project" onClose={() => setShowModal(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Project name" /></Field>
@@ -1169,7 +1073,7 @@ function Forecasting({ userId }) {
 }
 
 // ─── LEADERBOARDS ─────────────────────────────────────────────────────────────
-function Leaderboards({ userId }) {
+function Leaderboards({ userId, workspaceId }) {
   const [boards, setBoards] = useState([])
   const [selected, setSelected] = useState(null)
   const [showCreate, setShowCreate] = useState(false)
@@ -1178,14 +1082,15 @@ function Leaderboards({ userId }) {
   const [entry, setEntry] = useState({ name: '', value: '', unit: '' })
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('leaderboards').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    if (!workspaceId) return
+    const { data } = await supabase.from('leaderboards').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
     setBoards(data || [])
-  }, [userId])
+  }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const createBoard = async () => {
-    await supabase.from('leaderboards').insert({ ...form, user_id: userId, entries: [] })
+    await supabase.from('leaderboards').insert({ ...form, user_id: userId, workspace_id: workspaceId, entries: [] })
     setShowCreate(false)
     setForm({ title: '', type: 'weekly', metric: '' })
     load()
@@ -1211,7 +1116,6 @@ function Leaderboards({ userId }) {
         </div>
         <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Board</Btn>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
         {boards.map(b => (
           <Card key={b.id} onClick={() => setSelected(b)}>
@@ -1237,7 +1141,6 @@ function Leaderboards({ userId }) {
         ))}
         {boards.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>No leaderboards yet</div>}
       </div>
-
       {selected && (
         <Modal title={selected.title} onClose={() => setSelected(null)} wide>
           <div style={{ marginBottom: 16 }}>
@@ -1258,7 +1161,6 @@ function Leaderboards({ userId }) {
           <Btn onClick={() => setShowEntry(true)}><Plus size={14} />Add Entry</Btn>
         </Modal>
       )}
-
       {showCreate && (
         <Modal title="Create Leaderboard" onClose={() => setShowCreate(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. This Week's Top Callers" /></Field>
@@ -1274,7 +1176,6 @@ function Leaderboards({ userId }) {
           </div>
         </Modal>
       )}
-
       {showEntry && (
         <Modal title="Add Entry" onClose={() => setShowEntry(false)}>
           <Field label="Rep Name"><Input value={entry.name} onChange={e => setEntry({ ...entry, name: e.target.value })} placeholder="Name" /></Field>
@@ -1291,26 +1192,53 @@ function Leaderboards({ userId }) {
 }
 
 // ─── SETTINGS ─────────────────────────────────────────────────────────────────
-function SettingsPanel({ user, onSignOut, onReplayWalkthrough }) {
+function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthrough }) {
+  const [members, setMembers] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState('member')
   const [inviteStatus, setInviteStatus] = useState('')
-  const [members, setMembers] = useState([
-    { email: user?.email, role: 'admin', status: 'active', isYou: true },
-  ])
+  const [workspaceName, setWorkspaceName] = useState('')
 
-  const sendInvite = () => {
+  useEffect(() => {
+    if (!workspaceId) return
+    // Load workspace name
+    supabase.from('workspaces').select('name').eq('id', workspaceId).single().then(({ data }) => {
+      if (data) setWorkspaceName(data.name)
+    })
+    // Load members
+    supabase.from('workspace_members').select('*').eq('workspace_id', workspaceId).then(({ data }) => {
+      setMembers(data || [])
+    })
+  }, [workspaceId])
+
+  const sendInvite = async () => {
     if (!inviteEmail.trim() || !inviteEmail.includes('@')) { setInviteStatus('error'); return }
-    const already = members.find(m => m.email.toLowerCase() === inviteEmail.trim().toLowerCase())
+    const already = members.find(m => m.invited_email?.toLowerCase() === inviteEmail.trim().toLowerCase())
     if (already) { setInviteStatus('error'); return }
-    setMembers([...members, { email: inviteEmail.trim().toLowerCase(), role: inviteRole, status: 'pending', isYou: false }])
+
+    // Check if this user already exists in auth
+    // We store the invite as a pending member row — when they sign up, the trigger links them
+    const { error } = await supabase.from('workspace_members').insert({
+      workspace_id: workspaceId,
+      user_id: user.id, // placeholder — will be updated when they sign up
+      role: inviteRole,
+      invited_email: inviteEmail.trim().toLowerCase(),
+    })
+
+    if (error) { setInviteStatus('error'); return }
+
     setInviteEmail('')
     setInviteRole('member')
     setInviteStatus('sent')
     setTimeout(() => setInviteStatus(''), 3000)
+    // Reload members
+    supabase.from('workspace_members').select('*').eq('workspace_id', workspaceId).then(({ data }) => setMembers(data || []))
   }
 
-  const removeMember = (email) => setMembers(members.filter(m => m.email !== email))
+  const removeMember = async (id) => {
+    await supabase.from('workspace_members').delete().eq('id', id)
+    supabase.from('workspace_members').select('*').eq('workspace_id', workspaceId).then(({ data }) => setMembers(data || []))
+  }
 
   return (
     <div>
@@ -1319,73 +1247,58 @@ function SettingsPanel({ user, onSignOut, onReplayWalkthrough }) {
         <p style={{ color: S.muted, fontSize: 14 }}>Manage your workspace and team</p>
       </div>
 
+      {/* Team Members */}
       <Card style={{ marginBottom: 16 }}>
         <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}`, fontFamily: 'var(--font-display)' }}>Team Members</h3>
         <div style={{ marginBottom: 20 }}>
           {members.map((m, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: `1px solid ${S.borderLight}` }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>{m.email[0].toUpperCase()}</span>
+                <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>{(m.invited_email || user.email)?.[0]?.toUpperCase()}</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: S.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {m.email} {m.isYou && <span style={{ fontSize: 11, color: S.muted, fontWeight: 400 }}>(you)</span>}
+                  {m.user_id === user.id ? user.email : (m.invited_email || 'Team member')}
+                  {m.user_id === user.id && <span style={{ fontSize: 11, color: S.muted, fontWeight: 400 }}> (you)</span>}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', background: m.role === 'admin' ? S.accentBg2 : S.borderLight, color: m.role === 'admin' ? S.primary : S.muted }}>{m.role}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', background: m.status === 'active' ? '#d1fae5' : '#fef3c7', color: m.status === 'active' ? S.success : S.warning }}>{m.status}</span>
-                {!m.isYou && (
-                  <button onClick={() => removeMember(m.email)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 2px' }}
+                {m.user_id !== user.id && userRole === 'admin' && (
+                  <button onClick={() => removeMember(m.id)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', fontSize: 18, lineHeight: 1 }}
                     onMouseEnter={e => e.currentTarget.style.color = S.error}
-                    onMouseLeave={e => e.currentTarget.style.color = S.muted}
-                  >×</button>
+                    onMouseLeave={e => e.currentTarget.style.color = S.muted}>×</button>
                 )}
               </div>
             </div>
           ))}
         </div>
-        <div style={{ background: S.accentBg, borderRadius: 10, padding: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: S.inkSecondary, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Invite someone</div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-            <input
-              value={inviteEmail}
-              onChange={e => { setInviteEmail(e.target.value); setInviteStatus('') }}
-              onKeyDown={e => e.key === 'Enter' && sendInvite()}
-              placeholder="colleague@company.com"
-              style={{ flex: 1, padding: '9px 12px', border: `1px solid ${inviteStatus === 'error' ? S.error : S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff' }}
-              onFocus={e => e.target.style.borderColor = S.primary}
-              onBlur={e => e.target.style.borderColor = inviteStatus === 'error' ? S.error : S.border}
-            />
-            <select
-              value={inviteRole}
-              onChange={e => setInviteRole(e.target.value)}
-              style={{ padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', cursor: 'pointer' }}
-            >
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
-            </select>
-            <Btn onClick={sendInvite}>Invite</Btn>
-          </div>
-          <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.6 }}>
-            <strong>Admin</strong> — full access, can invite & manage members.<br />
-            <strong>Member</strong> — can use all features, cannot change settings.
-          </div>
-          {inviteStatus === 'sent' && (
-            <div style={{ marginTop: 10, padding: '8px 12px', background: '#d1fae5', borderRadius: 7, fontSize: 13, color: S.success, fontWeight: 600 }}>
-              ✓ Invite added — they'll get access when they sign up with that email.
+
+        {userRole === 'admin' && (
+          <div style={{ background: S.accentBg, borderRadius: 10, padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: S.inkSecondary, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Invite someone</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <input value={inviteEmail} onChange={e => { setInviteEmail(e.target.value); setInviteStatus('') }} onKeyDown={e => e.key === 'Enter' && sendInvite()} placeholder="colleague@company.com"
+                style={{ flex: 1, padding: '9px 12px', border: `1px solid ${inviteStatus === 'error' ? S.error : S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff' }}
+                onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = inviteStatus === 'error' ? S.error : S.border} />
+              <select value={inviteRole} onChange={e => setInviteRole(e.target.value)} style={{ padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', cursor: 'pointer' }}>
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+              <Btn onClick={sendInvite}>Invite</Btn>
             </div>
-          )}
-          {inviteStatus === 'error' && (
-            <div style={{ marginTop: 10, padding: '8px 12px', background: '#fee2e2', borderRadius: 7, fontSize: 13, color: S.error, fontWeight: 600 }}>
-              Enter a valid email that isn't already in the workspace.
+            <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.6 }}>
+              <strong>Admin</strong> — full access, can invite & manage members.<br />
+              <strong>Member</strong> — can use all features, cannot change settings.
             </div>
-          )}
-        </div>
+            {inviteStatus === 'sent' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#d1fae5', borderRadius: 7, fontSize: 13, color: S.success, fontWeight: 600 }}>✓ Invite saved — they'll join this workspace when they sign up with that email.</div>}
+            {inviteStatus === 'error' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#fee2e2', borderRadius: 7, fontSize: 13, color: S.error, fontWeight: 600 }}>Enter a valid email that isn't already in the workspace.</div>}
+          </div>
+        )}
       </Card>
 
       {[
-        { title: 'Workspace', items: [{ label: 'Account Email', value: user?.email }, { label: 'Workspace Name', value: 'My Workspace' }] },
+        { title: 'Workspace', items: [{ label: 'Workspace Name', value: workspaceName }, { label: 'Account Email', value: user?.email }, { label: 'Your Role', value: userRole }] },
         { title: 'Integrations', items: [{ label: 'CRM (Salesforce/HubSpot)', value: 'Coming soon', badge: 'soon' }, { label: 'Gong', value: 'Coming soon', badge: 'soon' }, { label: 'Slack', value: 'Coming soon', badge: 'soon' }, { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' }] },
         { title: 'Platform', items: [{ label: 'AI Engine', value: 'Claude Sonnet (Anthropic)' }, { label: 'Version', value: 'EnableOS 1.0 Beta' }] },
       ].map(group => (
@@ -1404,10 +1317,7 @@ function SettingsPanel({ user, onSignOut, onReplayWalkthrough }) {
       ))}
 
       <div style={{ display: 'flex', gap: 10 }}>
-        <button
-          onClick={onReplayWalkthrough}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', color: S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}
-        >
+        <button onClick={onReplayWalkthrough} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', color: S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
           <Sparkles size={14} />Replay Walkthrough
         </button>
         <Btn variant="danger" onClick={onSignOut} style={{ background: '#fef2f2', color: S.error, border: '1px solid #fecaca' }}>
@@ -1418,7 +1328,88 @@ function SettingsPanel({ user, onSignOut, onReplayWalkthrough }) {
   )
 }
 
-// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
+// ─── FEATURE REQUESTS ─────────────────────────────────────────────────────────
+function FeatureRequests() {
+  const [submitted, setSubmitted] = useState(false)
+  const [voted, setVoted] = useState([])
+  const [votes, setVotes] = useState({ 0:34, 1:28, 2:22, 3:19, 4:17, 5:31, 6:14, 7:26 })
+  const [form, setForm] = useState({ title: '', description: '', category: 'Platform' })
+  const categories = ['Platform', 'Integrations', 'AI', 'Analytics', 'Other']
+  const existing = [
+    { title: 'Enablement ROI dashboard — which assets closed which deals', status: 'roadmap', category: 'Analytics' },
+    { title: 'Google Calendar integration', status: 'planned', category: 'Integrations' },
+    { title: 'Slack intake bot — submit requests from Slack', status: 'planned', category: 'Integrations' },
+    { title: 'Salesforce / HubSpot CRM sync', status: 'planned', category: 'Integrations' },
+    { title: 'Gong integration — pull call themes into 1:1 notes', status: 'considering', category: 'Integrations' },
+    { title: 'AI-generated onboarding plans per rep', status: 'considering', category: 'AI' },
+    { title: 'Multi-seat workspaces for larger teams', status: 'roadmap', category: 'Platform' },
+    { title: 'Public-facing hub for reps to self-serve assets', status: 'considering', category: 'Platform' },
+  ]
+  const statusStyle = { planned: { bg: '#dbeafe', color: '#1d4ed8', label: 'Planned' }, considering: { bg: S.accentBg2, color: S.primary, label: 'Considering' }, roadmap: { bg: '#d1fae5', color: '#065f46', label: 'On Roadmap' } }
+  const vote = (i) => { if (voted.includes(i)) return; setVoted([...voted, i]); setVotes({ ...votes, [i]: votes[i] + 1 }) }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Feature Requests</h1>
+          <p style={{ color: S.muted, fontSize: 14 }}>Vote on what we build next, or suggest something new</p>
+        </div>
+        <a href="/feature-requests" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none', fontWeight: 600 }}>Public page →</a>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
+        <div>
+          <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 14 }}>Top requests</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {existing.map((f, i) => {
+              const s = statusStyle[f.status]
+              const hasVoted = voted.includes(i)
+              return (
+                <Card key={i} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <button onClick={() => vote(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hasVoted ? S.accentBg2 : S.accentBg, border: `1px solid ${hasVoted ? S.primary : S.border}`, borderRadius: 8, padding: '7px 10px', cursor: hasVoted ? 'default' : 'pointer', minWidth: 48 }}>
+                    <Star size={13} color={hasVoted ? S.primary : S.muted} fill={hasVoted ? S.primary : 'none'} strokeWidth={2} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: hasVoted ? S.primary : S.muted }}>{votes[i]}</span>
+                  </button>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 5 }}>{f.title}</div>
+                    <div style={{ display: 'flex', gap: 7 }}>
+                      <span style={{ background: s.bg, color: s.color, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' }}>{s.label}</span>
+                      <span style={{ fontSize: 11, color: S.muted }}>{f.category}</span>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+        <div>
+          <Card>
+            <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)' }}>{submitted ? '✓ Thanks!' : 'Suggest a feature'}</h3>
+            {submitted ? (
+              <div>
+                <p style={{ fontSize: 13, color: S.muted, marginBottom: 14, lineHeight: 1.6 }}>We read every request. If it fits the roadmap, it'll show up on the board.</p>
+                <Btn size="sm" variant="ghost" onClick={() => { setSubmitted(false); setForm({ title: '', description: '', category: 'Platform' }) }}>Submit another</Btn>
+              </div>
+            ) : (
+              <div>
+                <Field label="Title"><input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What should we build?" style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
+                <Field label="Category">
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {categories.map(c => <button type="button" key={c} onClick={() => setForm({ ...form, category: c })} style={{ padding: '4px 10px', borderRadius: 100, border: `1px solid ${form.category === c ? S.primary : S.border}`, background: form.category === c ? S.accentBg2 : '#fff', color: form.category === c ? S.primary : S.inkSecondary, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>)}
+                  </div>
+                </Field>
+                <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What problem does it solve?" rows={3} style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', resize: 'vertical' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
+                <Btn onClick={() => form.title && setSubmitted(true)} disabled={!form.title} style={{ width: '100%', justifyContent: 'center' }}>Submit Request</Btn>
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── NAV ──────────────────────────────────────────────────────────────────────
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'CORE' },
   { id: 'intake', label: 'Intake', icon: Inbox, group: 'CORE' },
@@ -1434,120 +1425,35 @@ const NAV = [
   { id: 'featurereqs', label: 'Feature Requests', icon: Star, group: null },
 ]
 
-// ─── FEATURE REQUESTS ─────────────────────────────────────────────────────────
-function FeatureRequests() {
-  const [submitted, setSubmitted] = useState(false)
-  const [voted, setVoted] = useState([])
-  const [votes, setVotes] = useState({ 0: 34, 1: 28, 2: 22, 3: 19, 4: 17, 5: 31, 6: 14, 7: 26 })
-  const [form, setForm] = useState({ title: '', description: '', category: 'Platform' })
-  const categories = ['Platform', 'Integrations', 'AI', 'Analytics', 'Other']
-
-  const existing = [
-    { title: 'Enablement ROI dashboard — which assets closed which deals', status: 'roadmap', category: 'Analytics' },
-    { title: 'Google Calendar integration', status: 'planned', category: 'Integrations' },
-    { title: 'Slack intake bot — submit requests from Slack', status: 'planned', category: 'Integrations' },
-    { title: 'Salesforce / HubSpot CRM sync', status: 'planned', category: 'Integrations' },
-    { title: 'Gong integration — pull call themes into 1:1 notes', status: 'considering', category: 'Integrations' },
-    { title: 'AI-generated onboarding plans per rep', status: 'considering', category: 'AI' },
-    { title: 'Multi-seat workspaces for larger teams', status: 'roadmap', category: 'Platform' },
-    { title: 'Public-facing hub for reps to self-serve assets', status: 'considering', category: 'Platform' },
-  ]
-
-  const statusStyle = {
-    planned: { bg: '#dbeafe', color: '#1d4ed8', label: 'Planned' },
-    considering: { bg: S.accentBg2, color: S.primary, label: 'Considering' },
-    roadmap: { bg: '#d1fae5', color: '#065f46', label: 'On Roadmap' },
-  }
-
-  const vote = (i) => {
-    if (voted.includes(i)) return
-    setVoted([...voted, i])
-    setVotes({ ...votes, [i]: votes[i] + 1 })
-  }
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Feature Requests</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Vote on what we build next, or suggest something new</p>
-        </div>
-        <a href="/feature-requests" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none', fontWeight: 600 }}>Public page →</a>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
-        <div>
-          <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 14 }}>Top requests</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {existing.map((f, i) => {
-              const s = statusStyle[f.status]
-              const hasVoted = voted.includes(i)
-              return (
-                <Card key={i} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <button onClick={() => vote(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hasVoted ? S.accentBg2 : S.accentBg, border: `1px solid ${hasVoted ? S.primary : S.border}`, borderRadius: 8, padding: '7px 10px', cursor: hasVoted ? 'default' : 'pointer', minWidth: 48, transition: 'all 0.15s' }}>
-                    <Star size={13} color={hasVoted ? S.primary : S.muted} fill={hasVoted ? S.primary : 'none'} strokeWidth={2} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: hasVoted ? S.primary : S.muted }}>{votes[i]}</span>
-                  </button>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 5 }}>{f.title}</div>
-                    <div style={{ display: 'flex', gap: 7 }}>
-                      <span style={{ background: s.bg, color: s.color, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</span>
-                      <span style={{ fontSize: 11, color: S.muted }}>{f.category}</span>
-                    </div>
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
-
-        <div>
-          <Card>
-            <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)' }}>
-              {submitted ? '✓ Thanks!' : 'Suggest a feature'}
-            </h3>
-            {submitted ? (
-              <div>
-                <p style={{ fontSize: 13, color: S.muted, marginBottom: 14, lineHeight: 1.6 }}>We read every request. If it fits the roadmap, it'll show up on the board.</p>
-                <Btn size="sm" variant="ghost" onClick={() => { setSubmitted(false); setForm({ title: '', description: '', category: 'Platform' }) }}>Submit another</Btn>
-              </div>
-            ) : (
-              <div>
-                <Field label="Title"><input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What should we build?" style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
-                <Field label="Category">
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {categories.map(c => (
-                      <button type="button" key={c} onClick={() => setForm({ ...form, category: c })}
-                        style={{ padding: '4px 10px', borderRadius: 100, border: `1px solid ${form.category === c ? S.primary : S.border}`, background: form.category === c ? S.accentBg2 : '#fff', color: form.category === c ? S.primary : S.inkSecondary, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </Field>
-                <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What problem does it solve?" rows={3} style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', resize: 'vertical' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
-                <Btn onClick={() => form.title && setSubmitted(true)} disabled={!form.title} style={{ width: '100%', justifyContent: 'center' }}>Submit Request</Btn>
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('dashboard')
   const [showWalkthrough, setShowWalkthrough] = useState(false)
+  const [workspaceId, setWorkspaceId] = useState(null)
+  const [userRole, setUserRole] = useState('member')
   const router = useRouter()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUser(user)
+
+      // Load user's workspace
+      const { data: membership } = await supabase
+        .from('workspace_members')
+        .select('workspace_id, role')
+        .eq('user_id', user.id)
+        .single()
+
+      if (membership) {
+        setWorkspaceId(membership.workspace_id)
+        setUserRole(membership.role)
+      }
+
       setLoading(false)
+
       const seen = localStorage.getItem(`eos_walked_${user.id}`)
       if (!seen) {
         setTimeout(() => setShowWalkthrough(true), 600)
@@ -1572,58 +1478,43 @@ export default function App() {
     </div>
   )
 
-  const groups = ['CORE', 'OPERATIONS']
+  const sharedProps = { userId: user.id, workspaceId }
+
   const renderView = () => {
-    const props = { userId: user.id }
     switch (activeTab) {
-      case 'dashboard': return <Dashboard {...props} />
-      case 'intake': return <Intake {...props} />
-      case 'ramp': return <Ramp {...props} />
-      case 'notes': return <Notes {...props} />
-      case 'collaterals': return <Collaterals {...props} />
-      case 'sessions': return <Sessions {...props} />
-      case 'pulse': return <PulseChecks {...props} />
-      case 'planning': return <WeeklyPlanning {...props} />
-      case 'forecasting': return <Forecasting {...props} />
-      case 'leaderboards': return <Leaderboards {...props} />
-      case 'settings': return <SettingsPanel user={user} onSignOut={signOut} onReplayWalkthrough={() => setShowWalkthrough(true)} />
+      case 'dashboard': return <Dashboard {...sharedProps} />
+      case 'intake': return <Intake {...sharedProps} />
+      case 'ramp': return <Ramp {...sharedProps} />
+      case 'notes': return <Notes userId={user.id} />
+      case 'collaterals': return <Collaterals {...sharedProps} />
+      case 'sessions': return <Sessions {...sharedProps} />
+      case 'pulse': return <PulseChecks {...sharedProps} />
+      case 'planning': return <WeeklyPlanning {...sharedProps} />
+      case 'forecasting': return <Forecasting {...sharedProps} />
+      case 'leaderboards': return <Leaderboards {...sharedProps} />
+      case 'settings': return <SettingsPanel user={user} workspaceId={workspaceId} userRole={userRole} onSignOut={signOut} onReplayWalkthrough={() => setShowWalkthrough(true)} />
       case 'featurereqs': return <FeatureRequests />
-      default: return <Dashboard {...props} />
+      default: return <Dashboard {...sharedProps} />
     }
   }
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
-      {showWalkthrough && (
-        <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab} />
-      )}
+      {showWalkthrough && <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab} />}
 
-      {/* Sidebar */}
       <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-        {/* Logo */}
         <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <SidebarLogo />
         </div>
-
-        {/* Nav */}
         <nav style={{ flex: 1, padding: '16px 12px' }}>
-          {groups.map(group => (
+          {['CORE', 'OPERATIONS'].map(group => (
             <div key={group} style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', padding: '0 8px', marginBottom: 6 }}>{group}</div>
               {NAV.filter(n => n.group === group).map(item => {
                 const active = activeTab === item.id
                 return (
-                  <button key={item.id} onClick={() => setActiveTab(item.id)} style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                    background: active ? `${S.primary}25` : 'transparent',
-                    color: active ? '#fff' : 'rgba(255,255,255,0.5)',
-                    fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)',
-                    marginBottom: 2, transition: 'all 0.15s', textAlign: 'left',
-                    borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent',
-                  }}>
-                    <item.icon size={16} />
-                    {item.label}
+                  <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? `${S.primary}25` : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', marginBottom: 2, transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent' }}>
+                    <item.icon size={16} />{item.label}
                   </button>
                 )
               })}
@@ -1633,30 +1524,16 @@ export default function App() {
             {NAV.filter(n => n.group === null).map(item => {
               const active = activeTab === item.id
               return (
-                <button key={item.id} onClick={() => setActiveTab(item.id)} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: active ? `${S.primary}25` : 'transparent',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.5)',
-                  fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)',
-                  transition: 'all 0.15s', textAlign: 'left',
-                  borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent',
-                }}>
-                  <item.icon size={16} />
-                  {item.label}
+                <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? `${S.primary}25` : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent' }}>
+                  <item.icon size={16} />{item.label}
                 </button>
               )
             })}
           </div>
         </nav>
-
-        {/* User */}
         <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           {user?.email === ADMIN_EMAIL && <WorkspaceSwitcher current="personal" />}
-          <button
-            onClick={() => setShowWalkthrough(true)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 7, border: 'none', background: 'rgba(124,92,252,0.12)', color: '#BDA9FF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 10 }}
-          >
+          <button onClick={() => setShowWalkthrough(true)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 7, border: 'none', background: 'rgba(124,92,252,0.12)', color: '#BDA9FF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
             <Sparkles size={12} />Replay walkthrough
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1665,16 +1542,16 @@ export default function App() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Enablement Manager</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{userRole === 'admin' ? 'Admin' : 'Member'}</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px' }}>
         {renderView()}
       </div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
     </div>
   )
 }
