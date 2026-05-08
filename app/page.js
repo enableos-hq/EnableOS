@@ -69,7 +69,7 @@ export default function Landing() {
         <a href="/" style={{ textDecoration: 'none' }}><Logo size={120} /></a>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <a href="#features" style={{ fontSize: 14, color: S.ink2, textDecoration: 'none', fontWeight: 500 }}>Features</a>
-          <a href="/feature-requests" style={{ fontSize: 14, color: S.ink2, textDecoration: 'none', fontWeight: 500 }}>Roadmap</a>
+          <a href="/roadmap" style={{ fontSize: 14, color: S.ink2, textDecoration: 'none', fontWeight: 500 }}>Roadmap</a>
           <a href="/login" style={{ fontSize: 14, color: S.ink2, textDecoration: 'none', fontWeight: 500 }}>Log in</a>
           <a href="#waitlist" style={{ background: S.ink, color: '#fff', padding: '9px 20px', borderRadius: 100, fontSize: 14, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-body)' }}>Get early access</a>
         </div>
@@ -172,8 +172,8 @@ export default function Landing() {
       <footer style={{ padding: '32px 48px', borderTop: `1px solid ${S.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Logo size={100} />
         <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-          <a href="/submit" style={{ fontSize: 13, color: S.muted, textDecoration: 'none' }}>Submit a request</a>
-          <a href="/feature-requests" style={{ fontSize: 13, color: S.muted, textDecoration: 'none' }}>Roadmap</a>
+          <a href="/intake-form" style={{ fontSize: 13, color: S.muted, textDecoration: 'none' }}>Submit a request</a>
+          <a href="/roadmap" style={{ fontSize: 13, color: S.muted, textDecoration: 'none' }}>Roadmap</a>
         </div>
         <p style={{ fontSize: 13, color: S.muted }}>© 2026 EnableOS · Built for enablement, by enablement</p>
       </footer>
