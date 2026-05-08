@@ -83,7 +83,6 @@ const S = {
   success: '#059669', warning: '#d97706', error: '#dc2626',
 }
 
-// ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 function Card({ children, style, onClick }) {
   return (
     <div onClick={onClick} style={{ background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 20, transition: 'box-shadow 0.2s, border-color 0.2s', cursor: onClick ? 'pointer' : 'default', ...style }}
@@ -140,7 +139,6 @@ function Textarea({ value, onChange, placeholder, rows = 3, style }) {
   return <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows} style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', ...style }} />
 }
 
-// ─── WALKTHROUGH ──────────────────────────────────────────────────────────────
 const WALKTHROUGH_STEPS = [
   { id: 'dashboard', title: 'Welcome to EnableOS 👋', desc: 'Your command centre. Open requests, ramping reps, must-do tasks, and ramp snapshot — everything in one view. Let\'s take a 60-second tour.' },
   { id: 'intake', title: 'Intake — your request queue', desc: 'Every enablement request lands here. Impact × Urgency ÷ Effort = auto priority score. No more guessing what to build next. Share the public form link so anyone can submit without a login.' },
@@ -190,7 +188,6 @@ function Walkthrough({ onClose, onNavigate }) {
   )
 }
 
-// ─── DASHBOARD ────────────────────────────────────────────────────────────────
 function Dashboard({ userId, workspaceId }) {
   const [stats, setStats] = useState({ requests: 0, reps: 0, todos: 0 })
   const [loading, setLoading] = useState(true)
@@ -271,7 +268,6 @@ function Dashboard({ userId, workspaceId }) {
   )
 }
 
-// ─── INTAKE ────────────────────────────────────────────────────────────────────
 function Intake({ userId, workspaceId }) {
   const [requests, setRequests] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -391,7 +387,6 @@ function Intake({ userId, workspaceId }) {
   )
 }
 
-// ─── RAMP & ONBOARDING ────────────────────────────────────────────────────────
 function Ramp({ userId, workspaceId }) {
   const [reps, setReps] = useState([])
   const [selected, setSelected] = useState(null)
@@ -513,7 +508,6 @@ function Ramp({ userId, workspaceId }) {
   )
 }
 
-// ─── 1:1 NOTES (private — scoped to user_id only) ─────────────────────────────
 function Notes({ userId }) {
   const [reps, setReps] = useState([])
   const [selectedRep, setSelectedRep] = useState(null)
@@ -524,7 +518,6 @@ function Notes({ userId }) {
   const [aiResult, setAiResult] = useState(null)
 
   useEffect(() => {
-    // Load reps from auth user's own reps (no workspace filter — notes are private)
     supabase.from('reps').select('*').eq('user_id', userId).then(({ data }) => {
       setReps(data || [])
       if (data && data.length > 0) setSelectedRep(data[0])
@@ -643,7 +636,6 @@ function Notes({ userId }) {
   )
 }
 
-// ─── COLLATERALS ──────────────────────────────────────────────────────────────
 function Collaterals({ userId, workspaceId }) {
   const [items, setItems] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -722,7 +714,6 @@ function Collaterals({ userId, workspaceId }) {
   )
 }
 
-// ─── SESSIONS ─────────────────────────────────────────────────────────────────
 function Sessions({ userId, workspaceId }) {
   const [sessions, setSessions] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -814,7 +805,6 @@ function Sessions({ userId, workspaceId }) {
   )
 }
 
-// ─── PULSE CHECKS ─────────────────────────────────────────────────────────────
 function PulseChecks({ userId, workspaceId }) {
   const [pulses, setPulses] = useState([])
   const [selected, setSelected] = useState(null)
@@ -895,7 +885,6 @@ function PulseChecks({ userId, workspaceId }) {
   )
 }
 
-// ─── WEEKLY PLANNING ──────────────────────────────────────────────────────────
 function WeeklyPlanning({ userId, workspaceId }) {
   const [todos, setTodos] = useState([])
   const [adding, setAdding] = useState(null)
@@ -981,7 +970,6 @@ function WeeklyPlanning({ userId, workspaceId }) {
   )
 }
 
-// ─── FORECASTING ──────────────────────────────────────────────────────────────
 function Forecasting({ userId, workspaceId }) {
   const [items, setItems] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -1072,7 +1060,6 @@ function Forecasting({ userId, workspaceId }) {
   )
 }
 
-// ─── LEADERBOARDS ─────────────────────────────────────────────────────────────
 function Leaderboards({ userId, workspaceId }) {
   const [boards, setBoards] = useState([])
   const [selected, setSelected] = useState(null)
@@ -1191,7 +1178,6 @@ function Leaderboards({ userId, workspaceId }) {
   )
 }
 
-// ─── SETTINGS ─────────────────────────────────────────────────────────────────
 function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthrough }) {
   const [members, setMembers] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
@@ -1201,11 +1187,9 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
 
   useEffect(() => {
     if (!workspaceId) return
-    // Load workspace name
     supabase.from('workspaces').select('name').eq('id', workspaceId).single().then(({ data }) => {
       if (data) setWorkspaceName(data.name)
     })
-    // Load members
     supabase.from('workspace_members').select('*').eq('workspace_id', workspaceId).then(({ data }) => {
       setMembers(data || [])
     })
@@ -1215,23 +1199,17 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
     if (!inviteEmail.trim() || !inviteEmail.includes('@')) { setInviteStatus('error'); return }
     const already = members.find(m => m.invited_email?.toLowerCase() === inviteEmail.trim().toLowerCase())
     if (already) { setInviteStatus('error'); return }
-
-    // Check if this user already exists in auth
-    // We store the invite as a pending member row — when they sign up, the trigger links them
     const { error } = await supabase.from('workspace_members').insert({
       workspace_id: workspaceId,
-      user_id: user.id, // placeholder — will be updated when they sign up
+      user_id: user.id,
       role: inviteRole,
       invited_email: inviteEmail.trim().toLowerCase(),
     })
-
     if (error) { setInviteStatus('error'); return }
-
     setInviteEmail('')
     setInviteRole('member')
     setInviteStatus('sent')
     setTimeout(() => setInviteStatus(''), 3000)
-    // Reload members
     supabase.from('workspace_members').select('*').eq('workspace_id', workspaceId).then(({ data }) => setMembers(data || []))
   }
 
@@ -1246,8 +1224,6 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Settings</h1>
         <p style={{ color: S.muted, fontSize: 14 }}>Manage your workspace and team</p>
       </div>
-
-      {/* Team Members */}
       <Card style={{ marginBottom: 16 }}>
         <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}`, fontFamily: 'var(--font-display)' }}>Team Members</h3>
         <div style={{ marginBottom: 20 }}>
@@ -1273,7 +1249,6 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
             </div>
           ))}
         </div>
-
         {userRole === 'admin' && (
           <div style={{ background: S.accentBg, borderRadius: 10, padding: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: S.inkSecondary, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Invite someone</div>
@@ -1296,7 +1271,6 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
           </div>
         )}
       </Card>
-
       {[
         { title: 'Workspace', items: [{ label: 'Workspace Name', value: workspaceName }, { label: 'Account Email', value: user?.email }, { label: 'Your Role', value: userRole }] },
         { title: 'Integrations', items: [{ label: 'CRM (Salesforce/HubSpot)', value: 'Coming soon', badge: 'soon' }, { label: 'Gong', value: 'Coming soon', badge: 'soon' }, { label: 'Slack', value: 'Coming soon', badge: 'soon' }, { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' }] },
@@ -1315,7 +1289,6 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
           ))}
         </Card>
       ))}
-
       <div style={{ display: 'flex', gap: 10 }}>
         <button onClick={onReplayWalkthrough} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', color: S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
           <Sparkles size={14} />Replay Walkthrough
@@ -1328,7 +1301,6 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
   )
 }
 
-// ─── FEATURE REQUESTS ─────────────────────────────────────────────────────────
 function FeatureRequests() {
   const [submitted, setSubmitted] = useState(false)
   const [voted, setVoted] = useState([])
@@ -1409,7 +1381,6 @@ function FeatureRequests() {
   )
 }
 
-// ─── NAV ──────────────────────────────────────────────────────────────────────
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'CORE' },
   { id: 'intake', label: 'Intake', icon: Inbox, group: 'CORE' },
@@ -1425,7 +1396,6 @@ const NAV = [
   { id: 'featurereqs', label: 'Feature Requests', icon: Star, group: null },
 ]
 
-// ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -1439,21 +1409,16 @@ export default function App() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUser(user)
-
-      // Load user's workspace
       const { data: membership } = await supabase
         .from('workspace_members')
         .select('workspace_id, role')
         .eq('user_id', user.id)
         .single()
-
       if (membership) {
         setWorkspaceId(membership.workspace_id)
         setUserRole(membership.role)
       }
-
       setLoading(false)
-
       const seen = localStorage.getItem(`eos_walked_${user.id}`)
       if (!seen) {
         setTimeout(() => setShowWalkthrough(true), 600)
@@ -1529,6 +1494,13 @@ export default function App() {
                 </button>
               )
             })}
+            {/* ── ROADMAP LINK ── */}
+            <a href="/roadmap" target="_blank" rel="noreferrer" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 400, fontFamily: 'var(--font-body)', textDecoration: 'none', borderLeft: '2px solid transparent', marginTop: 2 }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = `${S.primary}25` }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'transparent' }}
+            >
+              <TrendingUp size={16} />Roadmap
+            </a>
           </div>
         </nav>
         <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
