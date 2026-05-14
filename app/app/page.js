@@ -1417,12 +1417,15 @@ export default function App() {
       if (membership) {
         setWorkspaceId(membership.workspace_id)
         setUserRole(membership.role)
-      }
-      setLoading(false)
-      const seen = localStorage.getItem(`eos_walked_${user.id}`)
-      if (!seen) {
-        setTimeout(() => setShowWalkthrough(true), 600)
-        localStorage.setItem(`eos_walked_${user.id}`, '1')
+        setLoading(false)
+        const seen = localStorage.getItem(`eos_walked_${user.id}`)
+        if (!seen) {
+          setTimeout(() => setShowWalkthrough(true), 600)
+          localStorage.setItem(`eos_walked_${user.id}`, '1')
+        }
+      } else {
+        await supabase.auth.signOut()
+        router.push('/login?error=no_workspace')
       }
     })
   }, [router])
@@ -1466,7 +1469,6 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
       {showWalkthrough && <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab} />}
-
       <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
         <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <SidebarLogo />
@@ -1494,7 +1496,6 @@ export default function App() {
                 </button>
               )
             })}
-            {/* ── ROADMAP LINK ── */}
             <a href="/roadmap" target="_blank" rel="noreferrer" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 400, fontFamily: 'var(--font-body)', textDecoration: 'none', borderLeft: '2px solid transparent', marginTop: 2 }}
               onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = `${S.primary}25` }}
               onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'transparent' }}
@@ -1519,7 +1520,6 @@ export default function App() {
           </div>
         </div>
       </div>
-
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px' }}>
         {renderView()}
       </div>
