@@ -1406,8 +1406,10 @@ export default function App() {
   const router = useRouter()
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { router.push('/login'); return }
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { router.push('/login'); return }
+      const user = session.user
       setUser(user)
       const { data: membership } = await supabase
         .from('workspace_members')
@@ -1427,7 +1429,12 @@ export default function App() {
         await supabase.auth.signOut()
         router.push('/login?error=no_workspace')
       }
+    }
+    init()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) init()
     })
+    return () => subscription.unsubscribe()
   }, [router])
 
   const signOut = async () => {
