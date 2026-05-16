@@ -2,6 +2,21 @@
 
 import { useEffect } from 'react';
 
+function Logo() {
+  return (
+    <a href="/" className="v6-logo" aria-label="EnableOS">
+      <span className="v6-logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </span>
+      <span className="v6-logo-text">Enable<em>OS</em></span>
+    </a>
+  );
+}
+
 export default function Page() {
   useEffect(() => {
     function handleScroll() {
@@ -41,9 +56,10 @@ export default function Page() {
 
         <div className="v6-content">
           <nav className="v6-nav">
-            <div className="v6-logo">Enable<em>OS</em></div>
+            <Logo />
             <div className="v6-navlinks">
               <a href="#features">Features</a>
+              <a href="#roadmap">Roadmap</a>
               <a href="#stats">Why now</a>
               <a href="/login">Log in</a>
               <a href="https://tally.so/r/kdRgXd" className="v6-cta-nav">Get early access</a>
@@ -150,6 +166,48 @@ export default function Page() {
             </div>
           </section>
 
+          <section className="v6-section" id="roadmap">
+            <div className="v6-hl">
+              <span className="v6-eyebrow">Where we&apos;re going</span>
+              <h2 className="v6-h2">Built today. <em>Bigger tomorrow.</em></h2>
+              <div className="v6-roadmap">
+                <div className="v6-rmcol">
+                  <div className="v6-rmstatus v6-rmstatus-live">
+                    <span className="v6-rmdot" /> Live now
+                  </div>
+                  <ul className="v6-rmlist">
+                    <li>Twelve features across intake, ramp, coaching &amp; performance</li>
+                    <li>AI sentiment analysis on rep 1:1 notes</li>
+                    <li>President&apos;s Club tracker</li>
+                    <li>Auto-prioritized intake (Impact × Urgency ÷ Effort)</li>
+                  </ul>
+                </div>
+                <div className="v6-rmcol">
+                  <div className="v6-rmstatus v6-rmstatus-next">
+                    <span className="v6-rmdot" /> Shipping soon
+                  </div>
+                  <ul className="v6-rmlist">
+                    <li>HubSpot &amp; Salesforce sync</li>
+                    <li>Slack integration for intake</li>
+                    <li>Public intake portal — share a link, no login</li>
+                    <li>Gong call ingestion for coaching gaps</li>
+                  </ul>
+                </div>
+                <div className="v6-rmcol">
+                  <div className="v6-rmstatus v6-rmstatus-later">
+                    <span className="v6-rmdot" /> On the horizon
+                  </div>
+                  <ul className="v6-rmlist">
+                    <li>Mobile app for coaching on the go</li>
+                    <li>AI next-best-action recommendations</li>
+                    <li>Multi-region team workspaces</li>
+                    <li>Custom dashboards &amp; exports</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section className="v6-section" id="stats">
             <div className="v6-hl">
               <span className="v6-eyebrow">The gap we close</span>
@@ -157,8 +215,8 @@ export default function Page() {
               <div className="v6-stats">
                 <div className="v6-stat">
                   <div className="v6-stat-eyebrow">Ramp time</div>
-                  <div className="v6-stat-num"><em>1.5 mo</em><span className="small"> / 3 mo</span></div>
-                  <div className="v6-stat-label">Structured onboarding cuts SDR ramp in half — when the system exists.</div>
+                  <div className="v6-stat-num"><em>50%</em></div>
+                  <div className="v6-stat-label">Cut onboarding time in half with structured ramp programs.</div>
                   <div className="v6-stat-src">Industry avg: 3 months · <em>Bridge Group SDR Metrics Report</em></div>
                 </div>
                 <div className="v6-stat">
@@ -187,6 +245,39 @@ export default function Page() {
             </div>
           </section>
         </div>
+
+        <footer className="v6-footer">
+          <div className="v6-footer-inner">
+            <div className="v6-footer-top">
+              <div className="v6-footer-brand">
+                <Logo />
+                <p className="v6-footer-tag">The operating system for enablement. Built for the one person running it all.</p>
+              </div>
+              <div className="v6-footer-cols">
+                <div className="v6-footer-col">
+                  <h4>Product</h4>
+                  <a href="#features">Features</a>
+                  <a href="#roadmap">Roadmap</a>
+                  <a href="#stats">Why now</a>
+                </div>
+                <div className="v6-footer-col">
+                  <h4>Get started</h4>
+                  <a href="https://tally.so/r/kdRgXd">Early access</a>
+                  <a href="/login">Log in</a>
+                </div>
+                <div className="v6-footer-col">
+                  <h4>Contact</h4>
+                  <a href="mailto:hello@enableos.app">hello@enableos.app</a>
+                  <a href="https://www.linkedin.com/in/vedikaagarwal00/" target="_blank" rel="noreferrer">LinkedIn</a>
+                </div>
+              </div>
+            </div>
+            <div className="v6-footer-bottom">
+              <span>© 2026 EnableOS. Built in Bangalore.</span>
+              <span>Made for solo enablement hires everywhere.</span>
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   );
@@ -248,10 +339,15 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
 
 .v6-content { position: relative; z-index: 1; padding: 0 48px 48px; max-width: 1280px; margin: 0 auto; }
 
-.v6-nav { display: flex; justify-content: space-between; align-items: center; padding: 22px 48px; border-bottom: 1px solid var(--border-light); margin: 0 -48px 64px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); background: color-mix(in oklab, rgba(26, 18, 53, 0.75), rgba(253, 251, 255, 0.75) calc(var(--p) * 100%)); }
-.v6-logo { font-family: 'Libre Baskerville', serif; font-weight: 700; font-size: 22px; color: color-mix(in oklab, var(--cream), #1a1235 calc(var(--p) * 100%)); letter-spacing: -0.5px; }
+.v6-nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 48px; border-bottom: 1px solid var(--border-light); margin: 0 -48px 64px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); background: color-mix(in oklab, rgba(26, 18, 53, 0.75), rgba(253, 251, 255, 0.75) calc(var(--p) * 100%)); }
+
+/* ─── Logo (icon + wordmark) ─────────────────────────── */
+.v6-logo { display: inline-flex; align-items: center; gap: 11px; font-family: 'Libre Baskerville', serif; font-weight: 700; font-size: 22px; color: color-mix(in oklab, var(--cream), #1a1235 calc(var(--p) * 100%)); letter-spacing: -0.5px; line-height: 1; }
+.v6-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #7C5CFC, #9B7EFF); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(124, 92, 252, 0.45); flex-shrink: 0; }
+.v6-logo-text { line-height: 1; }
 .v6-logo em { color: #9B7EFF; font-style: normal; }
-.v6-navlinks { display: flex; gap: 28px; align-items: center; font-size: 13px; color: color-mix(in oklab, var(--cream-muted), #4a4162 calc(var(--p) * 100%)); }
+
+.v6-navlinks { display: flex; gap: 26px; align-items: center; font-size: 13px; color: color-mix(in oklab, var(--cream-muted), #4a4162 calc(var(--p) * 100%)); }
 .v6-cta-nav { background: color-mix(in oklab, var(--cream), #1a1235 calc(var(--p) * 100%)); color: color-mix(in oklab, #1a1235, var(--cream) calc(var(--p) * 100%)); padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
 
 .v6-section { padding-bottom: 80px; }
@@ -312,6 +408,19 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
 .v6-card h3 { font-family: 'Libre Baskerville', serif; font-size: 20px; font-weight: 700; margin: 0 0 10px; color: var(--cream); }
 .v6-card p { font-size: 13px; color: var(--cream-muted); line-height: 1.6; margin: 0; }
 
+/* ─── Roadmap ─────────────────────────────────────────── */
+.v6-roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 28px; }
+.v6-rmcol { background: linear-gradient(180deg, rgba(245, 240, 255, 0.04), rgba(245, 240, 255, 0.01)); border: 1px solid var(--border-light); border-radius: 14px; padding: 26px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, calc(0.15 + var(--p) * 0.25)); }
+.v6-rmstatus { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; font-weight: 700; padding: 6px 12px; border-radius: 100px; margin-bottom: 22px; }
+.v6-rmstatus-live { background: rgba(107, 203, 119, 0.16); color: #8FDD96; }
+.v6-rmstatus-next { background: rgba(255, 196, 0, 0.16); color: #FFD466; }
+.v6-rmstatus-later { background: rgba(155, 126, 255, 0.18); color: #B89DFF; }
+.v6-rmdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+.v6-rmlist { list-style: none; padding: 0; margin: 0; }
+.v6-rmlist li { font-size: 14px; color: var(--cream); font-weight: 300; line-height: 1.55; padding: 12px 0; border-top: 1px solid var(--border-light); }
+.v6-rmlist li:first-child { border-top: none; padding-top: 0; }
+.v6-rmlist li:last-child { padding-bottom: 0; }
+
 .v6-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding-top: 24px; border-top: 1px solid var(--border-light); margin-top: 12px; }
 .v6-stat { padding: 0 28px; border-right: 1px solid var(--border-light); }
 .v6-stat:first-child { padding-left: 0; }
@@ -334,16 +443,32 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
 .v6-scroll-hint { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(245, 240, 255, 0.6); pointer-events: none; opacity: calc(1 - var(--p) * 5); animation: hintBounce 2s ease-in-out infinite; z-index: 20; }
 @keyframes hintBounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(4px); } }
 
+/* ─── Footer ──────────────────────────────────────────── */
+.v6-footer { position: relative; z-index: 1; padding: 64px 48px 32px; border-top: 1px solid var(--border-light); background: color-mix(in oklab, rgba(26, 18, 53, 0.85), rgba(253, 251, 255, 0.85) calc(var(--p) * 100%)); backdrop-filter: blur(12px); }
+.v6-footer-inner { max-width: 1280px; margin: 0 auto; }
+.v6-footer-top { display: grid; grid-template-columns: 1.4fr 2fr; gap: 64px; padding-bottom: 40px; border-bottom: 1px solid var(--border-light); }
+.v6-footer-brand .v6-logo { margin-bottom: 18px; }
+.v6-footer-tag { font-size: 14px; color: color-mix(in oklab, var(--cream-muted), #4a4162 calc(var(--p) * 100%)); line-height: 1.65; max-width: 340px; margin: 0; font-weight: 300; }
+.v6-footer-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.v6-footer-col h4 { font-family: 'Sora', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: color-mix(in oklab, var(--cream-faint), #4a4162 calc(var(--p) * 100%)); font-weight: 600; margin: 0 0 18px; }
+.v6-footer-col a { display: block; font-size: 14px; color: color-mix(in oklab, var(--cream-muted), #4a4162 calc(var(--p) * 100%)); padding: 6px 0; transition: color 0.2s; font-weight: 300; }
+.v6-footer-col a:hover { color: color-mix(in oklab, var(--cream), #1a1235 calc(var(--p) * 100%)); }
+.v6-footer-bottom { padding-top: 26px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: color-mix(in oklab, var(--cream-faint), #4a4162 calc(var(--p) * 100%)); font-weight: 300; }
+
 @media (max-width: 768px) {
   .v6-content { padding: 0 22px 24px; }
-  .v6-nav { padding: 16px 22px; margin: 0 -22px 40px; }
+  .v6-nav { padding: 14px 22px; margin: 0 -22px 40px; }
   .v6-navlinks a:not(.v6-cta-nav) { display: none; }
   .v6-navlinks { gap: 14px; }
+  .v6-logo { font-size: 19px; gap: 9px; }
+  .v6-logo-icon { width: 32px; height: 32px; border-radius: 9px; }
+  .v6-logo-icon svg { width: 19px; height: 19px; }
   .v6-hero { grid-template-columns: 1fr; gap: 40px; min-height: auto; padding-top: 8px; }
   .v6-h1 { font-size: 40px; }
   .v6-h2 { font-size: 30px; }
   .v6-sub { font-size: 15px; }
   .v6-grid { grid-template-columns: 1fr; }
+  .v6-roadmap { grid-template-columns: 1fr; gap: 14px; }
   .v6-stats { grid-template-columns: 1fr; gap: 28px; }
   .v6-stat { padding: 0 0 20px; border-right: none; border-bottom: 1px solid var(--border-light); }
   .v6-stat:last-child { border-bottom: none; padding-bottom: 0; }
@@ -351,5 +476,9 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
   .v6-cta-h2 { font-size: 32px; }
   .v6-stat-num { font-size: 44px; }
   .v6-painlist li { font-size: 15px; }
+  .v6-footer { padding: 48px 22px 28px; }
+  .v6-footer-top { grid-template-columns: 1fr; gap: 32px; padding-bottom: 32px; }
+  .v6-footer-cols { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .v6-footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
 }
 `;
