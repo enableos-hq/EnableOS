@@ -4,15 +4,39 @@ import { useEffect } from 'react';
 
 function Logo() {
   return (
-    <a href="/" className="v6-logo" aria-label="EnableOS">
-      <span className="v6-logo-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </span>
-      <span className="v6-logo-text">Enable<em>OS</em></span>
+    <a href="/" className="v6-logo" aria-label="EnableOS — The Enablement Operating System">
+      <svg viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" className="v6-logo-svg">
+        <defs>
+          <linearGradient id="logoG1" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#BDA9FF"/>
+            <stop offset="100%" stopColor="#9B7EFF"/>
+          </linearGradient>
+          <linearGradient id="logoG2" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#9B7EFF"/>
+            <stop offset="100%" stopColor="#7C5CFC"/>
+          </linearGradient>
+          <linearGradient id="logoG3" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#7C5CFC"/>
+            <stop offset="100%" stopColor="#5B3EDB"/>
+          </linearGradient>
+        </defs>
+        {/* Stacked layers */}
+        <rect x="20" y="20" width="52" height="9" rx="2.5" fill="url(#logoG1)" opacity="0.55"/>
+        <rect x="26" y="35" width="52" height="12" rx="2.5" fill="url(#logoG2)" opacity="0.8"/>
+        <rect x="32" y="53" width="52" height="16" rx="2.5" fill="url(#logoG3)"/>
+        {/* Depth lines */}
+        <line x1="26" y1="35" x2="20" y2="29" stroke="#BDA9FF" strokeWidth="0.8" opacity="0.45"/>
+        <line x1="32" y1="53" x2="26" y2="47" stroke="#9B7EFF" strokeWidth="0.8" opacity="0.5"/>
+        <line x1="78" y1="35" x2="72" y2="29" stroke="#BDA9FF" strokeWidth="0.8" opacity="0.45"/>
+        <line x1="84" y1="53" x2="78" y2="47" stroke="#9B7EFF" strokeWidth="0.8" opacity="0.5"/>
+        {/* Two accent dots */}
+        <circle cx="79" cy="61" r="3" fill="#ffffff" opacity="0.9"/>
+        <circle cx="70" cy="61" r="3" fill="#BDA9FF" opacity="0.7"/>
+        {/* Wordmark */}
+        <text x="102" y="68" fontFamily="'Libre Baskerville', Georgia, serif" fontSize="38" fontWeight="400" fill="currentColor" letterSpacing="-0.02em">
+          Enable<tspan fontWeight="700" className="v6-logo-os">OS</tspan>
+        </text>
+      </svg>
     </a>
   );
 }
@@ -287,6 +311,7 @@ const styles = `
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,400i;0,700;1,400&family=Sora:wght@300;400;500;600;700&display=swap');
 
 :root { --p: 0; }
+html { scroll-behavior: smooth; }
 
 body { margin: 0; padding: 0; font-family: 'Sora', sans-serif; background: #1a1235; color: #F5F0FF; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 * { box-sizing: border-box; }
@@ -309,7 +334,6 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
   min-height: 100vh;
   position: relative;
   isolation: isolate;
-  scroll-behavior: smooth;
 }
 
 .v6-bg { position: fixed; top: 0; left: 0; right: 0; pointer-events: none; z-index: 0; overflow: hidden; opacity: calc(1 - var(--p) * 0.95); height: 100vh; }
@@ -339,18 +363,23 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
 
 .v6-content { position: relative; z-index: 1; padding: 0 48px 48px; max-width: 1280px; margin: 0 auto; }
 
-.v6-nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 48px; border-bottom: 1px solid var(--border-light); margin: 0 -48px 64px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); background: color-mix(in oklab, rgba(26, 18, 53, 0.75), rgba(253, 251, 255, 0.75) calc(var(--p) * 100%)); }
+.v6-nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 48px; border-bottom: 1px solid var(--border-light); margin: 0 -48px 64px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); background: color-mix(in oklab, rgba(26, 18, 53, 0.75), rgba(253, 251, 255, 0.75) calc(var(--p) * 100%)); }
 
-/* ─── Logo (icon + wordmark) ─────────────────────────── */
-.v6-logo { display: inline-flex; align-items: center; gap: 11px; font-family: 'Libre Baskerville', serif; font-weight: 700; font-size: 22px; color: color-mix(in oklab, var(--cream), #1a1235 calc(var(--p) * 100%)); letter-spacing: -0.5px; line-height: 1; }
-.v6-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #7C5CFC, #9B7EFF); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(124, 92, 252, 0.45); flex-shrink: 0; }
-.v6-logo-text { line-height: 1; }
-.v6-logo em { color: #9B7EFF; font-style: normal; }
+/* ─── Logo (real EnableOS lockup, dark↔light via scroll) ────── */
+.v6-logo {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  color: color-mix(in oklab, #ffffff, #1a1235 calc(var(--p) * 100%));
+  --logo-os: color-mix(in oklab, #BDA9FF, #7C5CFC calc(var(--p) * 100%));
+}
+.v6-logo-svg { height: 100%; width: auto; display: block; overflow: visible; }
+.v6-logo-os { fill: var(--logo-os); }
 
 .v6-navlinks { display: flex; gap: 26px; align-items: center; font-size: 13px; color: color-mix(in oklab, var(--cream-muted), #4a4162 calc(var(--p) * 100%)); }
 .v6-cta-nav { background: color-mix(in oklab, var(--cream), #1a1235 calc(var(--p) * 100%)); color: color-mix(in oklab, #1a1235, var(--cream) calc(var(--p) * 100%)); padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
 
-.v6-section { padding-bottom: 80px; }
+.v6-section { padding-bottom: 80px; scroll-margin-top: 90px; }
 
 .v6-hl { position: relative; padding: 52px 44px; border-radius: 20px; z-index: 1; isolation: isolate; }
 .v6-hl::before { content: ''; position: absolute; inset: 0; background: var(--block); opacity: var(--p); border-radius: inherit; z-index: -1; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, calc(var(--p) * 0.35)); }
@@ -457,12 +486,10 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
 
 @media (max-width: 768px) {
   .v6-content { padding: 0 22px 24px; }
-  .v6-nav { padding: 14px 22px; margin: 0 -22px 40px; }
+  .v6-nav { padding: 12px 22px; margin: 0 -22px 40px; }
   .v6-navlinks a:not(.v6-cta-nav) { display: none; }
   .v6-navlinks { gap: 14px; }
-  .v6-logo { font-size: 19px; gap: 9px; }
-  .v6-logo-icon { width: 32px; height: 32px; border-radius: 9px; }
-  .v6-logo-icon svg { width: 19px; height: 19px; }
+  .v6-logo { height: 36px; }
   .v6-hero { grid-template-columns: 1fr; gap: 40px; min-height: auto; padding-top: 8px; }
   .v6-h1 { font-size: 40px; }
   .v6-h2 { font-size: 30px; }
@@ -480,5 +507,6 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
   .v6-footer-top { grid-template-columns: 1fr; gap: 32px; padding-bottom: 32px; }
   .v6-footer-cols { grid-template-columns: 1fr 1fr; gap: 24px; }
   .v6-footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+  .v6-section { scroll-margin-top: 72px; }
 }
 `;
