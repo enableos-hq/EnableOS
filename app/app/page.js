@@ -69,7 +69,7 @@ import {
   LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
   Video, Activity, Calendar, TrendingUp, Trophy, Settings,
   LogOut, Plus, X, ChevronRight, Zap, Check,
-  Sparkles, Target, Star, Loader
+  Sparkles, Target, Star, Loader, Trash2
 } from 'lucide-react'
 
 const supabase = createClient()
@@ -81,6 +81,15 @@ const S = {
   ink: '#1a1235', inkSecondary: '#4a4162', muted: '#8b82a0',
   border: '#E2DCF0', borderLight: '#F0ECF8',
   success: '#059669', warning: '#d97706', error: '#dc2626',
+}
+
+// Small helper: surface Supabase errors instead of swallowing them.
+// Returns true if the operation succeeded, false otherwise.
+function handleDbError(error, action) {
+  if (!error) return true
+  console.error(`[${action}] Supabase error:`, error)
+  alert(`Couldn't ${action}: ${error.message || 'Unknown error'}\n\nCheck the browser console for details.`)
+  return false
 }
 
 function Card({ children, style, onClick }) {
@@ -276,7 +285,8 @@ function Intake({ userId, workspaceId }) {
 
   const load = useCallback(async () => {
     if (!workspaceId) return
-    const { data } = await supabase.from('requests').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('requests').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    if (error) { handleDbError(error, 'load requests'); return }
     setRequests(data || [])
   }, [workspaceId])
 
@@ -284,14 +294,16 @@ function Intake({ userId, workspaceId }) {
 
   const save = async () => {
     const priority = Math.round((form.impact * form.urgency) / form.effort)
-    await supabase.from('requests').insert({ ...form, user_id: userId, workspace_id: workspaceId, priority_score: priority })
+    const { error } = await supabase.from('requests').insert({ ...form, user_id: userId, workspace_id: workspaceId, priority_score: priority })
+    if (!handleDbError(error, 'add request')) return
     setShowModal(false)
     setForm({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' })
     load()
   }
 
   const updateStatus = async (id, status) => {
-    await supabase.from('requests').update({ status }).eq('id', id)
+    const { error } = await supabase.from('requests').update({ status }).eq('id', id)
+    if (!handleDbError(error, 'update request')) return
     load()
   }
 
@@ -395,7 +407,8 @@ function Ramp({ userId, workspaceId }) {
 
   const load = useCallback(async () => {
     if (!workspaceId) return
-    const { data } = await supabase.from('reps').select('*').eq('workspace_id', workspaceId)
+    const { data, error } = await supabase.from('reps').select('*').eq('workspace_id', workspaceId)
+    if (error) { handleDbError(error, 'load reps'); return }
     setReps(data || [])
     if (data && data.length > 0 && !selected) setSelected(data[0])
   }, [workspaceId, selected])
@@ -405,9 +418,18 @@ function Ramp({ userId, workspaceId }) {
   const addRep = async () => {
     if (!newRepName.trim()) return
     const defaultProgress = { sections: { 'Company & Culture': [false,false,false,false], 'Sales Process': [false,false,false,false], 'Product Deep Dive': [false,false,false,false], 'Outbound Mastery': [false,false,false,false], 'Live Certification': [false,false,false,false] }, benchmarks: {} }
-    await supabase.from('reps').insert({ user_id: userId, workspace_id: workspaceId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() })
+    const { error } = await supabase.from('reps').insert({ user_id: userId, workspace_id: workspaceId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() })
+    if (!handleDbError(error, 'add rep')) return
     setNewRepName('')
     setShowAddRep(false)
+    load()
+  }
+
+  const deleteRep = async (rep) => {
+    if (!confirm(`Delete ${rep.name}? This also removes their 1:1 notes. This can't be undone.`)) return
+    const { error } = await supabase.from('reps').delete().eq('id', rep.id)
+    if (!handleDbError(error, 'delete rep')) return
+    if (selected?.id === rep.id) setSelected(null)
     load()
   }
 
@@ -415,7 +437,8 @@ function Ramp({ userId, workspaceId }) {
     if (!selected) return
     const updated = { ...selected.progress }
     updated.sections[section][idx] = !updated.sections[section][idx]
-    await supabase.from('reps').update({ progress: updated }).eq('id', selected.id)
+    const { error } = await supabase.from('reps').update({ progress: updated }).eq('id', selected.id)
+    if (!handleDbError(error, 'update progress')) return
     setSelected({ ...selected, progress: updated })
     load()
   }
@@ -443,14 +466,27 @@ function Ramp({ userId, workspaceId }) {
           <button onClick={() => setShowAddRep(true)} style={{ background: 'none', border: 'none', color: S.primary, cursor: 'pointer' }}><Plus size={16} /></button>
         </div>
         {reps.map(r => (
-          <div key={r.id} onClick={() => setSelected(r)} style={{ padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer', background: selected?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selected?.id === r.id ? S.primary + '40' : 'transparent'}` }}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 4 }}>{r.name}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ flex: 1, height: 4, background: S.borderLight, borderRadius: 2 }}>
-                <div style={{ height: '100%', width: `${calcPct(r)}%`, background: S.primary, borderRadius: 2 }} />
+          <div key={r.id} style={{ padding: '10px 12px', borderRadius: 8, marginBottom: 4, background: selected?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selected?.id === r.id ? S.primary + '40' : 'transparent'}`, position: 'relative' }}>
+            <div onClick={() => setSelected(r)} style={{ cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 18 }}>{r.name}</div>
               </div>
-              <span style={{ fontSize: 11, color: S.primary, fontWeight: 700 }}>{calcPct(r)}%</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ flex: 1, height: 4, background: S.borderLight, borderRadius: 2 }}>
+                  <div style={{ height: '100%', width: `${calcPct(r)}%`, background: S.primary, borderRadius: 2 }} />
+                </div>
+                <span style={{ fontSize: 11, color: S.primary, fontWeight: 700 }}>{calcPct(r)}%</span>
+              </div>
             </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); deleteRep(r) }}
+              title="Delete rep"
+              style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.5, padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4 }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.color = S.error }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = 0.5; e.currentTarget.style.color = S.muted }}
+            >
+              <Trash2 size={12} />
+            </button>
           </div>
         ))}
         {reps.length === 0 && <div style={{ fontSize: 13, color: S.muted, textAlign: 'center', paddingTop: 20 }}>No reps yet</div>}
@@ -508,33 +544,53 @@ function Ramp({ userId, workspaceId }) {
   )
 }
 
-function Notes({ userId }) {
+function Notes({ userId, workspaceId }) {
   const [reps, setReps] = useState([])
   const [selectedRep, setSelectedRep] = useState(null)
   const [notes, setNotes] = useState([])
   const [showModal, setShowModal] = useState(false)
+  const [showAddRep, setShowAddRep] = useState(false)
+  const [newRepName, setNewRepName] = useState('')
   const [form, setForm] = useState({ shared_agenda: '', private_notes: '' })
   const [analyzing, setAnalyzing] = useState(false)
   const [aiResult, setAiResult] = useState(null)
 
-  useEffect(() => {
-    supabase.from('reps').select('*').eq('user_id', userId).then(({ data }) => {
-      setReps(data || [])
-      if (data && data.length > 0) setSelectedRep(data[0])
-    })
-  }, [userId])
+  const loadReps = useCallback(async () => {
+    if (!workspaceId) return
+    const { data, error } = await supabase.from('reps').select('*').eq('workspace_id', workspaceId)
+    if (error) { handleDbError(error, 'load reps'); return }
+    setReps(data || [])
+    if (data && data.length > 0 && !selectedRep) setSelectedRep(data[0])
+  }, [workspaceId, selectedRep])
+
+  useEffect(() => { loadReps() }, [loadReps])
 
   useEffect(() => {
-    if (!selectedRep) return
-    supabase.from('notes').select('*').eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data }) => setNotes(data || []))
-  }, [selectedRep, userId])
+    if (!selectedRep || !workspaceId) return
+    supabase.from('notes').select('*').eq('workspace_id', workspaceId).eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data, error }) => {
+      if (error) { handleDbError(error, 'load notes'); return }
+      setNotes(data || [])
+    })
+  }, [selectedRep, userId, workspaceId])
+
+  const addRepInline = async () => {
+    if (!newRepName.trim()) return
+    const defaultProgress = { sections: { 'Company & Culture': [false,false,false,false], 'Sales Process': [false,false,false,false], 'Product Deep Dive': [false,false,false,false], 'Outbound Mastery': [false,false,false,false], 'Live Certification': [false,false,false,false] }, benchmarks: {} }
+    const { data, error } = await supabase.from('reps').insert({ user_id: userId, workspace_id: workspaceId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() }).select().single()
+    if (!handleDbError(error, 'add rep')) return
+    setNewRepName('')
+    setShowAddRep(false)
+    if (data) setSelectedRep(data)
+    loadReps()
+  }
 
   const save = async () => {
-    await supabase.from('notes').insert({ ...form, user_id: userId, rep_id: selectedRep.id, date: new Date().toISOString() })
+    const { error } = await supabase.from('notes').insert({ ...form, user_id: userId, workspace_id: workspaceId, rep_id: selectedRep.id, date: new Date().toISOString() })
+    if (!handleDbError(error, 'save note')) return
     setShowModal(false)
     setForm({ shared_agenda: '', private_notes: '' })
     setAiResult(null)
-    supabase.from('notes').select('*').eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data }) => setNotes(data || []))
+    supabase.from('notes').select('*').eq('workspace_id', workspaceId).eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data }) => setNotes(data || []))
   }
 
   const analyze = async () => {
@@ -562,13 +618,20 @@ function Notes({ userId }) {
   return (
     <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 120px)' }}>
       <div style={{ width: 200, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 13, color: S.ink, marginBottom: 14 }}>Reps</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>Reps</span>
+          <button onClick={() => setShowAddRep(true)} title="Add rep" style={{ background: 'none', border: 'none', color: S.primary, cursor: 'pointer' }}><Plus size={16} /></button>
+        </div>
         {reps.map(r => (
           <div key={r.id} onClick={() => setSelectedRep(r)} style={{ padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer', background: selectedRep?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selectedRep?.id === r.id ? S.primary + '40' : 'transparent'}` }}>
             <span style={{ fontWeight: 600, fontSize: 13, color: S.ink }}>{r.name}</span>
           </div>
         ))}
-        {reps.length === 0 && <div style={{ fontSize: 13, color: S.muted }}>Add reps in Ramp & Onboarding first</div>}
+        {reps.length === 0 && (
+          <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.5, padding: '8px 0' }}>
+            No reps yet — tap <Plus size={11} style={{ verticalAlign: -1, display: 'inline' }} /> above or head to Ramp & Onboarding.
+          </div>
+        )}
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -603,9 +666,20 @@ function Notes({ userId }) {
               )}
             </Card>
           ))}
-          {notes.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>No notes yet for this rep</div>}
+          {notes.length === 0 && selectedRep && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>No notes yet for this rep</div>}
+          {!selectedRep && reps.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>Add a rep on the left to start taking notes</div>}
         </div>
       </div>
+
+      {showAddRep && (
+        <Modal title="Add Rep" onClose={() => setShowAddRep(false)}>
+          <Field label="Name"><Input value={newRepName} onChange={e => setNewRepName(e.target.value)} placeholder="Rep's name" /></Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => setShowAddRep(false)}>Cancel</Btn>
+            <Btn onClick={addRepInline} disabled={!newRepName.trim()}>Add Rep</Btn>
+          </div>
+        </Modal>
+      )}
 
       {showModal && (
         <Modal title={`New 1:1 Note — ${selectedRep?.name}`} onClose={() => { setShowModal(false); setAiResult(null) }} wide>
@@ -644,21 +718,24 @@ function Collaterals({ userId, workspaceId }) {
 
   const load = useCallback(async () => {
     if (!workspaceId) return
-    const { data } = await supabase.from('collaterals').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('collaterals').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    if (error) { handleDbError(error, 'load collaterals'); return }
     setItems(data || [])
   }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('collaterals').insert({ ...form, user_id: userId, workspace_id: workspaceId, usage_count: 0 })
+    const { error } = await supabase.from('collaterals').insert({ ...form, user_id: userId, workspace_id: workspaceId, usage_count: 0 })
+    if (!handleDbError(error, 'add collateral')) return
     setShowModal(false)
     setForm({ title: '', bucket: 'Battle Card', description: '', link: '' })
     load()
   }
 
   const bump = async (id, count) => {
-    await supabase.from('collaterals').update({ usage_count: count + 1 }).eq('id', id)
+    const { error } = await supabase.from('collaterals').update({ usage_count: count + 1 }).eq('id', id)
+    if (!handleDbError(error, 'update collateral')) return
     load()
   }
 
@@ -721,21 +798,25 @@ function Sessions({ userId, workspaceId }) {
 
   const load = useCallback(async () => {
     if (!workspaceId) return
-    const { data } = await supabase.from('sessions').select('*').eq('workspace_id', workspaceId).order('date', { ascending: true })
+    const { data, error } = await supabase.from('sessions').select('*').eq('workspace_id', workspaceId).order('date', { ascending: true })
+    if (error) { handleDbError(error, 'load sessions'); return }
     setSessions(data || [])
   }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('sessions').insert({ ...form, user_id: userId, workspace_id: workspaceId, completed: false })
+    const payload = { ...form, user_id: userId, workspace_id: workspaceId, completed: false, date: form.date || null }
+    const { error } = await supabase.from('sessions').insert(payload)
+    if (!handleDbError(error, 'schedule session')) return
     setShowModal(false)
     setForm({ title: '', date: '', type: 'Training', attendees: '' })
     load()
   }
 
   const markDone = async (id) => {
-    await supabase.from('sessions').update({ completed: true }).eq('id', id)
+    const { error } = await supabase.from('sessions').update({ completed: true }).eq('id', id)
+    if (!handleDbError(error, 'mark session done')) return
     load()
   }
 
@@ -813,14 +894,16 @@ function PulseChecks({ userId, workspaceId }) {
 
   const load = useCallback(async () => {
     if (!workspaceId) return
-    const { data } = await supabase.from('pulse_checks').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('pulse_checks').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    if (error) { handleDbError(error, 'load pulse checks'); return }
     setPulses(data || [])
   }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('pulse_checks').insert({ user_id: userId, workspace_id: workspaceId, title: form.title, questions: form.questions.filter(Boolean), responses: [] })
+    const { error } = await supabase.from('pulse_checks').insert({ user_id: userId, workspace_id: workspaceId, title: form.title, questions: form.questions.filter(Boolean), responses: [] })
+    if (!handleDbError(error, 'create pulse check')) return
     setShowCreate(false)
     setForm({ title: '', questions: [''] })
     load()
@@ -831,23 +914,38 @@ function PulseChecks({ userId, workspaceId }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Pulse Checks</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Track team sentiment and readiness</p>
+          <p style={{ color: S.muted, fontSize: 14 }}>Quick surveys to track team sentiment and readiness</p>
         </div>
         <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Pulse</Btn>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-        {pulses.map(p => (
-          <Card key={p.id} onClick={() => setSelected(p)}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{p.title}</span>
-              <Badge color="purple">{p.questions?.length || 0} Qs</Badge>
-            </div>
-            <div style={{ fontSize: 13, color: S.muted }}>{p.responses?.length || 0} responses</div>
-            <div style={{ fontSize: 12, color: S.muted, marginTop: 4 }}>{new Date(p.created_at).toLocaleDateString()}</div>
-          </Card>
-        ))}
-        {pulses.length === 0 && <div style={{ color: S.muted, padding: 40, textAlign: 'center', gridColumn: '1/-1' }}>No pulse checks yet</div>}
-      </div>
+      {pulses.length === 0 ? (
+        <Card style={{ padding: 40, textAlign: 'center' }}>
+          <div style={{ width: 56, height: 56, borderRadius: 14, background: S.accentBg2, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Activity size={26} color={S.primary} />
+          </div>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: S.ink, marginBottom: 8 }}>What's a Pulse Check?</h3>
+          <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.6, maxWidth: 480, margin: '0 auto 20px' }}>
+            A lightweight survey you send your reps to gauge how they're feeling — about their ramp, the product, the process, anything. Each pulse has a title and a few questions (1–5 scale). Share the link with your team and watch responses come in.
+          </p>
+          <p style={{ fontSize: 13, color: S.muted, marginBottom: 20 }}>
+            Examples: <em>Week 2 readiness check</em> · <em>Post-SKO sentiment</em> · <em>Are you getting enough deal support?</em>
+          </p>
+          <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create your first pulse</Btn>
+        </Card>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+          {pulses.map(p => (
+            <Card key={p.id} onClick={() => setSelected(p)}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{p.title}</span>
+                <Badge color="purple">{p.questions?.length || 0} Qs</Badge>
+              </div>
+              <div style={{ fontSize: 13, color: S.muted }}>{p.responses?.length || 0} responses</div>
+              <div style={{ fontSize: 12, color: S.muted, marginTop: 4 }}>{new Date(p.created_at).toLocaleDateString()}</div>
+            </Card>
+          ))}
+        </div>
+      )}
       {selected && (
         <Modal title={selected.title} onClose={() => setSelected(null)} wide>
           <div style={{ marginBottom: 16 }}>
@@ -892,7 +990,8 @@ function WeeklyPlanning({ userId, workspaceId }) {
 
   const load = useCallback(async () => {
     if (!workspaceId) return
-    const { data } = await supabase.from('todos').select('*').eq('workspace_id', workspaceId).eq('user_id', userId).order('created_at', { ascending: true })
+    const { data, error } = await supabase.from('todos').select('*').eq('workspace_id', workspaceId).eq('user_id', userId).order('created_at', { ascending: true })
+    if (error) { handleDbError(error, 'load tasks'); return }
     setTodos(data || [])
   }, [workspaceId, userId])
 
@@ -900,19 +999,22 @@ function WeeklyPlanning({ userId, workspaceId }) {
 
   const addTask = async (bucket) => {
     if (!newTask.trim()) return
-    await supabase.from('todos').insert({ user_id: userId, workspace_id: workspaceId, title: newTask, bucket, done: false })
+    const { error } = await supabase.from('todos').insert({ user_id: userId, workspace_id: workspaceId, title: newTask, bucket, done: false })
+    if (!handleDbError(error, 'add task')) return
     setNewTask('')
     setAdding(null)
     load()
   }
 
   const toggle = async (id, done) => {
-    await supabase.from('todos').update({ done: !done }).eq('id', id)
+    const { error } = await supabase.from('todos').update({ done: !done }).eq('id', id)
+    if (!handleDbError(error, 'update task')) return
     load()
   }
 
   const del = async (id) => {
-    await supabase.from('todos').delete().eq('id', id)
+    const { error } = await supabase.from('todos').delete().eq('id', id)
+    if (!handleDbError(error, 'delete task')) return
     load()
   }
 
@@ -977,21 +1079,25 @@ function Forecasting({ userId, workspaceId }) {
 
   const load = useCallback(async () => {
     if (!workspaceId) return
-    const { data } = await supabase.from('forecast').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('forecast').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    if (error) { handleDbError(error, 'load forecast'); return }
     setItems(data || [])
   }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    await supabase.from('forecast').insert({ ...form, user_id: userId, workspace_id: workspaceId })
+    const payload = { ...form, user_id: userId, workspace_id: workspaceId, eta: form.eta || null }
+    const { error } = await supabase.from('forecast').insert(payload)
+    if (!handleDbError(error, 'add project')) return
     setShowModal(false)
     setForm({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
     load()
   }
 
   const updateStatus = async (id, status) => {
-    await supabase.from('forecast').update({ status }).eq('id', id)
+    const { error } = await supabase.from('forecast').update({ status }).eq('id', id)
+    if (!handleDbError(error, 'update project')) return
     load()
   }
 
@@ -1070,14 +1176,16 @@ function Leaderboards({ userId, workspaceId }) {
 
   const load = useCallback(async () => {
     if (!workspaceId) return
-    const { data } = await supabase.from('leaderboards').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('leaderboards').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+    if (error) { handleDbError(error, 'load leaderboards'); return }
     setBoards(data || [])
   }, [workspaceId])
 
   useEffect(() => { load() }, [load])
 
   const createBoard = async () => {
-    await supabase.from('leaderboards').insert({ ...form, user_id: userId, workspace_id: workspaceId, entries: [] })
+    const { error } = await supabase.from('leaderboards').insert({ ...form, user_id: userId, workspace_id: workspaceId, entries: [] })
+    if (!handleDbError(error, 'create leaderboard')) return
     setShowCreate(false)
     setForm({ title: '', type: 'weekly', metric: '' })
     load()
@@ -1085,7 +1193,8 @@ function Leaderboards({ userId, workspaceId }) {
 
   const addEntry = async () => {
     const updated = [...(selected.entries || []), { ...entry, value: +entry.value }].sort((a, b) => b.value - a.value)
-    await supabase.from('leaderboards').update({ entries: updated }).eq('id', selected.id)
+    const { error } = await supabase.from('leaderboards').update({ entries: updated }).eq('id', selected.id)
+    if (!handleDbError(error, 'add entry')) return
     setSelected({ ...selected, entries: updated })
     setShowEntry(false)
     setEntry({ name: '', value: '', unit: '' })
@@ -1460,7 +1569,7 @@ export default function App() {
       case 'dashboard': return <Dashboard {...sharedProps} />
       case 'intake': return <Intake {...sharedProps} />
       case 'ramp': return <Ramp {...sharedProps} />
-      case 'notes': return <Notes userId={user.id} />
+      case 'notes': return <Notes {...sharedProps} />
       case 'collaterals': return <Collaterals {...sharedProps} />
       case 'sessions': return <Sessions {...sharedProps} />
       case 'pulse': return <PulseChecks {...sharedProps} />
@@ -1477,9 +1586,9 @@ export default function App() {
     <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
       {showWalkthrough && <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab} />}
       <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-        <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <a href="/" title="Back to enableos.app" style={{ display: 'block', padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none', cursor: 'pointer' }}>
           <SidebarLogo />
-        </div>
+        </a>
         <nav style={{ flex: 1, padding: '16px 12px' }}>
           {['CORE', 'OPERATIONS'].map(group => (
             <div key={group} style={{ marginBottom: 24 }}>
