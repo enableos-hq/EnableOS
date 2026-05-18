@@ -11,7 +11,6 @@ import {
 
 const supabase = createClient()
 
-// ─── Design tokens ────────────────────────────────────────────
 const S = {
   sidebar: { background: '#1a1235', width: 240 },
   canvas: '#FDFBFF',
@@ -22,7 +21,6 @@ const S = {
   success: '#059669', warning: '#d97706', error: '#dc2626',
 }
 
-// ─── Logo ─────────────────────────────────────────────────────
 const SidebarLogo = () => (
   <svg width="154" height="48" viewBox="0 0 310 78" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -44,7 +42,6 @@ const SidebarLogo = () => (
   </svg>
 )
 
-// ─── Workspace switcher ───────────────────────────────────────
 const ADMIN_EMAIL = 'enableos.hq@gmail.com'
 const WORKSPACES = [
   { id: 'admin', label: 'Admin', path: '/admin', color: '#dc2626', desc: 'Platform overview' },
@@ -86,7 +83,6 @@ function WorkspaceSwitcher({ current }) {
   )
 }
 
-// ─── Shared helpers ───────────────────────────────────────────
 function handleDbError(error, action) {
   if (!error) return true
   console.error(`[${action}] Supabase error:`, error)
@@ -99,7 +95,7 @@ function Card({ children, style, onClick }) {
     <div onClick={onClick}
       style={{ background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 14, padding: 20, transition: 'box-shadow 0.2s, border-color 0.2s, transform 0.15s', cursor: onClick ? 'pointer' : 'default', ...style }}
       onMouseEnter={e => { if (onClick) { e.currentTarget.style.boxShadow = `0 8px 24px rgba(124,92,252,0.12)`; e.currentTarget.style.borderColor = S.border; e.currentTarget.style.transform = 'translateY(-1px)' } }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = (style?.borderColor || S.borderLight); e.currentTarget.style.transform = 'none' }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = S.borderLight; e.currentTarget.style.transform = 'none' }}
     >{children}</div>
   )
 }
@@ -156,7 +152,6 @@ function Textarea({ value, onChange, placeholder, rows = 3, style }) {
   return <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows} style={{ width: '100%', background: '#2a2445', border: '1px solid rgba(155,126,255,0.15)', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', ...style }} />
 }
 
-// ─── Walkthrough ──────────────────────────────────────────────
 const WALKTHROUGH_STEPS = [
   { id: 'dashboard', title: 'Welcome to EnableOS', desc: 'Your command centre. Open requests, ramping reps, must-do tasks — everything you need to run enablement in one place. This is a 90-second tour.' },
   { id: 'intake', title: 'Intake — your request queue', desc: 'Every request lands here and gets auto-scored: Impact × Urgency ÷ Effort. Share the public link (top right) so stakeholders can submit directly — no login needed.' },
@@ -177,18 +172,14 @@ function Walkthrough({ onClose, onNavigate }) {
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, pointerEvents: 'none' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,18,53,0.55)', backdropFilter: 'blur(3px)', pointerEvents: 'all' }} onClick={onClose} />
       <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', width: 500, background: '#fff', borderRadius: 18, boxShadow: '0 32px 80px rgba(26,18,53,0.28), 0 0 0 1px rgba(124,92,252,0.12)', pointerEvents: 'all', overflow: 'hidden' }}>
-        {/* Progress bar */}
         <div style={{ height: 3, background: S.borderLight }}>
           <div style={{ height: '100%', width: `${((step + 1) / WALKTHROUGH_STEPS.length) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, transition: 'width 0.35s ease' }} />
         </div>
-        {/* Left accent */}
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${S.primary}, ${S.primaryHover})`, opacity: 0.7 }} />
         <div style={{ padding: '26px 28px 24px 32px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: S.accentBg2, color: S.primary, padding: '3px 12px', borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 12, letterSpacing: '0.04em' }}>
-                {step + 1} / {WALKTHROUGH_STEPS.length}
-              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: S.accentBg2, color: S.primary, padding: '3px 12px', borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 12, letterSpacing: '0.04em' }}>{step + 1} / {WALKTHROUGH_STEPS.length}</div>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: S.ink, marginBottom: 10, letterSpacing: '-0.3px', lineHeight: 1.2 }}>{current.title}</h3>
               <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.7, margin: 0 }}>{current.desc}</p>
             </div>
@@ -196,17 +187,12 @@ function Walkthrough({ onClose, onNavigate }) {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 22 }}>
             <div style={{ display: 'flex', gap: 4 }}>
-              {WALKTHROUGH_STEPS.map((_, i) => (
-                <div key={i} style={{ width: i === step ? 22 : 6, height: 6, borderRadius: 3, background: i < step ? S.primaryLight : i === step ? S.primary : S.borderLight, transition: 'all 0.3s' }} />
-              ))}
+              {WALKTHROUGH_STEPS.map((_, i) => <div key={i} style={{ width: i === step ? 22 : 6, height: 6, borderRadius: 3, background: i < step ? S.primaryLight : i === step ? S.primary : S.borderLight, transition: 'all 0.3s' }} />)}
             </div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500 }}>Skip tour</button>
               {step > 0 && <Btn variant="ghost" size="sm" onClick={() => { setStep(step - 1); onNavigate(WALKTHROUGH_STEPS[step - 1].id) }}>Back</Btn>}
-              {isLast
-                ? <Btn size="sm" onClick={onClose}>Done — let's go 🚀</Btn>
-                : <Btn size="sm" onClick={() => { setStep(step + 1); onNavigate(WALKTHROUGH_STEPS[step + 1].id) }}>Next <ChevronRight size={14} /></Btn>
-              }
+              {isLast ? <Btn size="sm" onClick={onClose}>Done — let's go 🚀</Btn> : <Btn size="sm" onClick={() => { setStep(step + 1); onNavigate(WALKTHROUGH_STEPS[step + 1].id) }}>Next <ChevronRight size={14} /></Btn>}
             </div>
           </div>
         </div>
@@ -215,30 +201,49 @@ function Walkthrough({ onClose, onNavigate }) {
   )
 }
 
-// ─── Dashboard ────────────────────────────────────────────────
 function Dashboard({ userId, workspaceId }) {
   const [stats, setStats] = useState({ requests: 0, reps: 0, todos: 0 })
+  const [topRequests, setTopRequests] = useState([])
+  const [rampReps, setRampReps] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!workspaceId) return
     async function load() {
-      const [{ count: reqCount }, { count: repCount }, { count: todoCount }] = await Promise.all([
+      const [
+        { count: reqCount },
+        { count: repCount },
+        { count: todoCount },
+        { data: requestsData },
+        { data: repsData },
+      ] = await Promise.all([
         supabase.from('requests').select('*', { count: 'exact', head: true }).eq('workspace_id', workspaceId).eq('status', 'open'),
         supabase.from('reps').select('*', { count: 'exact', head: true }).eq('workspace_id', workspaceId),
         supabase.from('todos').select('*', { count: 'exact', head: true }).eq('workspace_id', workspaceId).eq('user_id', userId).eq('done', false),
+        supabase.from('requests').select('id, title, priority_score').eq('workspace_id', workspaceId).eq('status', 'open').order('priority_score', { ascending: false }).limit(3),
+        supabase.from('reps').select('id, name, progress').eq('workspace_id', workspaceId).limit(4),
       ])
       setStats({ requests: reqCount || 0, reps: repCount || 0, todos: todoCount || 0 })
+      setTopRequests(requestsData || [])
+      setRampReps(repsData || [])
       setLoading(false)
     }
     load()
   }, [userId, workspaceId])
 
+  const calcPct = (rep) => {
+    if (!rep?.progress?.sections) return 0
+    const all = Object.values(rep.progress.sections).flat()
+    return Math.round((all.filter(Boolean).length / all.length) * 100)
+  }
+
+  const avgRamp = rampReps.length ? `${Math.round(rampReps.reduce((a, r) => a + calcPct(r), 0) / rampReps.length)}%` : '—'
+
   const statCards = [
     { label: 'Open Requests', value: stats.requests, icon: Inbox, color: S.primary },
     { label: 'Ramping Reps', value: stats.reps, icon: Users, color: S.success },
     { label: 'Must-Do Tasks', value: stats.todos, icon: Target, color: S.warning },
-    { label: 'Avg Ramp %', value: '68%', icon: TrendingUp, color: '#8b5cf6' },
+    { label: 'Avg Ramp %', value: avgRamp, icon: TrendingUp, color: '#8b5cf6' },
   ]
 
   return (
@@ -256,38 +261,47 @@ function Dashboard({ userId, workspaceId }) {
                   <s.icon size={18} color={s.color} />
                 </div>
                 <div style={{ fontSize: 30, fontWeight: 700, color: S.ink, fontFamily: 'var(--font-display)', marginBottom: 4, letterSpacing: '-0.5px' }}>{s.value}</div>
-                <div style={{ fontSize: 13, color: S.muted, fontWeight: 400 }}>{s.label}</div>
+                <div style={{ fontSize: 13, color: S.muted }}>{s.label}</div>
               </Card>
             ))}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <Card>
               <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.2px' }}>Priority Queue</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {['Finalize onboarding deck for new cohort', 'Battlecard update — competitor pricing changed', 'Cold outreach sequence refresh'].map((t, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: S.accentBg, borderRadius: 9 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? S.error : i === 1 ? S.warning : S.primary, flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, color: S.inkSecondary }}>{t}</span>
-                  </div>
-                ))}
-              </div>
+              {topRequests.length === 0 ? (
+                <div style={{ fontSize: 13, color: S.muted, padding: '8px 0' }}>No open requests yet — add one in Intake.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {topRequests.map((r, i) => (
+                    <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: S.accentBg, borderRadius: 9 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? S.error : i === 1 ? S.warning : S.primary, flexShrink: 0 }} />
+                      <span style={{ flex: 1, fontSize: 13, color: S.inkSecondary }}>{r.title}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: S.primary }}>P{r.priority_score}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
             <Card>
               <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.2px' }}>Ramp Snapshot</h3>
-              {['Alex Chen', 'Priya Sharma', 'Marcus O.'].map((name, i) => {
-                const pct = [78, 52, 91][i]
-                return (
-                  <div key={name} style={{ marginBottom: 14 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>{name}</span>
-                      <span style={{ fontSize: 13, color: S.primary, fontWeight: 700 }}>{pct}%</span>
+              {rampReps.length === 0 ? (
+                <div style={{ fontSize: 13, color: S.muted, padding: '8px 0' }}>No reps added yet — add one in Ramp & Onboarding.</div>
+              ) : (
+                rampReps.map(r => {
+                  const pct = calcPct(r)
+                  return (
+                    <div key={r.id} style={{ marginBottom: 14 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>{r.name}</span>
+                        <span style={{ fontSize: 13, color: S.primary, fontWeight: 700 }}>{pct}%</span>
+                      </div>
+                      <div style={{ height: 6, background: S.borderLight, borderRadius: 3 }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 3 }} />
+                      </div>
                     </div>
-                    <div style={{ height: 6, background: S.borderLight, borderRadius: 3 }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 3 }} />
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })
+              )}
             </Card>
           </div>
         </>
@@ -296,7 +310,6 @@ function Dashboard({ userId, workspaceId }) {
   )
 }
 
-// ─── Intake ───────────────────────────────────────────────────
 function Intake({ userId, workspaceId }) {
   const [requests, setRequests] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -316,9 +329,7 @@ function Intake({ userId, workspaceId }) {
     const priority = Math.round((form.impact * form.urgency) / form.effort)
     const { error } = await supabase.from('requests').insert({ ...form, user_id: userId, workspace_id: workspaceId, priority_score: priority })
     if (!handleDbError(error, 'add request')) return
-    setShowModal(false)
-    setForm({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' })
-    load()
+    setShowModal(false); setForm({ title: '', bucket: 'Collateral', description: '', impact: 3, urgency: 3, effort: 3, status: 'open' }); load()
   }
 
   const updateStatus = async (id, status) => {
@@ -339,25 +350,17 @@ function Intake({ userId, workspaceId }) {
           <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Manage and prioritize enablement requests</p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button
-            title="Copy public intake form link"
-            onClick={() => { const link = `${window.location.origin}/intake-form`; navigator.clipboard.writeText(link).then(() => alert(`Link copied!\n\n${link}\n\nAnyone with this link can submit a request — no login needed.`)) }}
+          <button title="Copy public intake form link" onClick={() => { const link = `${window.location.origin}/intake-form`; navigator.clipboard.writeText(link).then(() => alert(`Link copied!\n\n${link}\n\nAnyone with this link can submit a request — no login needed.`)) }}
             style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', cursor: 'pointer', color: S.inkSecondary, transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = S.accentBg; e.currentTarget.style.borderColor = S.primary; e.currentTarget.style.color = S.primary }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = S.border; e.currentTarget.style.color = S.inkSecondary }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-            </svg>
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = S.border; e.currentTarget.style.color = S.inkSecondary }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           </button>
           <Btn onClick={() => setShowModal(true)}><Plus size={16} />New Request</Btn>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {buckets.map(b => (
-          <button key={b} onClick={() => setFilter(b)} style={{ padding: '6px 14px', borderRadius: 100, border: `1px solid ${filter === b ? S.primary : S.border}`, background: filter === b ? S.accentBg2 : 'transparent', color: filter === b ? S.primary : S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>{b === 'all' ? 'All' : b}</button>
-        ))}
+        {buckets.map(b => <button key={b} onClick={() => setFilter(b)} style={{ padding: '6px 14px', borderRadius: 100, border: `1px solid ${filter === b ? S.primary : S.border}`, background: filter === b ? S.accentBg2 : 'transparent', color: filter === b ? S.primary : S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>{b === 'all' ? 'All' : b}</button>)}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {filtered.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 48 }}>No requests yet. Add your first one!</div>}
@@ -388,16 +391,10 @@ function Intake({ userId, workspaceId }) {
       {showModal && (
         <Modal title="New Enablement Request" onClose={() => setShowModal(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What's being requested?" /></Field>
-          <Field label="Bucket">
-            <Select value={form.bucket} onChange={e => setForm({ ...form, bucket: e.target.value })}>
-              {['Collateral', 'Training Session', 'Everboarding', 'Onboarding', 'Process', 'Playbook', 'Other'].map(b => <option key={b} value={b}>{b}</option>)}
-            </Select>
-          </Field>
+          <Field label="Bucket"><Select value={form.bucket} onChange={e => setForm({ ...form, bucket: e.target.value })}>{['Collateral', 'Training Session', 'Everboarding', 'Onboarding', 'Process', 'Playbook', 'Other'].map(b => <option key={b} value={b}>{b}</option>)}</Select></Field>
           <Field label="Description"><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="More context..." /></Field>
           {[['impact', 'Impact'], ['urgency', 'Urgency'], ['effort', 'Effort']].map(([key, label]) => (
-            <Field key={key} label={`${label}: ${form[key]}/5`}>
-              <input type="range" min={1} max={5} value={form[key]} onChange={e => setForm({ ...form, [key]: +e.target.value })} style={{ width: '100%', accentColor: S.primary }} />
-            </Field>
+            <Field key={key} label={`${label}: ${form[key]}/5`}><input type="range" min={1} max={5} value={form[key]} onChange={e => setForm({ ...form, [key]: +e.target.value })} style={{ width: '100%', accentColor: S.primary }} /></Field>
           ))}
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
             <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
@@ -409,7 +406,6 @@ function Intake({ userId, workspaceId }) {
   )
 }
 
-// ─── Ramp ─────────────────────────────────────────────────────
 function Ramp({ userId, workspaceId }) {
   const [reps, setReps] = useState([])
   const [selected, setSelected] = useState(null)
@@ -435,7 +431,7 @@ function Ramp({ userId, workspaceId }) {
   }
 
   const deleteRep = async (rep) => {
-    if (!confirm(`Delete ${rep.name}? This also removes their 1:1 notes. This can't be undone.`)) return
+    if (!confirm(`Delete ${rep.name}? This can't be undone.`)) return
     const { error } = await supabase.from('reps').delete().eq('id', rep.id)
     if (!handleDbError(error, 'delete rep')) return
     if (selected?.id === rep.id) setSelected(null)
@@ -478,13 +474,11 @@ function Ramp({ userId, workspaceId }) {
             <div onClick={() => setSelected(r)} style={{ cursor: 'pointer' }}>
               <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, paddingRight: 18, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ flex: 1, height: 4, background: S.borderLight, borderRadius: 2 }}>
-                  <div style={{ height: '100%', width: `${calcPct(r)}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 2 }} />
-                </div>
+                <div style={{ flex: 1, height: 4, background: S.borderLight, borderRadius: 2 }}><div style={{ height: '100%', width: `${calcPct(r)}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 2 }} /></div>
                 <span style={{ fontSize: 11, color: S.primary, fontWeight: 700 }}>{calcPct(r)}%</span>
               </div>
             </div>
-            <button onClick={(e) => { e.stopPropagation(); deleteRep(r) }} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.4, padding: 2, borderRadius: 4 }}
+            <button onClick={e => { e.stopPropagation(); deleteRep(r) }} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.4, padding: 2, borderRadius: 4 }}
               onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.color = S.error }}
               onMouseLeave={e => { e.currentTarget.style.opacity = 0.4; e.currentTarget.style.color = S.muted }}>
               <Trash2 size={12} />
@@ -504,7 +498,7 @@ function Ramp({ userId, workspaceId }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {sections.map(section => {
-                const checks = selected.progress?.sections?.[section] || [false, false, false, false]
+                const checks = selected.progress?.sections?.[section] || [false,false,false,false]
                 const done = checks.filter(Boolean).length
                 return (
                   <Card key={section}>
@@ -544,7 +538,6 @@ function Ramp({ userId, workspaceId }) {
   )
 }
 
-// ─── 1:1 Notes ────────────────────────────────────────────────
 function Notes({ userId, workspaceId }) {
   const [reps, setReps] = useState([])
   const [selectedRep, setSelectedRep] = useState(null)
@@ -596,8 +589,7 @@ function Notes({ userId, workspaceId }) {
     setAnalyzing(true)
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: `Analyze this 1:1 note from a sales enablement manager. Return ONLY a JSON object with: sentiment ("positive"|"neutral"|"concern"), action (1 suggested next action as string), theme (1-2 word tag), session (suggested session topic).\nShared agenda: ${form.shared_agenda}\nPrivate notes: ${form.private_notes}` }] })
       })
       const data = await res.json()
@@ -641,18 +633,8 @@ function Notes({ userId, workspaceId }) {
                 <span style={{ fontSize: 13, color: S.muted }}>{new Date(n.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                 {n.sentiment && <Badge color={sentimentColor[n.sentiment] || 'gray'}>{n.sentiment}</Badge>}
               </div>
-              {n.shared_agenda && (
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Shared Agenda</div>
-                  <p style={{ fontSize: 14, color: S.inkSecondary }}>{n.shared_agenda}</p>
-                </div>
-              )}
-              {n.ai_action && (
-                <div style={{ marginTop: 12, padding: '10px 14px', background: S.accentBg, borderRadius: 9, borderLeft: `3px solid ${S.primary}` }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: S.primary, marginBottom: 4 }}>✦ AI Suggestion</div>
-                  <p style={{ fontSize: 13, color: S.inkSecondary }}>{n.ai_action}</p>
-                </div>
-              )}
+              {n.shared_agenda && <div style={{ marginBottom: 10 }}><div style={{ fontSize: 12, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Shared Agenda</div><p style={{ fontSize: 14, color: S.inkSecondary }}>{n.shared_agenda}</p></div>}
+              {n.ai_action && <div style={{ marginTop: 12, padding: '10px 14px', background: S.accentBg, borderRadius: 9, borderLeft: `3px solid ${S.primary}` }}><div style={{ fontSize: 12, fontWeight: 700, color: S.primary, marginBottom: 4 }}>✦ AI Suggestion</div><p style={{ fontSize: 13, color: S.inkSecondary }}>{n.ai_action}</p></div>}
             </Card>
           ))}
           {notes.length === 0 && selectedRep && <div style={{ textAlign: 'center', color: S.muted, padding: 48 }}>No notes yet for this rep</div>}
@@ -697,7 +679,6 @@ function Notes({ userId, workspaceId }) {
   )
 }
 
-// ─── Collaterals ──────────────────────────────────────────────
 function Collaterals({ userId, workspaceId }) {
   const [items, setItems] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -760,11 +741,7 @@ function Collaterals({ userId, workspaceId }) {
       {showModal && (
         <Modal title="Add Collateral" onClose={() => setShowModal(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Asset name" /></Field>
-          <Field label="Type">
-            <Select value={form.bucket} onChange={e => setForm({ ...form, bucket: e.target.value })}>
-              {['Battle Card', 'Framework', 'One-Pager', 'Template', 'Guide', 'Sequence', 'Other'].map(b => <option key={b}>{b}</option>)}
-            </Select>
-          </Field>
+          <Field label="Type"><Select value={form.bucket} onChange={e => setForm({ ...form, bucket: e.target.value })}>{['Battle Card', 'Framework', 'One-Pager', 'Template', 'Guide', 'Sequence', 'Other'].map(b => <option key={b}>{b}</option>)}</Select></Field>
           <Field label="Description"><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What's this asset for?" rows={2} /></Field>
           <Field label="Link (optional)"><Input value={form.link} onChange={e => setForm({ ...form, link: e.target.value })} placeholder="https://..." /></Field>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
@@ -777,7 +754,6 @@ function Collaterals({ userId, workspaceId }) {
   )
 }
 
-// ─── Sessions ─────────────────────────────────────────────────
 function Sessions({ userId, workspaceId }) {
   const [sessions, setSessions] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -854,11 +830,7 @@ function Sessions({ userId, workspaceId }) {
         <Modal title="Schedule Session" onClose={() => setShowModal(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Session name" /></Field>
           <Field label="Date"><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></Field>
-          <Field label="Type">
-            <Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-              {['Training', 'Workshop', 'Coaching', 'Certification', 'Other'].map(t => <option key={t}>{t}</option>)}
-            </Select>
-          </Field>
+          <Field label="Type"><Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>{['Training', 'Workshop', 'Coaching', 'Certification', 'Other'].map(t => <option key={t}>{t}</option>)}</Select></Field>
           <Field label="Attendees"><Input value={form.attendees} onChange={e => setForm({ ...form, attendees: e.target.value })} placeholder="Who's joining?" /></Field>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <Btn variant="ghost" onClick={() => setShowModal(false)}>Cancel</Btn>
@@ -870,7 +842,6 @@ function Sessions({ userId, workspaceId }) {
   )
 }
 
-// ─── Pulse Checks (Surveys + Coaching Scores) ─────────────────
 const COACHING_AREAS = [
   { key: 'emails', label: 'Cold Emails', icon: '📧', desc: 'Prospecting quality, personalization, reply rate' },
   { key: 'calls', label: 'Cold Calls', icon: '📞', desc: 'Talk track, objection handling, qualification' },
@@ -888,8 +859,6 @@ const nowPeriod = () => { const d = new Date(); return `${d.getFullYear()}-${Str
 
 function PulseChecks({ userId, workspaceId }) {
   const [tab, setTab] = useState('surveys')
-
-  // Surveys
   const [pulses, setPulses] = useState([])
   const [selected, setSelected] = useState(null)
   const [showCreate, setShowCreate] = useState(false)
@@ -921,7 +890,6 @@ function PulseChecks({ userId, workspaceId }) {
     setShowCreate(false); setForm({ title: '', questions: [{ text: '', type: 'rating', options: [] }] }); loadPulses()
   }
 
-  // Coaching Scores
   const [reps, setReps] = useState([])
   const [selectedRep, setSelectedRep] = useState(null)
   const [coachPeriod, setCoachPeriod] = useState(nowPeriod())
@@ -971,14 +939,12 @@ function PulseChecks({ userId, workspaceId }) {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: S.accentBg, borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {[{ id: 'surveys', label: '📋 Surveys' }, { id: 'coaching', label: '🎯 Coaching Scores' }].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, background: tab === t.id ? '#fff' : 'transparent', color: tab === t.id ? S.ink : S.muted, boxShadow: tab === t.id ? '0 1px 6px rgba(26,18,53,0.1)' : 'none', transition: 'all 0.15s' }}>{t.label}</button>
         ))}
       </div>
 
-      {/* Surveys */}
       {tab === 'surveys' && (
         <>
           {pulses.length === 0 ? (
@@ -1011,7 +977,6 @@ function PulseChecks({ userId, workspaceId }) {
         </>
       )}
 
-      {/* Coaching Scores */}
       {tab === 'coaching' && (
         <div style={{ display: 'flex', gap: 20, minHeight: 400 }}>
           <div style={{ width: 200, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 14, padding: 16, flexShrink: 0 }}>
@@ -1044,9 +1009,7 @@ function PulseChecks({ userId, workspaceId }) {
                         <div style={{ fontSize: 24, marginBottom: 6 }}>{area.icon}</div>
                         <div style={{ fontWeight: 700, fontSize: 13, color: S.ink, marginBottom: 4 }}>{area.label}</div>
                         <div style={{ fontSize: 11, color: S.muted, marginBottom: 12, lineHeight: 1.4 }}>{area.desc}</div>
-                        {score ? (
-                          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: '50%', background: sc.bg, color: sc.color, fontWeight: 700, fontSize: 20, fontFamily: 'var(--font-display)' }}>{score}</div>
-                        ) : <div style={{ fontSize: 12, color: S.muted, fontStyle: 'italic' }}>Not scored</div>}
+                        {score ? <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: '50%', background: sc.bg, color: sc.color, fontWeight: 700, fontSize: 20, fontFamily: 'var(--font-display)' }}>{score}</div> : <div style={{ fontSize: 12, color: S.muted, fontStyle: 'italic' }}>Not scored</div>}
                       </Card>
                     )
                   })}
@@ -1074,11 +1037,7 @@ function PulseChecks({ userId, workspaceId }) {
                               <td style={{ padding: '10px 12px 10px 0', fontWeight: 600, color: S.ink }}>{period}</td>
                               {COACHING_AREAS.map(a => {
                                 const sc = data[a.key] ? scoreColor(data[a.key]) : null
-                                return (
-                                  <td key={a.key} style={{ textAlign: 'center', padding: '10px 12px' }}>
-                                    {data[a.key] ? <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', background: sc.bg, color: sc.color, fontWeight: 700, fontSize: 13 }}>{data[a.key]}</span> : <span style={{ color: S.borderLight }}>—</span>}
-                                  </td>
-                                )
+                                return <td key={a.key} style={{ textAlign: 'center', padding: '10px 12px' }}>{data[a.key] ? <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', background: sc.bg, color: sc.color, fontWeight: 700, fontSize: 13 }}>{data[a.key]}</span> : <span style={{ color: S.borderLight }}>—</span>}</td>
                               })}
                             </tr>
                           ))}
@@ -1087,23 +1046,18 @@ function PulseChecks({ userId, workspaceId }) {
                     </div>
                   </Card>
                 )}
-                {allPeriods.length === 0 && !currentScore && (
-                  <div style={{ textAlign: 'center', color: S.muted, padding: 48 }}>No coaching scores yet for {selectedRep.name}. Use "Add Score" above.</div>
-                )}
+                {allPeriods.length === 0 && !currentScore && <div style={{ textAlign: 'center', color: S.muted, padding: 48 }}>No coaching scores yet for {selectedRep.name}. Use "Add Score" above.</div>}
               </>
             )}
           </div>
         </div>
       )}
 
-      {/* View pulse modal */}
       {selected && (
         <Modal title={selected.title} onClose={() => setSelected(null)} wide>
           {(selected.questions || []).map((q, i) => {
             const isObj = typeof q === 'object' && q !== null
-            const text = isObj ? q.text : q
-            const type = isObj ? q.type : 'rating'
-            const options = isObj ? (q.options || []) : []
+            const text = isObj ? q.text : q; const type = isObj ? q.type : 'rating'; const options = isObj ? (q.options || []) : []
             return (
               <div key={i} style={{ marginBottom: 20, padding: '14px 16px', background: '#2a2445', borderRadius: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -1120,7 +1074,6 @@ function PulseChecks({ userId, workspaceId }) {
         </Modal>
       )}
 
-      {/* Create pulse modal */}
       {showCreate && (
         <Modal title="Create Pulse Check" onClose={() => setShowCreate(false)} wide>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Week 3 Readiness Check" /></Field>
@@ -1158,7 +1111,6 @@ function PulseChecks({ userId, workspaceId }) {
         </Modal>
       )}
 
-      {/* Add coaching score modal */}
       {showCoachModal && selectedRep && (
         <Modal title={`Coaching Score — ${selectedRep.name}`} onClose={() => setShowCoachModal(false)} wide>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, padding: '10px 14px', background: '#2a2445', borderRadius: 9 }}>
@@ -1170,24 +1122,18 @@ function PulseChecks({ userId, workspaceId }) {
               <div key={area.key} style={{ background: '#2a2445', borderRadius: 10, padding: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <span style={{ fontSize: 20 }}>{area.icon}</span>
-                  <div>
-                    <div style={{ fontWeight: 700, color: '#fff', fontSize: 13 }}>{area.label}</div>
-                    <div style={{ fontSize: 11, color: S.muted }}>{area.desc}</div>
-                  </div>
+                  <div><div style={{ fontWeight: 700, color: '#fff', fontSize: 13 }}>{area.label}</div><div style={{ fontSize: 11, color: S.muted }}>{area.desc}</div></div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {[1,2,3,4,5].map(n => {
-                    const active = coachForm[area.key] >= n
-                    const sc = scoreColor(coachForm[area.key])
+                    const active = coachForm[area.key] >= n; const sc = scoreColor(coachForm[area.key])
                     return <button key={n} onClick={() => setCoachForm({ ...coachForm, [area.key]: n })} style={{ flex: 1, height: 38, borderRadius: 7, border: 'none', cursor: 'pointer', background: active ? sc.bg : '#3a3550', color: active ? sc.color : S.muted, fontWeight: 700, fontSize: 14, transition: 'all 0.15s' }}>{n}</button>
                   })}
                 </div>
               </div>
             ))}
           </div>
-          <Field label="Coaching notes">
-            <Textarea value={coachForm.notes} onChange={e => setCoachForm({ ...coachForm, notes: e.target.value })} placeholder="What's working well? What to improve? What to work on with their manager?" rows={3} />
-          </Field>
+          <Field label="Coaching notes"><Textarea value={coachForm.notes} onChange={e => setCoachForm({ ...coachForm, notes: e.target.value })} placeholder="What's working well? What to improve? What to work on with their manager?" rows={3} /></Field>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <Btn variant="ghost" onClick={() => setShowCoachModal(false)}>Cancel</Btn>
             <Btn onClick={saveCoach} disabled={savingCoach}>{savingCoach ? 'Saving...' : 'Save Score'}</Btn>
@@ -1198,7 +1144,6 @@ function PulseChecks({ userId, workspaceId }) {
   )
 }
 
-// ─── Weekly Planning ──────────────────────────────────────────
 function WeeklyPlanning({ userId, workspaceId }) {
   const [todos, setTodos] = useState([])
   const [adding, setAdding] = useState(null)
@@ -1283,7 +1228,6 @@ function WeeklyPlanning({ userId, workspaceId }) {
   )
 }
 
-// ─── Forecasting (drag-and-drop kanban) ──────────────────────
 function Forecasting({ userId, workspaceId }) {
   const [items, setItems] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -1367,9 +1311,7 @@ function Forecasting({ userId, workspaceId }) {
                     {item.notes && <div style={{ fontSize: 12, color: S.muted, marginTop: 8, lineHeight: 1.5 }}>{item.notes}</div>}
                   </div>
                 ))}
-                {isOver && stageItems.length === 0 && (
-                  <div style={{ padding: '24px 0', textAlign: 'center', color: S.primary, fontSize: 13, fontWeight: 600, border: `1px dashed ${S.primary}50`, borderRadius: 9 }}>Drop here</div>
-                )}
+                {isOver && stageItems.length === 0 && <div style={{ padding: '24px 0', textAlign: 'center', color: S.primary, fontSize: 13, fontWeight: 600, border: `1px dashed ${S.primary}50`, borderRadius: 9 }}>Drop here</div>}
               </div>
             </div>
           )
@@ -1378,16 +1320,8 @@ function Forecasting({ userId, workspaceId }) {
       {showModal && (
         <Modal title="Add Project" onClose={() => setShowModal(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Project name" /></Field>
-          <Field label="Status">
-            <Select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
-              {stages.map(s => <option key={s} value={s}>{stageLabels[s]}</option>)}
-            </Select>
-          </Field>
-          <Field label="Impact">
-            <Select value={form.impact} onChange={e => setForm({ ...form, impact: e.target.value })}>
-              {['critical', 'high', 'medium', 'low'].map(i => <option key={i}>{i}</option>)}
-            </Select>
-          </Field>
+          <Field label="Status"><Select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>{stages.map(s => <option key={s} value={s}>{stageLabels[s]}</option>)}</Select></Field>
+          <Field label="Impact"><Select value={form.impact} onChange={e => setForm({ ...form, impact: e.target.value })}>{['critical', 'high', 'medium', 'low'].map(i => <option key={i}>{i}</option>)}</Select></Field>
           <Field label="ETA"><Input type="date" value={form.eta} onChange={e => setForm({ ...form, eta: e.target.value })} /></Field>
           <Field label="Notes"><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Additional context..." rows={2} /></Field>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
@@ -1400,7 +1334,6 @@ function Forecasting({ userId, workspaceId }) {
   )
 }
 
-// ─── Leaderboards ─────────────────────────────────────────────
 function Leaderboards({ userId, workspaceId }) {
   const [boards, setBoards] = useState([])
   const [selected, setSelected] = useState(null)
@@ -1456,9 +1389,7 @@ function Leaderboards({ userId, workspaceId }) {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                   <span style={{ fontSize: 16 }}>{medals[i] || '·'}</span>
                   <span style={{ fontSize: 13, color: S.ink, fontWeight: 600, minWidth: 80 }}>{e.name}</span>
-                  <div style={{ flex: 1, height: 6, background: S.borderLight, borderRadius: 3 }}>
-                    <div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 3 }} />
-                  </div>
+                  <div style={{ flex: 1, height: 6, background: S.borderLight, borderRadius: 3 }}><div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 3 }} /></div>
                   <span style={{ fontSize: 12, color: S.primary, fontWeight: 700 }}>{e.value}{e.unit}</span>
                 </div>
               )
@@ -1476,9 +1407,7 @@ function Leaderboards({ userId, workspaceId }) {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, padding: '8px 12px', background: i < 3 ? S.accentBg : 'transparent', borderRadius: 9 }}>
                   <span style={{ fontSize: 20, minWidth: 28 }}>{medals[i] || `#${i + 1}`}</span>
                   <span style={{ color: '#fff', fontWeight: 700, minWidth: 100 }}>{e.name}</span>
-                  <div style={{ flex: 1, height: 8, background: '#3a3550', borderRadius: 4 }}>
-                    <div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 4 }} />
-                  </div>
+                  <div style={{ flex: 1, height: 8, background: '#3a3550', borderRadius: 4 }}><div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 4 }} /></div>
                   <span style={{ color: S.primaryLight, fontWeight: 700 }}>{e.value}{e.unit}</span>
                 </div>
               )
@@ -1491,11 +1420,7 @@ function Leaderboards({ userId, workspaceId }) {
         <Modal title="Create Leaderboard" onClose={() => setShowCreate(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. This Week's Top Callers" /></Field>
           <Field label="Metric"><Input value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })} placeholder="e.g. Calls made, Demos booked" /></Field>
-          <Field label="Type">
-            <Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-              {['weekly', 'quarterly', 'ramp', 'collateral'].map(t => <option key={t}>{t}</option>)}
-            </Select>
-          </Field>
+          <Field label="Type"><Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>{['weekly', 'quarterly', 'ramp', 'collateral'].map(t => <option key={t}>{t}</option>)}</Select></Field>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <Btn variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Btn>
             <Btn onClick={createBoard} disabled={!form.title}>Create</Btn>
@@ -1517,7 +1442,6 @@ function Leaderboards({ userId, workspaceId }) {
   )
 }
 
-// ─── Settings ─────────────────────────────────────────────────
 function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthrough }) {
   const [members, setMembers] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
@@ -1552,7 +1476,6 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Settings</h1>
         <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Manage your workspace and team</p>
       </div>
-
       <Card style={{ marginBottom: 16 }}>
         <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 18, paddingBottom: 14, borderBottom: `1px solid ${S.borderLight}`, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>Team Members</h3>
         <div style={{ marginBottom: 20 }}>
@@ -1589,16 +1512,12 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
               </select>
               <Btn onClick={sendInvite}>Invite</Btn>
             </div>
-            <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.65 }}>
-              <strong>Admin</strong> — full access, can invite & manage members.<br />
-              <strong>Member</strong> — full features, cannot change settings.
-            </div>
-            {inviteStatus === 'sent' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#d1fae5', borderRadius: 8, fontSize: 13, color: S.success, fontWeight: 600 }}>✓ Invite saved — they'll join this workspace when they sign up with that email.</div>}
+            <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.65 }}><strong>Admin</strong> — full access, can invite & manage members.<br /><strong>Member</strong> — full features, cannot change settings.</div>
+            {inviteStatus === 'sent' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#d1fae5', borderRadius: 8, fontSize: 13, color: S.success, fontWeight: 600 }}>✓ Invite saved — they'll join when they sign up with that email.</div>}
             {inviteStatus === 'error' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#fee2e2', borderRadius: 8, fontSize: 13, color: S.error, fontWeight: 600 }}>Enter a valid email that isn't already in the workspace.</div>}
           </div>
         )}
       </Card>
-
       {[
         { title: 'Workspace', items: [{ label: 'Workspace Name', value: workspaceName }, { label: 'Account Email', value: user?.email }, { label: 'Your Role', value: userRole }] },
         { title: 'Integrations', items: [{ label: 'CRM (Salesforce / HubSpot)', value: 'Coming soon', badge: 'soon' }, { label: 'Gong', value: 'Coming soon', badge: 'soon' }, { label: 'Slack', value: 'Coming soon', badge: 'soon' }, { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' }] },
@@ -1617,7 +1536,6 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
           ))}
         </Card>
       ))}
-
       <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
         <button onClick={onReplayWalkthrough} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', color: S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = S.primary; e.currentTarget.style.color = S.primary }} onMouseLeave={e => { e.currentTarget.style.borderColor = S.border; e.currentTarget.style.color = S.inkSecondary }}>
           <Sparkles size={14} />Replay Walkthrough
@@ -1628,7 +1546,6 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
   )
 }
 
-// ─── Feature Requests ─────────────────────────────────────────
 function FeatureRequests() {
   const [submitted, setSubmitted] = useState(false)
   const [voted, setVoted] = useState([])
@@ -1650,19 +1567,16 @@ function FeatureRequests() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Feature Requests</h1>
-          <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Vote on what we build next, or suggest something new</p>
-        </div>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Feature Requests</h1>
+        <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Vote on what we build next, or suggest something new</p>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
         <div>
           <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 14 }}>Top requests</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {existing.map((f, i) => {
-              const s = statusStyle[f.status]
-              const hasVoted = voted.includes(i)
+              const s = statusStyle[f.status]; const hasVoted = voted.includes(i)
               return (
                 <Card key={i} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
                   <button onClick={() => vote(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hasVoted ? S.accentBg2 : S.accentBg, border: `1px solid ${hasVoted ? S.primary : S.border}`, borderRadius: 9, padding: '7px 10px', cursor: hasVoted ? 'default' : 'pointer', minWidth: 48, transition: 'all 0.15s' }}>
@@ -1692,11 +1606,7 @@ function FeatureRequests() {
             ) : (
               <div>
                 <Field label="Title"><input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What should we build?" style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', transition: 'border-color 0.15s' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
-                <Field label="Category">
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {categories.map(c => <button type="button" key={c} onClick={() => setForm({ ...form, category: c })} style={{ padding: '4px 10px', borderRadius: 100, border: `1px solid ${form.category === c ? S.primary : S.border}`, background: form.category === c ? S.accentBg2 : '#fff', color: form.category === c ? S.primary : S.inkSecondary, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>{c}</button>)}
-                  </div>
-                </Field>
+                <Field label="Category"><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{categories.map(c => <button type="button" key={c} onClick={() => setForm({ ...form, category: c })} style={{ padding: '4px 10px', borderRadius: 100, border: `1px solid ${form.category === c ? S.primary : S.border}`, background: form.category === c ? S.accentBg2 : '#fff', color: form.category === c ? S.primary : S.inkSecondary, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>{c}</button>)}</div></Field>
                 <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What problem does it solve?" rows={3} style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', resize: 'vertical', transition: 'border-color 0.15s' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
                 <Btn onClick={() => form.title && setSubmitted(true)} disabled={!form.title} style={{ width: '100%', justifyContent: 'center' }}>Submit Request</Btn>
               </div>
@@ -1708,7 +1618,6 @@ function FeatureRequests() {
   )
 }
 
-// ─── Nav config ───────────────────────────────────────────────
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'CORE' },
   { id: 'intake', label: 'Intake', icon: Inbox, group: 'CORE' },
@@ -1724,7 +1633,6 @@ const NAV = [
   { id: 'featurereqs', label: 'Feature Requests', icon: Star, group: null },
 ]
 
-// ─── App ──────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -1797,16 +1705,12 @@ export default function App() {
         a { text-decoration: none; }
         @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
       `}</style>
-
       <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
         {showWalkthrough && <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab} />}
-
-        {/* Sidebar */}
         <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-          <a href="/" title="Back to enableos.app" style={{ display: 'block', padding: '20px 16px 16px', borderBottom: '1px solid rgba(155,126,255,0.14)', background: 'linear-gradient(180deg, rgba(124,92,252,0.07), transparent)', textDecoration: 'none', cursor: 'pointer' }}>
+          <a href="/" title="Back to enableos.app" style={{ display: 'block', padding: '20px 16px 16px', borderBottom: '1px solid rgba(155,126,255,0.14)', background: 'linear-gradient(180deg, rgba(124,92,252,0.07), transparent)', textDecoration: 'none' }}>
             <SidebarLogo />
           </a>
-
           <nav style={{ flex: 1, padding: '16px 12px' }}>
             {['CORE', 'OPERATIONS'].map(group => (
               <div key={group} style={{ marginBottom: 24 }}>
@@ -1814,7 +1718,8 @@ export default function App() {
                 {NAV.filter(n => n.group === group).map(item => {
                   const active = activeTab === item.id
                   return (
-                    <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? 'linear-gradient(90deg, rgba(124,92,252,0.22), rgba(124,92,252,0.06))' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', marginBottom: 2, transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primaryHover}` : '2px solid transparent' }}
+                    <button key={item.id} onClick={() => setActiveTab(item.id)}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? 'linear-gradient(90deg, rgba(124,92,252,0.22), rgba(124,92,252,0.06))' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', marginBottom: 2, transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primaryHover}` : '2px solid transparent' }}
                       onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)' } }}
                       onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.48)' } }}
                     >
@@ -1824,12 +1729,12 @@ export default function App() {
                 })}
               </div>
             ))}
-
             <div style={{ borderTop: '1px solid rgba(155,126,255,0.1)', paddingTop: 16 }}>
               {NAV.filter(n => n.group === null).map(item => {
                 const active = activeTab === item.id
                 return (
-                  <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? 'linear-gradient(90deg, rgba(124,92,252,0.22), rgba(124,92,252,0.06))' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primaryHover}` : '2px solid transparent', marginBottom: 2 }}
+                  <button key={item.id} onClick={() => setActiveTab(item.id)}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? 'linear-gradient(90deg, rgba(124,92,252,0.22), rgba(124,92,252,0.06))' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primaryHover}` : '2px solid transparent', marginBottom: 2 }}
                     onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)' } }}
                     onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.48)' } }}
                   >
@@ -1837,7 +1742,8 @@ export default function App() {
                   </button>
                 )
               })}
-              <a href="/roadmap" target="_blank" rel="noreferrer" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, color: 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: 400, fontFamily: 'var(--font-body)', textDecoration: 'none', borderLeft: '2px solid transparent', marginTop: 2, transition: 'all 0.15s' }}
+              <a href="/roadmap" target="_blank" rel="noreferrer"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, color: 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: 400, fontFamily: 'var(--font-body)', textDecoration: 'none', borderLeft: '2px solid transparent', marginTop: 2, transition: 'all 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.48)'; e.currentTarget.style.background = 'transparent' }}
               >
@@ -1845,11 +1751,10 @@ export default function App() {
               </a>
             </div>
           </nav>
-
-          {/* Sidebar footer */}
           <div style={{ padding: '14px 16px 18px', borderTop: '1px solid rgba(155,126,255,0.1)' }}>
             {user?.email === ADMIN_EMAIL && <WorkspaceSwitcher current="personal" />}
-            <button onClick={() => setShowWalkthrough(true)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 7, border: 'none', background: 'rgba(124,92,252,0.12)', color: '#BDA9FF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 12, transition: 'background 0.15s' }}
+            <button onClick={() => setShowWalkthrough(true)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 7, border: 'none', background: 'rgba(124,92,252,0.12)', color: '#BDA9FF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 12, transition: 'background 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,92,252,0.2)'}
               onMouseLeave={e => e.currentTarget.style.background = 'rgba(124,92,252,0.12)'}>
               <Sparkles size={12} />Replay walkthrough
@@ -1865,8 +1770,6 @@ export default function App() {
             </div>
           </div>
         </div>
-
-        {/* Main content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '36px 40px' }}>
           {renderView()}
         </div>
