@@ -2,9 +2,29 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
+import {
+  LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
+  Video, Activity, Calendar, TrendingUp, Trophy, Settings,
+  LogOut, Plus, X, ChevronRight, Zap, Check,
+  Sparkles, Target, Star, Loader, Trash2
+} from 'lucide-react'
 
+const supabase = createClient()
+
+// ─── Design tokens ────────────────────────────────────────────
+const S = {
+  sidebar: { background: '#1a1235', width: 240 },
+  canvas: '#FDFBFF',
+  primary: '#7C5CFC', primaryHover: '#9B7EFF',
+  primaryLight: '#BDA9FF', accentBg: '#F0ECFF', accentBg2: '#E8E0FF',
+  ink: '#1a1235', inkSecondary: '#4a4162', muted: '#8b82a0',
+  border: '#E2DCF0', borderLight: '#F0ECF8',
+  success: '#059669', warning: '#d97706', error: '#dc2626',
+}
+
+// ─── Logo ─────────────────────────────────────────────────────
 const SidebarLogo = () => (
-  <svg width="154" height="48" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <svg width="154" height="48" viewBox="0 0 310 78" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="pl1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#BDA9FF"/><stop offset="100%" stopColor="#9B7EFF"/></linearGradient>
       <linearGradient id="pl2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#9B7EFF"/><stop offset="100%" stopColor="#7C5CFC"/></linearGradient>
@@ -24,6 +44,7 @@ const SidebarLogo = () => (
   </svg>
 )
 
+// ─── Workspace switcher ───────────────────────────────────────
 const ADMIN_EMAIL = 'enableos.hq@gmail.com'
 const WORKSPACES = [
   { id: 'admin', label: 'Admin', path: '/admin', color: '#dc2626', desc: 'Platform overview' },
@@ -35,18 +56,18 @@ function WorkspaceSwitcher({ current }) {
   const [open, setOpen] = useState(false)
   const currentWS = WORKSPACES.find(w => w.id === current)
   return (
-    <div style={{ position: 'relative', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 4, marginBottom: 10 }}>
+    <div style={{ position: 'relative', borderTop: '1px solid rgba(155,126,255,0.12)', paddingTop: 12, marginTop: 4, marginBottom: 10 }}>
       <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', padding: '0 8px', marginBottom: 6 }}>Workspace</div>
-      <button onClick={() => setOpen(!open)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+      <button onClick={() => setOpen(!open)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(155,126,255,0.15)', background: 'rgba(124,92,252,0.08)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: currentWS?.color, flexShrink: 0 }} />
         <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: '#fff', textAlign: 'left' }}>{currentWS?.label}</span>
         <ChevronRight size={12} color="rgba(255,255,255,0.3)" style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
       </button>
       {open && (
-        <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: '#2a2040', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 6, marginBottom: 4, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+        <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: '#2a2040', border: '1px solid rgba(155,126,255,0.15)', borderRadius: 10, padding: 6, marginBottom: 4, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
           <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', padding: '6px 8px 8px' }}>Switch workspace</div>
           {WORKSPACES.map(ws => (
-            <a key={ws.id} href={ws.path} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 7, textDecoration: 'none', background: ws.id === current ? 'rgba(255,255,255,0.08)' : 'transparent', marginBottom: 2 }}
+            <a key={ws.id} href={ws.path} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 7, textDecoration: 'none', background: ws.id === current ? 'rgba(124,92,252,0.15)' : 'transparent', marginBottom: 2 }}
               onMouseEnter={e => { if (ws.id !== current) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
               onMouseLeave={e => { if (ws.id !== current) e.currentTarget.style.background = 'transparent' }}>
               <div style={{ width: 28, height: 28, borderRadius: 6, background: ws.color + '25', border: `1px solid ${ws.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -65,26 +86,7 @@ function WorkspaceSwitcher({ current }) {
   )
 }
 
-import {
-  LayoutDashboard, Inbox, Users, MessageSquare, BookOpen,
-  Video, Activity, Calendar, TrendingUp, Trophy, Settings,
-  LogOut, Plus, X, ChevronRight, Zap, Check,
-  Sparkles, Target, Star, Loader, Trash2
-} from 'lucide-react'
-
-const supabase = createClient()
-
-const S = {
-  sidebar: { background: '#1a1235', width: 240 },
-  canvas: '#FDFBFF', primary: '#7C5CFC', primaryHover: '#9B7EFF',
-  primaryLight: '#BDA9FF', accentBg: '#F0ECFF', accentBg2: '#E8E0FF',
-  ink: '#1a1235', inkSecondary: '#4a4162', muted: '#8b82a0',
-  border: '#E2DCF0', borderLight: '#F0ECF8',
-  success: '#059669', warning: '#d97706', error: '#dc2626',
-}
-
-// Small helper: surface Supabase errors instead of swallowing them.
-// Returns true if the operation succeeded, false otherwise.
+// ─── Shared helpers ───────────────────────────────────────────
 function handleDbError(error, action) {
   if (!error) return true
   console.error(`[${action}] Supabase error:`, error)
@@ -94,16 +96,22 @@ function handleDbError(error, action) {
 
 function Card({ children, style, onClick }) {
   return (
-    <div onClick={onClick} style={{ background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 20, transition: 'box-shadow 0.2s, border-color 0.2s', cursor: onClick ? 'pointer' : 'default', ...style }}
-      onMouseEnter={e => { if (onClick) { e.currentTarget.style.boxShadow = `0 4px 20px rgba(124,92,252,0.12)`; e.currentTarget.style.borderColor = S.border } }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = S.borderLight }}
+    <div onClick={onClick}
+      style={{ background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 14, padding: 20, transition: 'box-shadow 0.2s, border-color 0.2s, transform 0.15s', cursor: onClick ? 'pointer' : 'default', ...style }}
+      onMouseEnter={e => { if (onClick) { e.currentTarget.style.boxShadow = `0 8px 24px rgba(124,92,252,0.12)`; e.currentTarget.style.borderColor = S.border; e.currentTarget.style.transform = 'translateY(-1px)' } }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = (style?.borderColor || S.borderLight); e.currentTarget.style.transform = 'none' }}
     >{children}</div>
   )
 }
 
 function Btn({ children, onClick, variant = 'primary', size = 'md', disabled, style }) {
   const base = { display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer', border: 'none', transition: 'all 0.15s', opacity: disabled ? 0.5 : 1, borderRadius: size === 'sm' ? 6 : 8, fontSize: size === 'sm' ? 12 : 14, padding: size === 'sm' ? '6px 12px' : '10px 18px', ...style }
-  const variants = { primary: { background: S.ink, color: '#fff' }, ghost: { background: 'transparent', color: S.inkSecondary, border: `1px solid ${S.border}` }, danger: { background: '#fef2f2', color: S.error, border: `1px solid #fecaca` }, purple: { background: S.primary, color: '#fff' } }
+  const variants = {
+    primary: { background: S.ink, color: '#fff' },
+    ghost: { background: 'transparent', color: S.inkSecondary, border: `1px solid ${S.border}` },
+    danger: { background: '#fef2f2', color: S.error, border: `1px solid #fecaca` },
+    purple: { background: `linear-gradient(135deg, ${S.primary}, ${S.primaryHover})`, color: '#fff' },
+  }
   return <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>{children}</button>
 }
 
@@ -115,9 +123,9 @@ function Badge({ children, color = 'purple' }) {
 
 function Modal({ title, onClose, children, wide }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(26,18,53,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ background: S.ink, borderRadius: 16, width: '100%', maxWidth: wide ? 680 : 480, maxHeight: '90vh', overflowY: 'auto', border: `1px solid #3a3550` }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #3a3550' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(26,18,53,0.65)', backdropFilter: 'blur(6px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ background: S.ink, borderRadius: 18, width: '100%', maxWidth: wide ? 680 : 480, maxHeight: '90vh', overflowY: 'auto', border: `1px solid rgba(155,126,255,0.2)`, boxShadow: '0 32px 80px rgba(0,0,0,0.5)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid rgba(155,126,255,0.12)' }}>
           <span style={{ color: '#fff', fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)' }}>{title}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer' }}><X size={18} /></button>
         </div>
@@ -137,25 +145,28 @@ function Field({ label, children }) {
 }
 
 function Input({ value, onChange, placeholder, type = 'text', style }) {
-  return <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }} />
+  return <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={{ width: '100%', background: '#2a2445', border: '1px solid rgba(155,126,255,0.15)', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }} />
 }
 
 function Select({ value, onChange, children, style }) {
-  return <select value={value} onChange={onChange} style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}>{children}</select>
+  return <select value={value} onChange={onChange} style={{ width: '100%', background: '#2a2445', border: '1px solid rgba(155,126,255,0.15)', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', ...style }}>{children}</select>
 }
 
 function Textarea({ value, onChange, placeholder, rows = 3, style }) {
-  return <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows} style={{ width: '100%', background: '#2a2445', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', ...style }} />
+  return <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows} style={{ width: '100%', background: '#2a2445', border: '1px solid rgba(155,126,255,0.15)', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', ...style }} />
 }
 
+// ─── Walkthrough ──────────────────────────────────────────────
 const WALKTHROUGH_STEPS = [
-  { id: 'dashboard', title: 'Welcome to EnableOS 👋', desc: 'Your command centre. Open requests, ramping reps, must-do tasks, and ramp snapshot — everything in one view. Let\'s take a 60-second tour.' },
-  { id: 'intake', title: 'Intake — your request queue', desc: 'Every enablement request lands here. Impact × Urgency ÷ Effort = auto priority score. No more guessing what to build next. Share the public form link so anyone can submit without a login.' },
-  { id: 'ramp', title: 'Ramp & Onboarding', desc: 'Track every rep\'s onboarding across 5 sections. See who\'s ahead, who\'s behind, check off items as they complete them.' },
-  { id: 'notes', title: '1:1 Notes with AI', desc: 'Log private coaching notes and shared agendas per rep. Claude AI analyses sentiment, flags reps at risk, and suggests your next coaching action. Only you can see your notes.' },
-  { id: 'collaterals', title: 'Collateral Library', desc: 'Every asset in one place with usage tracking. See what\'s actually being used and what\'s collecting dust.' },
-  { id: 'planning', title: 'Weekly Planning', desc: 'Must Do / Should Do / Could Do. Kanban for your weekly priorities. Check things off, track your completion rate.' },
-  { id: 'settings', title: 'You\'re all set! 🚀', desc: 'That\'s the core loop. Head to Settings to invite your team. Your 1:1 notes are private to you — everything else is shared with your workspace.' },
+  { id: 'dashboard', title: 'Welcome to EnableOS', desc: 'Your command centre. Open requests, ramping reps, must-do tasks — everything you need to run enablement in one place. This is a 90-second tour.' },
+  { id: 'intake', title: 'Intake — your request queue', desc: 'Every request lands here and gets auto-scored: Impact × Urgency ÷ Effort. Share the public link (top right) so stakeholders can submit directly — no login needed.' },
+  { id: 'ramp', title: 'Ramp & Onboarding', desc: 'Add reps and track their onboarding across 5 sections. Check off items as they complete them. See exactly who\'s ready and who needs support before the QBR.' },
+  { id: 'notes', title: '1:1 Notes — private to you', desc: 'Log shared agendas and private coaching notes per rep. Hit "Analyze with AI" and Claude reads your notes, flags confidence drops, and suggests your next action.' },
+  { id: 'collaterals', title: 'Collaterals library', desc: 'One source of truth for every battle card, playbook, and deck. Tag by type, track usage, and link directly. No more "where\'s that one-pager?" in Slack.' },
+  { id: 'pulse', title: 'Pulse Checks', desc: 'Two tools in one: build surveys with rating scales, multiple choice, or free text — or use Coaching Scores to rate reps monthly across emails, cold calls, demos, and negotiations.' },
+  { id: 'forecasting', title: 'Forecasting — drag to move', desc: 'Your enablement project pipeline. Add projects, then drag cards between Backlog → Planned → In Progress → Done. No dropdown needed, just drop.' },
+  { id: 'planning', title: 'Weekly Planning', desc: 'Must Do, Should Do, Could Do. Your three-column task board. Check things off and track your completion rate at the top of the page.' },
+  { id: 'settings', title: 'You\'re all set 🚀', desc: 'Head to Settings to invite your team. They\'ll join when they sign up with the email you add. Your 1:1 notes are always private — everything else is shared.' },
 ]
 
 function Walkthrough({ onClose, onNavigate }) {
@@ -164,29 +175,36 @@ function Walkthrough({ onClose, onNavigate }) {
   const isLast = step === WALKTHROUGH_STEPS.length - 1
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, pointerEvents: 'none' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,18,53,0.5)', backdropFilter: 'blur(2px)', pointerEvents: 'all' }} onClick={onClose} />
-      <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', width: 480, background: '#fff', borderRadius: 16, boxShadow: '0 24px 64px rgba(26,18,53,0.3)', pointerEvents: 'all', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,18,53,0.55)', backdropFilter: 'blur(3px)', pointerEvents: 'all' }} onClick={onClose} />
+      <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', width: 500, background: '#fff', borderRadius: 18, boxShadow: '0 32px 80px rgba(26,18,53,0.28), 0 0 0 1px rgba(124,92,252,0.12)', pointerEvents: 'all', overflow: 'hidden' }}>
+        {/* Progress bar */}
         <div style={{ height: 3, background: S.borderLight }}>
-          <div style={{ height: '100%', width: `${((step + 1) / WALKTHROUGH_STEPS.length) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, transition: 'width 0.3s' }} />
+          <div style={{ height: '100%', width: `${((step + 1) / WALKTHROUGH_STEPS.length) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, transition: 'width 0.35s ease' }} />
         </div>
-        <div style={{ padding: 28 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+        {/* Left accent */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${S.primary}, ${S.primaryHover})`, opacity: 0.7 }} />
+        <div style={{ padding: '26px 28px 24px 32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: S.accentBg2, color: S.primary, padding: '4px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Step {step + 1} of {WALKTHROUGH_STEPS.length}</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: S.ink, marginBottom: 8 }}>{current.title}</h3>
-              <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.65 }}>{current.desc}</p>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: S.accentBg2, color: S.primary, padding: '3px 12px', borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 12, letterSpacing: '0.04em' }}>
+                {step + 1} / {WALKTHROUGH_STEPS.length}
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: S.ink, marginBottom: 10, letterSpacing: '-0.3px', lineHeight: 1.2 }}>{current.title}</h3>
+              <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.7, margin: 0 }}>{current.desc}</p>
             </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', flexShrink: 0, marginLeft: 16 }}><X size={18} /></button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', flexShrink: 0, marginLeft: 20, marginTop: -2 }}><X size={18} /></button>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
-            <div style={{ display: 'flex', gap: 5 }}>
-              {WALKTHROUGH_STEPS.map((_, i) => <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i <= step ? S.primary : S.borderLight, transition: 'all 0.3s' }} />)}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 22 }}>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {WALKTHROUGH_STEPS.map((_, i) => (
+                <div key={i} style={{ width: i === step ? 22 : 6, height: 6, borderRadius: 3, background: i < step ? S.primaryLight : i === step ? S.primary : S.borderLight, transition: 'all 0.3s' }} />
+              ))}
             </div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Skip</button>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.muted, fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500 }}>Skip tour</button>
               {step > 0 && <Btn variant="ghost" size="sm" onClick={() => { setStep(step - 1); onNavigate(WALKTHROUGH_STEPS[step - 1].id) }}>Back</Btn>}
               {isLast
-                ? <Btn size="sm" onClick={onClose}>Done — let's go! 🚀</Btn>
+                ? <Btn size="sm" onClick={onClose}>Done — let's go 🚀</Btn>
                 : <Btn size="sm" onClick={() => { setStep(step + 1); onNavigate(WALKTHROUGH_STEPS[step + 1].id) }}>Next <ChevronRight size={14} /></Btn>
               }
             </div>
@@ -197,6 +215,7 @@ function Walkthrough({ onClose, onNavigate }) {
   )
 }
 
+// ─── Dashboard ────────────────────────────────────────────────
 function Dashboard({ userId, workspaceId }) {
   const [stats, setStats] = useState({ requests: 0, reps: 0, todos: 0 })
   const [loading, setLoading] = useState(true)
@@ -225,28 +244,28 @@ function Dashboard({ userId, workspaceId }) {
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, color: S.ink, marginBottom: 4 }}>Good morning 👋</h1>
-        <p style={{ color: S.inkSecondary, fontSize: 15 }}>Here's what's happening with your team today.</p>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: S.ink, marginBottom: 6, letterSpacing: '-0.5px' }}>Good morning 👋</h1>
+        <p style={{ color: S.inkSecondary, fontSize: 15, fontWeight: 300 }}>Here's what's happening with your team today.</p>
       </div>
       {loading ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
             {statCards.map(s => (
-              <Card key={s.label}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+              <Card key={s.label} style={{ borderTop: `3px solid ${s.color}22` }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: s.color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
                   <s.icon size={18} color={s.color} />
                 </div>
-                <div style={{ fontSize: 28, fontWeight: 700, color: S.ink, fontFamily: 'var(--font-display)', marginBottom: 4 }}>{s.value}</div>
-                <div style={{ fontSize: 13, color: S.muted }}>{s.label}</div>
+                <div style={{ fontSize: 30, fontWeight: 700, color: S.ink, fontFamily: 'var(--font-display)', marginBottom: 4, letterSpacing: '-0.5px' }}>{s.value}</div>
+                <div style={{ fontSize: 13, color: S.muted, fontWeight: 400 }}>{s.label}</div>
               </Card>
             ))}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <Card>
-              <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 15 }}>Priority Queue</h3>
+              <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.2px' }}>Priority Queue</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {['Finalize onboarding deck for new cohort', 'Battlecard update — competitor pricing changed', 'Cold outreach sequence refresh'].map((t, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: S.accentBg, borderRadius: 8 }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: S.accentBg, borderRadius: 9 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? S.error : i === 1 ? S.warning : S.primary, flexShrink: 0 }} />
                     <span style={{ fontSize: 13, color: S.inkSecondary }}>{t}</span>
                   </div>
@@ -254,7 +273,7 @@ function Dashboard({ userId, workspaceId }) {
               </div>
             </Card>
             <Card>
-              <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 15 }}>Ramp Snapshot</h3>
+              <h3 style={{ fontWeight: 700, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.2px' }}>Ramp Snapshot</h3>
               {['Alex Chen', 'Priya Sharma', 'Marcus O.'].map((name, i) => {
                 const pct = [78, 52, 91][i]
                 return (
@@ -277,6 +296,7 @@ function Dashboard({ userId, workspaceId }) {
   )
 }
 
+// ─── Intake ───────────────────────────────────────────────────
 function Intake({ userId, workspaceId }) {
   const [requests, setRequests] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -315,17 +335,14 @@ function Intake({ userId, workspaceId }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Intake</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Manage and prioritize enablement requests</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Intake</h1>
+          <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Manage and prioritize enablement requests</p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button
-            title="Share public intake form link"
-            onClick={() => {
-              const link = `${window.location.origin}/intake-form`
-              navigator.clipboard.writeText(link).then(() => alert(`Link copied!\n\n${link}\n\nAnyone with this link can submit a request — no login needed.`))
-            }}
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 7, border: `1px solid ${S.border}`, background: 'transparent', cursor: 'pointer', color: S.inkSecondary, transition: 'all 0.15s' }}
+            title="Copy public intake form link"
+            onClick={() => { const link = `${window.location.origin}/intake-form`; navigator.clipboard.writeText(link).then(() => alert(`Link copied!\n\n${link}\n\nAnyone with this link can submit a request — no login needed.`)) }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', cursor: 'pointer', color: S.inkSecondary, transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = S.accentBg; e.currentTarget.style.borderColor = S.primary; e.currentTarget.style.color = S.primary }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = S.border; e.currentTarget.style.color = S.inkSecondary }}
           >
@@ -337,15 +354,13 @@ function Intake({ userId, workspaceId }) {
           <Btn onClick={() => setShowModal(true)}><Plus size={16} />New Request</Btn>
         </div>
       </div>
-
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {buckets.map(b => (
-          <button key={b} onClick={() => setFilter(b)} style={{ padding: '6px 14px', borderRadius: 100, border: `1px solid ${filter === b ? S.primary : S.border}`, background: filter === b ? S.accentBg2 : 'transparent', color: filter === b ? S.primary : S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{b === 'all' ? 'All' : b}</button>
+          <button key={b} onClick={() => setFilter(b)} style={{ padding: '6px 14px', borderRadius: 100, border: `1px solid ${filter === b ? S.primary : S.border}`, background: filter === b ? S.accentBg2 : 'transparent', color: filter === b ? S.primary : S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>{b === 'all' ? 'All' : b}</button>
         ))}
       </div>
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {filtered.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>No requests yet. Add your first one!</div>}
+        {filtered.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 48 }}>No requests yet. Add your first one!</div>}
         {filtered.map(r => (
           <Card key={r.id} style={{ padding: '16px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -364,17 +379,12 @@ function Intake({ userId, workspaceId }) {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 6, marginLeft: 16 }}>
-                {r.status !== 'done' && (
-                  <Btn size="sm" variant="ghost" onClick={() => updateStatus(r.id, r.status === 'open' ? 'in-progress' : 'done')}>
-                    {r.status === 'open' ? 'Start' : 'Done'}
-                  </Btn>
-                )}
+                {r.status !== 'done' && <Btn size="sm" variant="ghost" onClick={() => updateStatus(r.id, r.status === 'open' ? 'in-progress' : 'done')}>{r.status === 'open' ? 'Start' : 'Done'}</Btn>}
               </div>
             </div>
           </Card>
         ))}
       </div>
-
       {showModal && (
         <Modal title="New Enablement Request" onClose={() => setShowModal(false)}>
           <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What's being requested?" /></Field>
@@ -399,6 +409,7 @@ function Intake({ userId, workspaceId }) {
   )
 }
 
+// ─── Ramp ─────────────────────────────────────────────────────
 function Ramp({ userId, workspaceId }) {
   const [reps, setReps] = useState([])
   const [selected, setSelected] = useState(null)
@@ -420,9 +431,7 @@ function Ramp({ userId, workspaceId }) {
     const defaultProgress = { sections: { 'Company & Culture': [false,false,false,false], 'Sales Process': [false,false,false,false], 'Product Deep Dive': [false,false,false,false], 'Outbound Mastery': [false,false,false,false], 'Live Certification': [false,false,false,false] }, benchmarks: {} }
     const { error } = await supabase.from('reps').insert({ user_id: userId, workspace_id: workspaceId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() })
     if (!handleDbError(error, 'add rep')) return
-    setNewRepName('')
-    setShowAddRep(false)
-    load()
+    setNewRepName(''); setShowAddRep(false); load()
   }
 
   const deleteRep = async (rep) => {
@@ -439,8 +448,7 @@ function Ramp({ userId, workspaceId }) {
     updated.sections[section][idx] = !updated.sections[section][idx]
     const { error } = await supabase.from('reps').update({ progress: updated }).eq('id', selected.id)
     if (!handleDbError(error, 'update progress')) return
-    setSelected({ ...selected, progress: updated })
-    load()
+    setSelected({ ...selected, progress: updated }); load()
   }
 
   const sections = ['Company & Culture', 'Sales Process', 'Product Deep Dive', 'Outbound Mastery', 'Live Certification']
@@ -460,46 +468,39 @@ function Ramp({ userId, workspaceId }) {
 
   return (
     <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 120px)' }}>
-      <div style={{ width: 220, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
+      <div style={{ width: 220, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 14, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>Reps</span>
           <button onClick={() => setShowAddRep(true)} style={{ background: 'none', border: 'none', color: S.primary, cursor: 'pointer' }}><Plus size={16} /></button>
         </div>
         {reps.map(r => (
-          <div key={r.id} style={{ padding: '10px 12px', borderRadius: 8, marginBottom: 4, background: selected?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selected?.id === r.id ? S.primary + '40' : 'transparent'}`, position: 'relative' }}>
+          <div key={r.id} style={{ padding: '10px 12px', borderRadius: 9, marginBottom: 4, background: selected?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selected?.id === r.id ? S.primary + '40' : 'transparent'}`, position: 'relative' }}>
             <div onClick={() => setSelected(r)} style={{ cursor: 'pointer' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 18 }}>{r.name}</div>
-              </div>
+              <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, paddingRight: 18, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ flex: 1, height: 4, background: S.borderLight, borderRadius: 2 }}>
-                  <div style={{ height: '100%', width: `${calcPct(r)}%`, background: S.primary, borderRadius: 2 }} />
+                  <div style={{ height: '100%', width: `${calcPct(r)}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 2 }} />
                 </div>
                 <span style={{ fontSize: 11, color: S.primary, fontWeight: 700 }}>{calcPct(r)}%</span>
               </div>
             </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); deleteRep(r) }}
-              title="Delete rep"
-              style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.5, padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4 }}
+            <button onClick={(e) => { e.stopPropagation(); deleteRep(r) }} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.4, padding: 2, borderRadius: 4 }}
               onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.color = S.error }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = 0.5; e.currentTarget.style.color = S.muted }}
-            >
+              onMouseLeave={e => { e.currentTarget.style.opacity = 0.4; e.currentTarget.style.color = S.muted }}>
               <Trash2 size={12} />
             </button>
           </div>
         ))}
         {reps.length === 0 && <div style={{ fontSize: 13, color: S.muted, textAlign: 'center', paddingTop: 20 }}>No reps yet</div>}
       </div>
-
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {!selected ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: S.muted }}>Select a rep or add one</div>
         ) : (
           <>
             <div style={{ marginBottom: 24 }}>
-              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>{selected.name}</h1>
-              <p style={{ color: S.muted, fontSize: 14 }}>{calcPct(selected)}% complete · Started {selected.start_date ? new Date(selected.start_date).toLocaleDateString() : 'recently'}</p>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>{selected.name}</h1>
+              <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>{calcPct(selected)}% complete · Started {selected.start_date ? new Date(selected.start_date).toLocaleDateString() : 'recently'}</p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {sections.map(section => {
@@ -508,15 +509,15 @@ function Ramp({ userId, workspaceId }) {
                 return (
                   <Card key={section}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                      <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{section}</h3>
+                      <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>{section}</h3>
                       <Badge color={done === 4 ? 'green' : 'gray'}>{done}/4</Badge>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {sectionItems[section].map((item, i) => (
-                        <div key={i} onClick={() => toggleCheck(section, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '6px 8px', borderRadius: 6, transition: 'background 0.15s' }}
+                        <div key={i} onClick={() => toggleCheck(section, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '6px 8px', borderRadius: 7, transition: 'background 0.15s' }}
                           onMouseEnter={e => e.currentTarget.style.background = S.accentBg}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checks[i] ? S.primary : S.border}`, background: checks[i] ? S.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${checks[i] ? S.primary : S.border}`, background: checks[i] ? S.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
                             {checks[i] && <Check size={11} color="#fff" strokeWidth={3} />}
                           </div>
                           <span style={{ fontSize: 14, color: checks[i] ? S.muted : S.inkSecondary, textDecoration: checks[i] ? 'line-through' : 'none' }}>{item}</span>
@@ -530,7 +531,6 @@ function Ramp({ userId, workspaceId }) {
           </>
         )}
       </div>
-
       {showAddRep && (
         <Modal title="Add Rep" onClose={() => setShowAddRep(false)}>
           <Field label="Name"><Input value={newRepName} onChange={e => setNewRepName(e.target.value)} placeholder="Rep's name" /></Field>
@@ -544,6 +544,7 @@ function Ramp({ userId, workspaceId }) {
   )
 }
 
+// ─── 1:1 Notes ────────────────────────────────────────────────
 function Notes({ userId, workspaceId }) {
   const [reps, setReps] = useState([])
   const [selectedRep, setSelectedRep] = useState(null)
@@ -578,18 +579,15 @@ function Notes({ userId, workspaceId }) {
     const defaultProgress = { sections: { 'Company & Culture': [false,false,false,false], 'Sales Process': [false,false,false,false], 'Product Deep Dive': [false,false,false,false], 'Outbound Mastery': [false,false,false,false], 'Live Certification': [false,false,false,false] }, benchmarks: {} }
     const { data, error } = await supabase.from('reps').insert({ user_id: userId, workspace_id: workspaceId, name: newRepName, progress: defaultProgress, start_date: new Date().toISOString() }).select().single()
     if (!handleDbError(error, 'add rep')) return
-    setNewRepName('')
-    setShowAddRep(false)
+    setNewRepName(''); setShowAddRep(false)
     if (data) setSelectedRep(data)
     loadReps()
   }
 
   const save = async () => {
-    const { error } = await supabase.from('notes').insert({ ...form, user_id: userId, workspace_id: workspaceId, rep_id: selectedRep.id, date: new Date().toISOString() })
+    const { error } = await supabase.from('notes').insert({ ...form, user_id: userId, workspace_id: workspaceId, rep_id: selectedRep.id, date: new Date().toISOString(), sentiment: aiResult?.sentiment || null, ai_action: aiResult?.action || null })
     if (!handleDbError(error, 'save note')) return
-    setShowModal(false)
-    setForm({ shared_agenda: '', private_notes: '' })
-    setAiResult(null)
+    setShowModal(false); setForm({ shared_agenda: '', private_notes: '' }); setAiResult(null)
     supabase.from('notes').select('*').eq('workspace_id', workspaceId).eq('user_id', userId).eq('rep_id', selectedRep.id).order('created_at', { ascending: false }).then(({ data }) => setNotes(data || []))
   }
 
@@ -600,11 +598,7 @@ function Notes({ userId, workspaceId }) {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: `Analyze this 1:1 note from a sales enablement manager. Return ONLY a JSON object with: sentiment ("positive"|"neutral"|"concern"), action (1 suggested next action as string), theme (1-2 word tag), session (suggested session topic).\nShared agenda: ${form.shared_agenda}\nPrivate notes: ${form.private_notes}` }]
-        })
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: `Analyze this 1:1 note from a sales enablement manager. Return ONLY a JSON object with: sentiment ("positive"|"neutral"|"concern"), action (1 suggested next action as string), theme (1-2 word tag), session (suggested session topic).\nShared agenda: ${form.shared_agenda}\nPrivate notes: ${form.private_notes}` }] })
       })
       const data = await res.json()
       const text = data.content?.[0]?.text || '{}'
@@ -617,27 +611,22 @@ function Notes({ userId, workspaceId }) {
 
   return (
     <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 120px)' }}>
-      <div style={{ width: 200, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 12, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
+      <div style={{ width: 200, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 14, padding: 16, overflowY: 'auto', flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>Reps</span>
-          <button onClick={() => setShowAddRep(true)} title="Add rep" style={{ background: 'none', border: 'none', color: S.primary, cursor: 'pointer' }}><Plus size={16} /></button>
+          <button onClick={() => setShowAddRep(true)} style={{ background: 'none', border: 'none', color: S.primary, cursor: 'pointer' }}><Plus size={16} /></button>
         </div>
         {reps.map(r => (
-          <div key={r.id} onClick={() => setSelectedRep(r)} style={{ padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer', background: selectedRep?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selectedRep?.id === r.id ? S.primary + '40' : 'transparent'}` }}>
+          <div key={r.id} onClick={() => setSelectedRep(r)} style={{ padding: '10px 12px', borderRadius: 9, marginBottom: 4, cursor: 'pointer', background: selectedRep?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selectedRep?.id === r.id ? S.primary + '40' : 'transparent'}`, transition: 'all 0.15s' }}>
             <span style={{ fontWeight: 600, fontSize: 13, color: S.ink }}>{r.name}</span>
           </div>
         ))}
-        {reps.length === 0 && (
-          <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.5, padding: '8px 0' }}>
-            No reps yet — tap <Plus size={11} style={{ verticalAlign: -1, display: 'inline' }} /> above or head to Ramp & Onboarding.
-          </div>
-        )}
+        {reps.length === 0 && <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.6, padding: '4px 0' }}>No reps yet — tap + above.</div>}
       </div>
-
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>1:1 Notes</h1>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>1:1 Notes</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
               <p style={{ color: S.muted, fontSize: 14 }}>{selectedRep ? `Notes for ${selectedRep.name}` : 'Select a rep'}</p>
               <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: '#fef3c7', color: S.warning }}>🔒 Private to you</span>
@@ -659,18 +648,17 @@ function Notes({ userId, workspaceId }) {
                 </div>
               )}
               {n.ai_action && (
-                <div style={{ marginTop: 12, padding: '10px 14px', background: S.accentBg, borderRadius: 8, borderLeft: `3px solid ${S.primary}` }}>
+                <div style={{ marginTop: 12, padding: '10px 14px', background: S.accentBg, borderRadius: 9, borderLeft: `3px solid ${S.primary}` }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: S.primary, marginBottom: 4 }}>✦ AI Suggestion</div>
                   <p style={{ fontSize: 13, color: S.inkSecondary }}>{n.ai_action}</p>
                 </div>
               )}
             </Card>
           ))}
-          {notes.length === 0 && selectedRep && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>No notes yet for this rep</div>}
-          {!selectedRep && reps.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 40 }}>Add a rep on the left to start taking notes</div>}
+          {notes.length === 0 && selectedRep && <div style={{ textAlign: 'center', color: S.muted, padding: 48 }}>No notes yet for this rep</div>}
+          {!selectedRep && reps.length === 0 && <div style={{ textAlign: 'center', color: S.muted, padding: 48 }}>Add a rep on the left to start taking notes</div>}
         </div>
       </div>
-
       {showAddRep && (
         <Modal title="Add Rep" onClose={() => setShowAddRep(false)}>
           <Field label="Name"><Input value={newRepName} onChange={e => setNewRepName(e.target.value)} placeholder="Rep's name" /></Field>
@@ -680,17 +668,16 @@ function Notes({ userId, workspaceId }) {
           </div>
         </Modal>
       )}
-
       {showModal && (
         <Modal title={`New 1:1 Note — ${selectedRep?.name}`} onClose={() => { setShowModal(false); setAiResult(null) }} wide>
           <Field label="Shared Agenda (rep can see)"><Textarea value={form.shared_agenda} onChange={e => setForm({ ...form, shared_agenda: e.target.value })} placeholder="Topics to cover together..." /></Field>
           <Field label="Private Notes (only you see)"><Textarea value={form.private_notes} onChange={e => setForm({ ...form, private_notes: e.target.value })} placeholder="Your private observations, concerns, coaching notes..." rows={4} /></Field>
           {!aiResult ? (
             <Btn variant="ghost" onClick={analyze} disabled={analyzing} style={{ marginBottom: 16, color: S.primary, borderColor: S.primary }}>
-              {analyzing ? <><Loader size={14} />Analyzing...</> : <><Sparkles size={14} />Analyze with AI</>}
+              {analyzing ? <><Loader size={14} style={{ animation: 'spin 1s linear infinite' }} />Analyzing...</> : <><Sparkles size={14} />Analyze with AI</>}
             </Btn>
           ) : (
-            <div style={{ background: '#2a2445', borderRadius: 10, padding: 16, marginBottom: 16, border: '1px solid #3a3550' }}>
+            <div style={{ background: '#2a2445', borderRadius: 10, padding: 16, marginBottom: 16, border: '1px solid rgba(155,126,255,0.2)' }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: S.primaryLight, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><Sparkles size={12} />AI Analysis</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div><div style={{ fontSize: 11, color: S.muted, marginBottom: 3 }}>Sentiment</div><Badge color={sentimentColor[aiResult.sentiment] || 'gray'}>{aiResult.sentiment}</Badge></div>
@@ -710,6 +697,7 @@ function Notes({ userId, workspaceId }) {
   )
 }
 
+// ─── Collaterals ──────────────────────────────────────────────
 function Collaterals({ userId, workspaceId }) {
   const [items, setItems] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -728,9 +716,7 @@ function Collaterals({ userId, workspaceId }) {
   const save = async () => {
     const { error } = await supabase.from('collaterals').insert({ ...form, user_id: userId, workspace_id: workspaceId, usage_count: 0 })
     if (!handleDbError(error, 'add collateral')) return
-    setShowModal(false)
-    setForm({ title: '', bucket: 'Battle Card', description: '', link: '' })
-    load()
+    setShowModal(false); setForm({ title: '', bucket: 'Battle Card', description: '', link: '' }); load()
   }
 
   const bump = async (id, count) => {
@@ -746,11 +732,11 @@ function Collaterals({ userId, workspaceId }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Collaterals</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Your enablement asset library</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Collaterals</h1>
+          <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Your enablement asset library</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search assets..." style={{ padding: '8px 14px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search assets..." style={{ padding: '9px 14px', border: `1px solid ${S.border}`, borderRadius: 9, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', transition: 'border-color 0.15s' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} />
           <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Asset</Btn>
         </div>
       </div>
@@ -761,15 +747,15 @@ function Collaterals({ userId, workspaceId }) {
               <Badge color={bucketColors[item.bucket] || 'gray'}>{item.bucket}</Badge>
               <span style={{ fontSize: 12, color: S.muted }}>{item.usage_count || 0} uses</span>
             </div>
-            <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 6 }}>{item.title}</h3>
+            <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 6, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>{item.title}</h3>
             {item.description && <p style={{ fontSize: 13, color: S.muted, marginBottom: 12 }}>{item.description}</p>}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              {item.link && <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none' }}>Open →</a>}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: item.description ? 0 : 12 }}>
+              {item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none', fontWeight: 600 }}>Open →</a> : <span />}
               <Btn size="sm" variant="ghost" onClick={() => bump(item.id, item.usage_count || 0)}>+1 Use</Btn>
             </div>
           </Card>
         ))}
-        {filtered.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>No collaterals yet. Add your first asset!</div>}
+        {filtered.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 48 }}>No collaterals yet. Add your first asset!</div>}
       </div>
       {showModal && (
         <Modal title="Add Collateral" onClose={() => setShowModal(false)}>
@@ -791,6 +777,7 @@ function Collaterals({ userId, workspaceId }) {
   )
 }
 
+// ─── Sessions ─────────────────────────────────────────────────
 function Sessions({ userId, workspaceId }) {
   const [sessions, setSessions] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -806,12 +793,9 @@ function Sessions({ userId, workspaceId }) {
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    const payload = { ...form, user_id: userId, workspace_id: workspaceId, completed: false, date: form.date || null }
-    const { error } = await supabase.from('sessions').insert(payload)
+    const { error } = await supabase.from('sessions').insert({ ...form, user_id: userId, workspace_id: workspaceId, completed: false, date: form.date || null })
     if (!handleDbError(error, 'schedule session')) return
-    setShowModal(false)
-    setForm({ title: '', date: '', type: 'Training', attendees: '' })
-    load()
+    setShowModal(false); setForm({ title: '', date: '', type: 'Training', attendees: '' }); load()
   }
 
   const markDone = async (id) => {
@@ -828,13 +812,13 @@ function Sessions({ userId, workspaceId }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Sessions</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Schedule and track training sessions</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Sessions</h1>
+          <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Schedule and track training sessions</p>
         </div>
         <Btn onClick={() => setShowModal(true)}><Plus size={16} />Schedule Session</Btn>
       </div>
       <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 12 }}>Upcoming ({upcoming.length})</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
         {upcoming.map(s => (
           <Card key={s.id} style={{ padding: '14px 18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -857,7 +841,7 @@ function Sessions({ userId, workspaceId }) {
       <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 12 }}>Completed ({completed.length})</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {completed.map(s => (
-          <Card key={s.id} style={{ padding: '14px 18px', opacity: 0.7 }}>
+          <Card key={s.id} style={{ padding: '14px 18px', opacity: 0.65 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Check size={16} color={S.success} />
               <span style={{ fontWeight: 600, fontSize: 14, color: S.ink, textDecoration: 'line-through' }}>{s.title}</span>
@@ -886,96 +870,327 @@ function Sessions({ userId, workspaceId }) {
   )
 }
 
+// ─── Pulse Checks (Surveys + Coaching Scores) ─────────────────
+const COACHING_AREAS = [
+  { key: 'emails', label: 'Cold Emails', icon: '📧', desc: 'Prospecting quality, personalization, reply rate' },
+  { key: 'calls', label: 'Cold Calls', icon: '📞', desc: 'Talk track, objection handling, qualification' },
+  { key: 'demos', label: 'Demos', icon: '🖥', desc: 'Discovery, presentation, deal advancement' },
+  { key: 'negotiations', label: 'Negotiations', icon: '🤝', desc: 'Pricing, multi-threading, closing conversations' },
+]
+
+const scoreColor = (n) => {
+  if (n >= 4) return { color: S.success, bg: '#d1fae5' }
+  if (n >= 3) return { color: S.warning, bg: '#fef3c7' }
+  return { color: S.error, bg: '#fee2e2' }
+}
+
+const nowPeriod = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` }
+
 function PulseChecks({ userId, workspaceId }) {
+  const [tab, setTab] = useState('surveys')
+
+  // Surveys
   const [pulses, setPulses] = useState([])
   const [selected, setSelected] = useState(null)
   const [showCreate, setShowCreate] = useState(false)
-  const [form, setForm] = useState({ title: '', questions: [''] })
+  const [form, setForm] = useState({ title: '', questions: [{ text: '', type: 'rating', options: [] }] })
 
-  const load = useCallback(async () => {
+  const loadPulses = useCallback(async () => {
     if (!workspaceId) return
     const { data, error } = await supabase.from('pulse_checks').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
     if (error) { handleDbError(error, 'load pulse checks'); return }
     setPulses(data || [])
   }, [workspaceId])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { loadPulses() }, [loadPulses])
 
-  const save = async () => {
-    const { error } = await supabase.from('pulse_checks').insert({ user_id: userId, workspace_id: workspaceId, title: form.title, questions: form.questions.filter(Boolean), responses: [] })
-    if (!handleDbError(error, 'create pulse check')) return
-    setShowCreate(false)
-    setForm({ title: '', questions: [''] })
-    load()
+  const addQuestion = () => setForm({ ...form, questions: [...form.questions, { text: '', type: 'rating', options: [] }] })
+  const removeQuestion = (i) => setForm({ ...form, questions: form.questions.filter((_, j) => j !== i) })
+  const updateQuestion = (i, field, value) => {
+    const qs = [...form.questions]; qs[i] = { ...qs[i], [field]: value }
+    if (field === 'type' && value === 'choice' && !qs[i].options?.length) qs[i].options = ['', '']
+    setForm({ ...form, questions: qs })
   }
+  const addOption = (qi) => { const qs = [...form.questions]; qs[qi] = { ...qs[qi], options: [...(qs[qi].options || []), ''] }; setForm({ ...form, questions: qs }) }
+  const updateOption = (qi, oi, val) => { const qs = [...form.questions]; const opts = [...(qs[qi].options || [])]; opts[oi] = val; qs[qi] = { ...qs[qi], options: opts }; setForm({ ...form, questions: qs }) }
+  const removeOption = (qi, oi) => { const qs = [...form.questions]; qs[qi] = { ...qs[qi], options: qs[qi].options.filter((_, k) => k !== oi) }; setForm({ ...form, questions: qs }) }
+
+  const savePulse = async () => {
+    const { error } = await supabase.from('pulse_checks').insert({ user_id: userId, workspace_id: workspaceId, title: form.title, questions: form.questions.filter(q => q.text.trim()), responses: [] })
+    if (!handleDbError(error, 'create pulse check')) return
+    setShowCreate(false); setForm({ title: '', questions: [{ text: '', type: 'rating', options: [] }] }); loadPulses()
+  }
+
+  // Coaching Scores
+  const [reps, setReps] = useState([])
+  const [selectedRep, setSelectedRep] = useState(null)
+  const [coachPeriod, setCoachPeriod] = useState(nowPeriod())
+  const [coachForm, setCoachForm] = useState({ emails: 3, calls: 3, demos: 3, negotiations: 3, notes: '' })
+  const [showCoachModal, setShowCoachModal] = useState(false)
+  const [savingCoach, setSavingCoach] = useState(false)
+
+  const loadReps = useCallback(async () => {
+    if (!workspaceId) return
+    const { data, error } = await supabase.from('reps').select('*').eq('workspace_id', workspaceId)
+    if (error) { handleDbError(error, 'load reps'); return }
+    setReps(data || [])
+    if (data?.length && !selectedRep) setSelectedRep(data[0])
+  }, [workspaceId, selectedRep])
+
+  useEffect(() => { if (tab === 'coaching') loadReps() }, [tab, loadReps])
+
+  const openCoachModal = () => {
+    const existing = selectedRep?.progress?.benchmarks?.[coachPeriod]
+    setCoachForm(existing ? { emails: existing.emails, calls: existing.calls, demos: existing.demos, negotiations: existing.negotiations, notes: existing.notes || '' } : { emails: 3, calls: 3, demos: 3, negotiations: 3, notes: '' })
+    setShowCoachModal(true)
+  }
+
+  const saveCoach = async () => {
+    if (!selectedRep) return
+    setSavingCoach(true)
+    const updated = { ...selectedRep.progress, benchmarks: { ...(selectedRep.progress?.benchmarks || {}), [coachPeriod]: { ...coachForm, date: new Date().toISOString() } } }
+    const { error } = await supabase.from('reps').update({ progress: updated }).eq('id', selectedRep.id)
+    if (!handleDbError(error, 'save coaching score')) { setSavingCoach(false); return }
+    setSelectedRep({ ...selectedRep, progress: updated }); setShowCoachModal(false); setSavingCoach(false); loadReps()
+  }
+
+  const currentScore = selectedRep?.progress?.benchmarks?.[coachPeriod]
+  const allPeriods = selectedRep?.progress?.benchmarks ? Object.entries(selectedRep.progress.benchmarks).sort((a, b) => b[0].localeCompare(a[0])) : []
+  const typeLabel = { rating: '⭐ Rating 1–5', choice: '☑ Multiple choice', text: '📝 Free text' }
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Pulse Checks</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Quick surveys to track team sentiment and readiness</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Pulse Checks</h1>
+          <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Surveys and coaching scores for your team</p>
         </div>
-        <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Pulse</Btn>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {tab === 'surveys' && <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Pulse</Btn>}
+          {tab === 'coaching' && selectedRep && <Btn onClick={openCoachModal}><Plus size={16} />Add Score</Btn>}
+        </div>
       </div>
-      {pulses.length === 0 ? (
-        <Card style={{ padding: 40, textAlign: 'center' }}>
-          <div style={{ width: 56, height: 56, borderRadius: 14, background: S.accentBg2, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <Activity size={26} color={S.primary} />
-          </div>
-          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: S.ink, marginBottom: 8 }}>What's a Pulse Check?</h3>
-          <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.6, maxWidth: 480, margin: '0 auto 20px' }}>
-            A lightweight survey you send your reps to gauge how they're feeling — about their ramp, the product, the process, anything. Each pulse has a title and a few questions (1–5 scale). Share the link with your team and watch responses come in.
-          </p>
-          <p style={{ fontSize: 13, color: S.muted, marginBottom: 20 }}>
-            Examples: <em>Week 2 readiness check</em> · <em>Post-SKO sentiment</em> · <em>Are you getting enough deal support?</em>
-          </p>
-          <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create your first pulse</Btn>
-        </Card>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-          {pulses.map(p => (
-            <Card key={p.id} onClick={() => setSelected(p)}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{p.title}</span>
-                <Badge color="purple">{p.questions?.length || 0} Qs</Badge>
-              </div>
-              <div style={{ fontSize: 13, color: S.muted }}>{p.responses?.length || 0} responses</div>
-              <div style={{ fontSize: 12, color: S.muted, marginTop: 4 }}>{new Date(p.created_at).toLocaleDateString()}</div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: S.accentBg, borderRadius: 10, padding: 4, width: 'fit-content' }}>
+        {[{ id: 'surveys', label: '📋 Surveys' }, { id: 'coaching', label: '🎯 Coaching Scores' }].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, background: tab === t.id ? '#fff' : 'transparent', color: tab === t.id ? S.ink : S.muted, boxShadow: tab === t.id ? '0 1px 6px rgba(26,18,53,0.1)' : 'none', transition: 'all 0.15s' }}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* Surveys */}
+      {tab === 'surveys' && (
+        <>
+          {pulses.length === 0 ? (
+            <Card style={{ padding: 48, textAlign: 'center' }}>
+              <div style={{ width: 56, height: 56, borderRadius: 14, background: S.accentBg2, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Activity size={26} color={S.primary} /></div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: S.ink, marginBottom: 8, letterSpacing: '-0.2px' }}>What's a Pulse Check?</h3>
+              <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.65, maxWidth: 480, margin: '0 auto 20px' }}>A lightweight survey you send your reps. Mix rating scales, multiple choice, and free text questions. Share the link and watch responses come in.</p>
+              <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create your first pulse</Btn>
             </Card>
-          ))}
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+              {pulses.map(p => (
+                <Card key={p.id} onClick={() => setSelected(p)}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{ fontWeight: 700, fontSize: 15, color: S.ink, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>{p.title}</span>
+                    <Badge color="purple">{p.questions?.length || 0} Qs</Badge>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                    {(p.questions || []).slice(0, 4).map((q, i) => {
+                      const type = typeof q === 'object' ? q.type : 'rating'
+                      const icons = { rating: '⭐', choice: '☑', text: '📝' }
+                      return <span key={i} style={{ fontSize: 11, color: S.muted, background: S.accentBg, padding: '2px 8px', borderRadius: 100 }}>{icons[type] || '⭐'}</span>
+                    })}
+                  </div>
+                  <div style={{ fontSize: 12, color: S.muted }}>{new Date(p.created_at).toLocaleDateString()}</div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Coaching Scores */}
+      {tab === 'coaching' && (
+        <div style={{ display: 'flex', gap: 20, minHeight: 400 }}>
+          <div style={{ width: 200, background: '#fff', border: `1px solid ${S.borderLight}`, borderRadius: 14, padding: 16, flexShrink: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 13, color: S.ink, marginBottom: 14 }}>Reps</div>
+            {reps.map(r => (
+              <div key={r.id} onClick={() => setSelectedRep(r)} style={{ padding: '10px 12px', borderRadius: 9, marginBottom: 4, cursor: 'pointer', background: selectedRep?.id === r.id ? S.accentBg2 : 'transparent', border: `1px solid ${selectedRep?.id === r.id ? S.primary + '40' : 'transparent'}`, transition: 'all 0.15s' }}>
+                <span style={{ fontWeight: 600, fontSize: 13, color: S.ink }}>{r.name}</span>
+              </div>
+            ))}
+            {reps.length === 0 && <div style={{ fontSize: 13, color: S.muted, lineHeight: 1.5 }}>Add reps in Ramp & Onboarding first</div>}
+          </div>
+          <div style={{ flex: 1 }}>
+            {!selectedRep ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: S.muted }}>Select a rep to view coaching scores</div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <div>
+                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: S.ink, letterSpacing: '-0.3px' }}>{selectedRep.name}</h2>
+                    <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Monthly coaching scores — rate, track, and coach the lows</p>
+                  </div>
+                  <input type="month" value={coachPeriod} onChange={e => setCoachPeriod(e.target.value)} style={{ padding: '8px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', cursor: 'pointer' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+                  {COACHING_AREAS.map(area => {
+                    const score = currentScore?.[area.key]
+                    const sc = score ? scoreColor(score) : { color: S.muted, bg: S.borderLight }
+                    return (
+                      <Card key={area.key} style={{ padding: '18px 16px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 24, marginBottom: 6 }}>{area.icon}</div>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: S.ink, marginBottom: 4 }}>{area.label}</div>
+                        <div style={{ fontSize: 11, color: S.muted, marginBottom: 12, lineHeight: 1.4 }}>{area.desc}</div>
+                        {score ? (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: '50%', background: sc.bg, color: sc.color, fontWeight: 700, fontSize: 20, fontFamily: 'var(--font-display)' }}>{score}</div>
+                        ) : <div style={{ fontSize: 12, color: S.muted, fontStyle: 'italic' }}>Not scored</div>}
+                      </Card>
+                    )
+                  })}
+                </div>
+                {currentScore?.notes && (
+                  <Card style={{ marginBottom: 24, borderLeft: `4px solid ${S.primary}`, paddingLeft: 20 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: S.primary, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Coaching notes · {coachPeriod}</div>
+                    <p style={{ fontSize: 14, color: S.inkSecondary, lineHeight: 1.65 }}>{currentScore.notes}</p>
+                  </Card>
+                )}
+                {allPeriods.length > 0 && (
+                  <Card>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>Score history</div>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                        <thead>
+                          <tr>
+                            <th style={{ textAlign: 'left', color: S.muted, fontWeight: 600, padding: '0 12px 12px 0', fontSize: 12 }}>Period</th>
+                            {COACHING_AREAS.map(a => <th key={a.key} style={{ textAlign: 'center', color: S.muted, fontWeight: 600, padding: '0 12px 12px', fontSize: 12 }}>{a.icon} {a.label}</th>)}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allPeriods.map(([period, data]) => (
+                            <tr key={period} style={{ borderTop: `1px solid ${S.borderLight}` }}>
+                              <td style={{ padding: '10px 12px 10px 0', fontWeight: 600, color: S.ink }}>{period}</td>
+                              {COACHING_AREAS.map(a => {
+                                const sc = data[a.key] ? scoreColor(data[a.key]) : null
+                                return (
+                                  <td key={a.key} style={{ textAlign: 'center', padding: '10px 12px' }}>
+                                    {data[a.key] ? <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', background: sc.bg, color: sc.color, fontWeight: 700, fontSize: 13 }}>{data[a.key]}</span> : <span style={{ color: S.borderLight }}>—</span>}
+                                  </td>
+                                )
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Card>
+                )}
+                {allPeriods.length === 0 && !currentScore && (
+                  <div style={{ textAlign: 'center', color: S.muted, padding: 48 }}>No coaching scores yet for {selectedRep.name}. Use "Add Score" above.</div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
+
+      {/* View pulse modal */}
       {selected && (
         <Modal title={selected.title} onClose={() => setSelected(null)} wide>
-          <div style={{ marginBottom: 16 }}>
-            {(selected.questions || []).map((q, i) => (
-              <div key={i} style={{ marginBottom: 16 }}>
-                <div style={{ color: '#fff', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{i + 1}. {q}</div>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  {[1, 2, 3, 4, 5].map(n => <div key={n} style={{ flex: 1, height: 8, background: n <= 3 ? S.primary + '40' : '#3a3550', borderRadius: 4 }} />)}
+          {(selected.questions || []).map((q, i) => {
+            const isObj = typeof q === 'object' && q !== null
+            const text = isObj ? q.text : q
+            const type = isObj ? q.type : 'rating'
+            const options = isObj ? (q.options || []) : []
+            return (
+              <div key={i} style={{ marginBottom: 20, padding: '14px 16px', background: '#2a2445', borderRadius: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>{i + 1}. {text}</div>
+                  <span style={{ fontSize: 11, color: S.muted, background: '#3a3550', padding: '3px 8px', borderRadius: 100 }}>{typeLabel[type]}</span>
+                </div>
+                {type === 'rating' && <div style={{ display: 'flex', gap: 6 }}>{[1,2,3,4,5].map(n => <div key={n} style={{ flex: 1, height: 8, background: '#3a3550', borderRadius: 4 }} />)}<span style={{ fontSize: 11, color: S.muted, marginLeft: 8, whiteSpace: 'nowrap' }}>1 → 5</span></div>}
+                {type === 'choice' && options.length > 0 && <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{options.map((opt, j) => opt && <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: '#3a3550', borderRadius: 6 }}><div style={{ width: 14, height: 14, borderRadius: 3, border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0 }} /><span style={{ fontSize: 13, color: '#ddd' }}>{opt}</span></div>)}</div>}
+                {type === 'text' && <div style={{ background: '#3a3550', borderRadius: 6, padding: '8px 12px', fontSize: 13, color: S.muted, fontStyle: 'italic' }}>Open text response...</div>}
+              </div>
+            )
+          })}
+          <div style={{ color: S.muted, fontSize: 13, marginTop: 8 }}>Share this pulse check link with your team to collect responses.</div>
+        </Modal>
+      )}
+
+      {/* Create pulse modal */}
+      {showCreate && (
+        <Modal title="Create Pulse Check" onClose={() => setShowCreate(false)} wide>
+          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Week 3 Readiness Check" /></Field>
+          <Field label="Questions">
+            {form.questions.map((q, i) => (
+              <div key={i} style={{ background: '#2a2445', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: q.type === 'choice' ? 12 : 0 }}>
+                  <Input value={q.text} onChange={e => updateQuestion(i, 'text', e.target.value)} placeholder={`Question ${i + 1}`} style={{ flex: 1 }} />
+                  <select value={q.type} onChange={e => updateQuestion(i, 'type', e.target.value)} style={{ background: '#3a3550', border: '1px solid rgba(155,126,255,0.15)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer', flexShrink: 0 }}>
+                    <option value="rating">⭐ Rating 1–5</option>
+                    <option value="choice">☑ Multiple choice</option>
+                    <option value="text">📝 Free text</option>
+                  </select>
+                  {form.questions.length > 1 && <button onClick={() => removeQuestion(i)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', padding: 4 }}><X size={16} /></button>}
+                </div>
+                {q.type === 'choice' && (
+                  <div>
+                    {(q.options || []).map((opt, j) => (
+                      <div key={j} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                        <Input value={opt} onChange={e => updateOption(i, j, e.target.value)} placeholder={`Option ${j + 1}`} />
+                        {q.options.length > 2 && <button onClick={() => removeOption(i, j)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer' }}><X size={14} /></button>}
+                      </div>
+                    ))}
+                    <Btn size="sm" variant="ghost" onClick={() => addOption(i)} style={{ marginTop: 2 }}><Plus size={13} />Add option</Btn>
+                  </div>
+                )}
+              </div>
+            ))}
+            <Btn size="sm" variant="ghost" onClick={addQuestion} style={{ marginTop: 4 }}><Plus size={14} />Add Question</Btn>
+          </Field>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+            <Btn variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Btn>
+            <Btn onClick={savePulse} disabled={!form.title}>Create</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {/* Add coaching score modal */}
+      {showCoachModal && selectedRep && (
+        <Modal title={`Coaching Score — ${selectedRep.name}`} onClose={() => setShowCoachModal(false)} wide>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, padding: '10px 14px', background: '#2a2445', borderRadius: 9 }}>
+            <span style={{ fontSize: 13, color: S.muted }}>Period:</span>
+            <input type="month" value={coachPeriod} onChange={e => setCoachPeriod(e.target.value)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+            {COACHING_AREAS.map(area => (
+              <div key={area.key} style={{ background: '#2a2445', borderRadius: 10, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 20 }}>{area.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#fff', fontSize: 13 }}>{area.label}</div>
+                    <div style={{ fontSize: 11, color: S.muted }}>{area.desc}</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[1,2,3,4,5].map(n => {
+                    const active = coachForm[area.key] >= n
+                    const sc = scoreColor(coachForm[area.key])
+                    return <button key={n} onClick={() => setCoachForm({ ...coachForm, [area.key]: n })} style={{ flex: 1, height: 38, borderRadius: 7, border: 'none', cursor: 'pointer', background: active ? sc.bg : '#3a3550', color: active ? sc.color : S.muted, fontWeight: 700, fontSize: 14, transition: 'all 0.15s' }}>{n}</button>
+                  })}
                 </div>
               </div>
             ))}
           </div>
-          <div style={{ color: S.muted, fontSize: 13 }}>Share this pulse check link with your team to collect responses.</div>
-        </Modal>
-      )}
-      {showCreate && (
-        <Modal title="Create Pulse Check" onClose={() => setShowCreate(false)}>
-          <Field label="Title"><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Week 3 Readiness Check" /></Field>
-          <Field label="Questions">
-            {form.questions.map((q, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <Input value={q} onChange={e => { const qs = [...form.questions]; qs[i] = e.target.value; setForm({ ...form, questions: qs }) }} placeholder={`Question ${i + 1}`} />
-                {form.questions.length > 1 && <button onClick={() => setForm({ ...form, questions: form.questions.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer' }}><X size={16} /></button>}
-              </div>
-            ))}
-            <Btn size="sm" variant="ghost" onClick={() => setForm({ ...form, questions: [...form.questions, ''] })} style={{ marginTop: 4 }}><Plus size={14} />Add Question</Btn>
+          <Field label="Coaching notes">
+            <Textarea value={coachForm.notes} onChange={e => setCoachForm({ ...coachForm, notes: e.target.value })} placeholder="What's working well? What to improve? What to work on with their manager?" rows={3} />
           </Field>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
-            <Btn variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Btn>
-            <Btn onClick={save} disabled={!form.title}>Create</Btn>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Btn variant="ghost" onClick={() => setShowCoachModal(false)}>Cancel</Btn>
+            <Btn onClick={saveCoach} disabled={savingCoach}>{savingCoach ? 'Saving...' : 'Save Score'}</Btn>
           </div>
         </Modal>
       )}
@@ -983,6 +1198,7 @@ function PulseChecks({ userId, workspaceId }) {
   )
 }
 
+// ─── Weekly Planning ──────────────────────────────────────────
 function WeeklyPlanning({ userId, workspaceId }) {
   const [todos, setTodos] = useState([])
   const [adding, setAdding] = useState(null)
@@ -1001,9 +1217,7 @@ function WeeklyPlanning({ userId, workspaceId }) {
     if (!newTask.trim()) return
     const { error } = await supabase.from('todos').insert({ user_id: userId, workspace_id: workspaceId, title: newTask, bucket, done: false })
     if (!handleDbError(error, 'add task')) return
-    setNewTask('')
-    setAdding(null)
-    load()
+    setNewTask(''); setAdding(null); load()
   }
 
   const toggle = async (id, done) => {
@@ -1023,16 +1237,15 @@ function WeeklyPlanning({ userId, workspaceId }) {
     { key: 'should', label: 'Should Do', color: S.warning, bg: '#fffbeb' },
     { key: 'could', label: 'Could Do', color: S.primary, bg: S.accentBg },
   ]
-  const total = todos.length
-  const done = todos.filter(t => t.done).length
+  const total = todos.length; const done = todos.filter(t => t.done).length
 
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink, marginBottom: 4 }}>Weekly Planning</h1>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, marginBottom: 8, letterSpacing: '-0.4px' }}>Weekly Planning</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ flex: 1, maxWidth: 300, height: 6, background: S.borderLight, borderRadius: 3 }}>
-            <div style={{ height: '100%', width: `${total ? (done / total) * 100 : 0}%`, background: S.primary, borderRadius: 3, transition: 'width 0.3s' }} />
+          <div style={{ flex: 1, maxWidth: 280, height: 6, background: S.borderLight, borderRadius: 3 }}>
+            <div style={{ height: '100%', width: `${total ? (done / total) * 100 : 0}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 3, transition: 'width 0.3s' }} />
           </div>
           <span style={{ fontSize: 13, color: S.muted }}>{done}/{total} complete</span>
         </div>
@@ -1041,26 +1254,24 @@ function WeeklyPlanning({ userId, workspaceId }) {
         {buckets.map(b => {
           const items = todos.filter(t => t.bucket === b.key)
           return (
-            <div key={b.key} style={{ background: b.bg, border: `1px solid ${b.color}20`, borderRadius: 12, padding: 16 }}>
+            <div key={b.key} style={{ background: b.bg, border: `1px solid ${b.color}18`, borderRadius: 14, padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <span style={{ fontWeight: 700, fontSize: 14, color: b.color }}>{b.label}</span>
+                <span style={{ fontWeight: 700, fontSize: 14, color: b.color, fontFamily: 'var(--font-display)', letterSpacing: '-0.1px' }}>{b.label}</span>
                 <button onClick={() => setAdding(b.key)} style={{ background: 'none', border: 'none', color: b.color, cursor: 'pointer' }}><Plus size={16} /></button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {items.map(t => (
-                  <div key={t.id} style={{ background: '#fff', borderRadius: 8, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${S.borderLight}` }}>
-                    <div onClick={() => toggle(t.id, t.done)} style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${t.done ? b.color : S.border}`, background: t.done ? b.color : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                  <div key={t.id} style={{ background: '#fff', borderRadius: 9, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${S.borderLight}` }}>
+                    <div onClick={() => toggle(t.id, t.done)} style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${t.done ? b.color : S.border}`, background: t.done ? b.color : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all 0.15s' }}>
                       {t.done && <Check size={11} color="#fff" strokeWidth={3} />}
                     </div>
                     <span style={{ flex: 1, fontSize: 13, color: t.done ? S.muted : S.ink, textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</span>
-                    <button onClick={() => del(t.id)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.5 }}><X size={12} /></button>
+                    <button onClick={() => del(t.id)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', opacity: 0.4 }}><X size={12} /></button>
                   </div>
                 ))}
                 {adding === b.key && (
-                  <div style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', border: `1px solid ${b.color}` }}>
-                    <input autoFocus value={newTask} onChange={e => setNewTask(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') addTask(b.key); if (e.key === 'Escape') setAdding(null) }}
-                      placeholder="Add task..." style={{ width: '100%', border: 'none', outline: 'none', fontSize: 13, fontFamily: 'var(--font-body)', color: S.ink }} />
+                  <div style={{ background: '#fff', borderRadius: 9, padding: '8px 12px', border: `1px solid ${b.color}` }}>
+                    <input autoFocus value={newTask} onChange={e => setNewTask(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addTask(b.key); if (e.key === 'Escape') setAdding(null) }} placeholder="Add task..." style={{ width: '100%', border: 'none', outline: 'none', fontSize: 13, fontFamily: 'var(--font-body)', color: S.ink }} />
                   </div>
                 )}
               </div>
@@ -1072,10 +1283,13 @@ function WeeklyPlanning({ userId, workspaceId }) {
   )
 }
 
+// ─── Forecasting (drag-and-drop kanban) ──────────────────────
 function Forecasting({ userId, workspaceId }) {
   const [items, setItems] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
+  const [dragId, setDragId] = useState(null)
+  const [dragOver, setDragOver] = useState(null)
 
   const load = useCallback(async () => {
     if (!workspaceId) return
@@ -1087,55 +1301,75 @@ function Forecasting({ userId, workspaceId }) {
   useEffect(() => { load() }, [load])
 
   const save = async () => {
-    const payload = { ...form, user_id: userId, workspace_id: workspaceId, eta: form.eta || null }
-    const { error } = await supabase.from('forecast').insert(payload)
+    const { error } = await supabase.from('forecast').insert({ ...form, user_id: userId, workspace_id: workspaceId, eta: form.eta || null })
     if (!handleDbError(error, 'add project')) return
-    setShowModal(false)
-    setForm({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' })
-    load()
+    setShowModal(false); setForm({ title: '', status: 'planned', impact: 'medium', eta: '', notes: '' }); load()
   }
 
   const updateStatus = async (id, status) => {
+    setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i))
     const { error } = await supabase.from('forecast').update({ status }).eq('id', id)
-    if (!handleDbError(error, 'update project')) return
-    load()
+    if (error) { handleDbError(error, 'update project'); load() }
+  }
+
+  const handleDrop = (e, stage) => {
+    e.preventDefault()
+    if (dragId) updateStatus(dragId, stage)
+    setDragId(null); setDragOver(null)
   }
 
   const stages = ['backlog', 'planned', 'in-progress', 'done']
   const stageLabels = { backlog: 'Backlog', planned: 'Planned', 'in-progress': 'In Progress', done: 'Done' }
+  const stageColors = { backlog: S.muted, planned: S.primary, 'in-progress': S.warning, done: S.success }
   const impactColor = { critical: 'red', high: 'yellow', medium: 'purple', low: 'gray' }
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Forecasting</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Enablement project pipeline</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Forecasting</h1>
+          <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Drag cards between columns to move them</p>
         </div>
         <Btn onClick={() => setShowModal(true)}><Plus size={16} />Add Project</Btn>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
         {stages.map(stage => {
           const stageItems = items.filter(i => i.status === stage)
+          const isOver = dragOver === stage
           return (
-            <div key={stage} style={{ background: S.accentBg, borderRadius: 12, padding: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>{stageLabels[stage]}</span>
-                <Badge color="gray">{stageItems.length}</Badge>
+            <div key={stage}
+              onDragOver={e => { e.preventDefault(); setDragOver(stage) }}
+              onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null) }}
+              onDrop={e => handleDrop(e, stage)}
+              style={{ background: isOver ? 'rgba(124,92,252,0.06)' : S.accentBg, border: `2px dashed ${isOver ? S.primary : 'transparent'}`, borderRadius: 14, padding: 14, minHeight: 220, transition: 'all 0.15s' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: stageColors[stage] }} />
+                  <span style={{ fontWeight: 700, fontSize: 13, color: S.ink }}>{stageLabels[stage]}</span>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: S.muted, background: S.borderLight, padding: '2px 8px', borderRadius: 100 }}>{stageItems.length}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {stageItems.map(item => (
-                  <div key={item.id} style={{ background: '#fff', borderRadius: 8, padding: '12px 14px', border: `1px solid ${S.borderLight}` }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 6 }}>{item.title}</div>
+                  <div key={item.id} draggable
+                    onDragStart={e => { setDragId(item.id); e.dataTransfer.effectAllowed = 'move' }}
+                    onDragEnd={() => { setDragId(null); setDragOver(null) }}
+                    style={{ background: '#fff', borderRadius: 10, padding: '12px 14px', border: `1px solid ${S.borderLight}`, cursor: 'grab', opacity: dragId === item.id ? 0.35 : 1, transition: 'opacity 0.15s, box-shadow 0.15s', userSelect: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+                    onMouseEnter={e => { if (dragId !== item.id) e.currentTarget.style.boxShadow = `0 4px 16px rgba(124,92,252,0.14)` }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)' }}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: 13, color: S.ink, marginBottom: 8 }}>{item.title}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Badge color={impactColor[item.impact] || 'gray'}>{item.impact}</Badge>
                       {item.eta && <span style={{ fontSize: 11, color: S.muted }}>{new Date(item.eta).toLocaleDateString()}</span>}
                     </div>
-                    <select value={item.status} onChange={e => updateStatus(item.id, e.target.value)} style={{ marginTop: 8, width: '100%', fontSize: 11, border: `1px solid ${S.border}`, borderRadius: 4, padding: '3px 6px', fontFamily: 'var(--font-body)', color: S.inkSecondary, background: '#fff' }}>
-                      {stages.map(s => <option key={s} value={s}>{stageLabels[s]}</option>)}
-                    </select>
+                    {item.notes && <div style={{ fontSize: 12, color: S.muted, marginTop: 8, lineHeight: 1.5 }}>{item.notes}</div>}
                   </div>
                 ))}
+                {isOver && stageItems.length === 0 && (
+                  <div style={{ padding: '24px 0', textAlign: 'center', color: S.primary, fontSize: 13, fontWeight: 600, border: `1px dashed ${S.primary}50`, borderRadius: 9 }}>Drop here</div>
+                )}
               </div>
             </div>
           )
@@ -1166,6 +1400,7 @@ function Forecasting({ userId, workspaceId }) {
   )
 }
 
+// ─── Leaderboards ─────────────────────────────────────────────
 function Leaderboards({ userId, workspaceId }) {
   const [boards, setBoards] = useState([])
   const [selected, setSelected] = useState(null)
@@ -1186,19 +1421,14 @@ function Leaderboards({ userId, workspaceId }) {
   const createBoard = async () => {
     const { error } = await supabase.from('leaderboards').insert({ ...form, user_id: userId, workspace_id: workspaceId, entries: [] })
     if (!handleDbError(error, 'create leaderboard')) return
-    setShowCreate(false)
-    setForm({ title: '', type: 'weekly', metric: '' })
-    load()
+    setShowCreate(false); setForm({ title: '', type: 'weekly', metric: '' }); load()
   }
 
   const addEntry = async () => {
     const updated = [...(selected.entries || []), { ...entry, value: +entry.value }].sort((a, b) => b.value - a.value)
     const { error } = await supabase.from('leaderboards').update({ entries: updated }).eq('id', selected.id)
     if (!handleDbError(error, 'add entry')) return
-    setSelected({ ...selected, entries: updated })
-    setShowEntry(false)
-    setEntry({ name: '', value: '', unit: '' })
-    load()
+    setSelected({ ...selected, entries: updated }); setShowEntry(false); setEntry({ name: '', value: '', unit: '' }); load()
   }
 
   const medals = ['🥇', '🥈', '🥉']
@@ -1207,8 +1437,8 @@ function Leaderboards({ userId, workspaceId }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Leaderboards</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Track and celebrate rep performance</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Leaderboards</h1>
+          <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Track and celebrate rep performance</p>
         </div>
         <Btn onClick={() => setShowCreate(true)}><Plus size={16} />Create Board</Btn>
       </div>
@@ -1216,7 +1446,7 @@ function Leaderboards({ userId, workspaceId }) {
         {boards.map(b => (
           <Card key={b.id} onClick={() => setSelected(b)}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{ fontWeight: 700, fontSize: 15, color: S.ink }}>{b.title}</span>
+              <span style={{ fontWeight: 700, fontSize: 15, color: S.ink, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>{b.title}</span>
               <Badge color="purple">{b.type}</Badge>
             </div>
             <div style={{ fontSize: 13, color: S.muted, marginBottom: 12 }}>{b.metric}</div>
@@ -1227,7 +1457,7 @@ function Leaderboards({ userId, workspaceId }) {
                   <span style={{ fontSize: 16 }}>{medals[i] || '·'}</span>
                   <span style={{ fontSize: 13, color: S.ink, fontWeight: 600, minWidth: 80 }}>{e.name}</span>
                   <div style={{ flex: 1, height: 6, background: S.borderLight, borderRadius: 3 }}>
-                    <div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: S.primary, borderRadius: 3 }} />
+                    <div style={{ height: '100%', width: `${(e.value / max) * 100}%`, background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 3 }} />
                   </div>
                   <span style={{ fontSize: 12, color: S.primary, fontWeight: 700 }}>{e.value}{e.unit}</span>
                 </div>
@@ -1235,7 +1465,7 @@ function Leaderboards({ userId, workspaceId }) {
             })}
           </Card>
         ))}
-        {boards.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>No leaderboards yet</div>}
+        {boards.length === 0 && <div style={{ color: S.muted, gridColumn: '1/-1', textAlign: 'center', padding: 48 }}>No leaderboards yet</div>}
       </div>
       {selected && (
         <Modal title={selected.title} onClose={() => setSelected(null)} wide>
@@ -1243,7 +1473,7 @@ function Leaderboards({ userId, workspaceId }) {
             {(selected.entries || []).map((e, i) => {
               const max = selected.entries[0]?.value || 1
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, padding: '8px 12px', background: i < 3 ? S.accentBg : 'transparent', borderRadius: 8 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, padding: '8px 12px', background: i < 3 ? S.accentBg : 'transparent', borderRadius: 9 }}>
                   <span style={{ fontSize: 20, minWidth: 28 }}>{medals[i] || `#${i + 1}`}</span>
                   <span style={{ color: '#fff', fontWeight: 700, minWidth: 100 }}>{e.name}</span>
                   <div style={{ flex: 1, height: 8, background: '#3a3550', borderRadius: 4 }}>
@@ -1287,6 +1517,7 @@ function Leaderboards({ userId, workspaceId }) {
   )
 }
 
+// ─── Settings ─────────────────────────────────────────────────
 function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthrough }) {
   const [members, setMembers] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
@@ -1296,28 +1527,16 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
 
   useEffect(() => {
     if (!workspaceId) return
-    supabase.from('workspaces').select('name').eq('id', workspaceId).single().then(({ data }) => {
-      if (data) setWorkspaceName(data.name)
-    })
-    supabase.from('workspace_members').select('*').eq('workspace_id', workspaceId).then(({ data }) => {
-      setMembers(data || [])
-    })
+    supabase.from('workspaces').select('name').eq('id', workspaceId).single().then(({ data }) => { if (data) setWorkspaceName(data.name) })
+    supabase.from('workspace_members').select('*').eq('workspace_id', workspaceId).then(({ data }) => { setMembers(data || []) })
   }, [workspaceId])
 
   const sendInvite = async () => {
     if (!inviteEmail.trim() || !inviteEmail.includes('@')) { setInviteStatus('error'); return }
-    const already = members.find(m => m.invited_email?.toLowerCase() === inviteEmail.trim().toLowerCase())
-    if (already) { setInviteStatus('error'); return }
-    const { error } = await supabase.from('workspace_members').insert({
-      workspace_id: workspaceId,
-      user_id: user.id,
-      role: inviteRole,
-      invited_email: inviteEmail.trim().toLowerCase(),
-    })
+    if (members.find(m => m.invited_email?.toLowerCase() === inviteEmail.trim().toLowerCase())) { setInviteStatus('error'); return }
+    const { error } = await supabase.from('workspace_members').insert({ workspace_id: workspaceId, user_id: user.id, role: inviteRole, invited_email: inviteEmail.trim().toLowerCase() })
     if (error) { setInviteStatus('error'); return }
-    setInviteEmail('')
-    setInviteRole('member')
-    setInviteStatus('sent')
+    setInviteEmail(''); setInviteRole('member'); setInviteStatus('sent')
     setTimeout(() => setInviteStatus(''), 3000)
     supabase.from('workspace_members').select('*').eq('workspace_id', workspaceId).then(({ data }) => setMembers(data || []))
   }
@@ -1330,16 +1549,17 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
   return (
     <div>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Settings</h1>
-        <p style={{ color: S.muted, fontSize: 14 }}>Manage your workspace and team</p>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Settings</h1>
+        <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Manage your workspace and team</p>
       </div>
+
       <Card style={{ marginBottom: 16 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}`, fontFamily: 'var(--font-display)' }}>Team Members</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 18, paddingBottom: 14, borderBottom: `1px solid ${S.borderLight}`, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>Team Members</h3>
         <div style={{ marginBottom: 20 }}>
           {members.map((m, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: `1px solid ${S.borderLight}` }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>{(m.invited_email || user.email)?.[0]?.toUpperCase()}</span>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>{(m.invited_email || user.email)?.[0]?.toUpperCase()}</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: S.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1350,20 +1570,18 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', background: m.role === 'admin' ? S.accentBg2 : S.borderLight, color: m.role === 'admin' ? S.primary : S.muted }}>{m.role}</span>
                 {m.user_id !== user.id && userRole === 'admin' && (
-                  <button onClick={() => removeMember(m.id)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', fontSize: 18, lineHeight: 1 }}
-                    onMouseEnter={e => e.currentTarget.style.color = S.error}
-                    onMouseLeave={e => e.currentTarget.style.color = S.muted}>×</button>
+                  <button onClick={() => removeMember(m.id)} style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', fontSize: 18, lineHeight: 1 }} onMouseEnter={e => e.currentTarget.style.color = S.error} onMouseLeave={e => e.currentTarget.style.color = S.muted}>×</button>
                 )}
               </div>
             </div>
           ))}
         </div>
         {userRole === 'admin' && (
-          <div style={{ background: S.accentBg, borderRadius: 10, padding: 16 }}>
+          <div style={{ background: S.accentBg, borderRadius: 11, padding: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: S.inkSecondary, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Invite someone</div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
               <input value={inviteEmail} onChange={e => { setInviteEmail(e.target.value); setInviteStatus('') }} onKeyDown={e => e.key === 'Enter' && sendInvite()} placeholder="colleague@company.com"
-                style={{ flex: 1, padding: '9px 12px', border: `1px solid ${inviteStatus === 'error' ? S.error : S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff' }}
+                style={{ flex: 1, padding: '9px 12px', border: `1px solid ${inviteStatus === 'error' ? S.error : S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', transition: 'border-color 0.15s' }}
                 onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = inviteStatus === 'error' ? S.error : S.border} />
               <select value={inviteRole} onChange={e => setInviteRole(e.target.value)} style={{ padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', cursor: 'pointer' }}>
                 <option value="member">Member</option>
@@ -1371,22 +1589,23 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
               </select>
               <Btn onClick={sendInvite}>Invite</Btn>
             </div>
-            <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.65 }}>
               <strong>Admin</strong> — full access, can invite & manage members.<br />
-              <strong>Member</strong> — can use all features, cannot change settings.
+              <strong>Member</strong> — full features, cannot change settings.
             </div>
-            {inviteStatus === 'sent' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#d1fae5', borderRadius: 7, fontSize: 13, color: S.success, fontWeight: 600 }}>✓ Invite saved — they'll join this workspace when they sign up with that email.</div>}
-            {inviteStatus === 'error' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#fee2e2', borderRadius: 7, fontSize: 13, color: S.error, fontWeight: 600 }}>Enter a valid email that isn't already in the workspace.</div>}
+            {inviteStatus === 'sent' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#d1fae5', borderRadius: 8, fontSize: 13, color: S.success, fontWeight: 600 }}>✓ Invite saved — they'll join this workspace when they sign up with that email.</div>}
+            {inviteStatus === 'error' && <div style={{ marginTop: 10, padding: '8px 12px', background: '#fee2e2', borderRadius: 8, fontSize: 13, color: S.error, fontWeight: 600 }}>Enter a valid email that isn't already in the workspace.</div>}
           </div>
         )}
       </Card>
+
       {[
         { title: 'Workspace', items: [{ label: 'Workspace Name', value: workspaceName }, { label: 'Account Email', value: user?.email }, { label: 'Your Role', value: userRole }] },
-        { title: 'Integrations', items: [{ label: 'CRM (Salesforce/HubSpot)', value: 'Coming soon', badge: 'soon' }, { label: 'Gong', value: 'Coming soon', badge: 'soon' }, { label: 'Slack', value: 'Coming soon', badge: 'soon' }, { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' }] },
+        { title: 'Integrations', items: [{ label: 'CRM (Salesforce / HubSpot)', value: 'Coming soon', badge: 'soon' }, { label: 'Gong', value: 'Coming soon', badge: 'soon' }, { label: 'Slack', value: 'Coming soon', badge: 'soon' }, { label: 'Google Calendar', value: 'Coming soon', badge: 'soon' }] },
         { title: 'Platform', items: [{ label: 'AI Engine', value: 'Claude Sonnet (Anthropic)' }, { label: 'Version', value: 'EnableOS 1.0 Beta' }] },
       ].map(group => (
         <Card key={group.title} style={{ marginBottom: 16 }}>
-          <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}` }}>{group.title}</h3>
+          <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${S.borderLight}`, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>{group.title}</h3>
           {group.items.map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${S.borderLight}` }}>
               <span style={{ fontSize: 14, color: S.inkSecondary }}>{item.label}</span>
@@ -1398,18 +1617,18 @@ function SettingsPanel({ user, workspaceId, userRole, onSignOut, onReplayWalkthr
           ))}
         </Card>
       ))}
-      <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={onReplayWalkthrough} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', color: S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+
+      <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+        <button onClick={onReplayWalkthrough} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: `1px solid ${S.border}`, background: 'transparent', color: S.inkSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = S.primary; e.currentTarget.style.color = S.primary }} onMouseLeave={e => { e.currentTarget.style.borderColor = S.border; e.currentTarget.style.color = S.inkSecondary }}>
           <Sparkles size={14} />Replay Walkthrough
         </button>
-        <Btn variant="danger" onClick={onSignOut} style={{ background: '#fef2f2', color: S.error, border: '1px solid #fecaca' }}>
-          <LogOut size={16} />Sign Out
-        </Btn>
+        <Btn variant="danger" onClick={onSignOut}><LogOut size={16} />Sign Out</Btn>
       </div>
     </div>
   )
 }
 
+// ─── Feature Requests ─────────────────────────────────────────
 function FeatureRequests() {
   const [submitted, setSubmitted] = useState(false)
   const [voted, setVoted] = useState([])
@@ -1433,10 +1652,9 @@ function FeatureRequests() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: S.ink }}>Feature Requests</h1>
-          <p style={{ color: S.muted, fontSize: 14 }}>Vote on what we build next, or suggest something new</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: S.ink, letterSpacing: '-0.4px' }}>Feature Requests</h1>
+          <p style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>Vote on what we build next, or suggest something new</p>
         </div>
-        <a href="/feature-requests" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: S.primary, textDecoration: 'none', fontWeight: 600 }}>Public page →</a>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
         <div>
@@ -1447,7 +1665,7 @@ function FeatureRequests() {
               const hasVoted = voted.includes(i)
               return (
                 <Card key={i} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <button onClick={() => vote(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hasVoted ? S.accentBg2 : S.accentBg, border: `1px solid ${hasVoted ? S.primary : S.border}`, borderRadius: 8, padding: '7px 10px', cursor: hasVoted ? 'default' : 'pointer', minWidth: 48 }}>
+                  <button onClick={() => vote(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hasVoted ? S.accentBg2 : S.accentBg, border: `1px solid ${hasVoted ? S.primary : S.border}`, borderRadius: 9, padding: '7px 10px', cursor: hasVoted ? 'default' : 'pointer', minWidth: 48, transition: 'all 0.15s' }}>
                     <Star size={13} color={hasVoted ? S.primary : S.muted} fill={hasVoted ? S.primary : 'none'} strokeWidth={2} />
                     <span style={{ fontSize: 12, fontWeight: 700, color: hasVoted ? S.primary : S.muted }}>{votes[i]}</span>
                   </button>
@@ -1465,21 +1683,21 @@ function FeatureRequests() {
         </div>
         <div>
           <Card>
-            <h3 style={{ fontWeight: 700, fontSize: 14, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)' }}>{submitted ? '✓ Thanks!' : 'Suggest a feature'}</h3>
+            <h3 style={{ fontWeight: 700, fontSize: 15, color: S.ink, marginBottom: 16, fontFamily: 'var(--font-display)', letterSpacing: '-0.2px' }}>{submitted ? '✓ Thanks!' : 'Suggest a feature'}</h3>
             {submitted ? (
               <div>
-                <p style={{ fontSize: 13, color: S.muted, marginBottom: 14, lineHeight: 1.6 }}>We read every request. If it fits the roadmap, it'll show up on the board.</p>
+                <p style={{ fontSize: 13, color: S.muted, marginBottom: 14, lineHeight: 1.65 }}>We read every request. If it fits the roadmap, it'll show up on the board.</p>
                 <Btn size="sm" variant="ghost" onClick={() => { setSubmitted(false); setForm({ title: '', description: '', category: 'Platform' }) }}>Submit another</Btn>
               </div>
             ) : (
               <div>
-                <Field label="Title"><input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What should we build?" style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
+                <Field label="Title"><input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="What should we build?" style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', transition: 'border-color 0.15s' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
                 <Field label="Category">
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {categories.map(c => <button type="button" key={c} onClick={() => setForm({ ...form, category: c })} style={{ padding: '4px 10px', borderRadius: 100, border: `1px solid ${form.category === c ? S.primary : S.border}`, background: form.category === c ? S.accentBg2 : '#fff', color: form.category === c ? S.primary : S.inkSecondary, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>)}
+                    {categories.map(c => <button type="button" key={c} onClick={() => setForm({ ...form, category: c })} style={{ padding: '4px 10px', borderRadius: 100, border: `1px solid ${form.category === c ? S.primary : S.border}`, background: form.category === c ? S.accentBg2 : '#fff', color: form.category === c ? S.primary : S.inkSecondary, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>{c}</button>)}
                   </div>
                 </Field>
-                <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What problem does it solve?" rows={3} style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', resize: 'vertical' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
+                <Field label="Why do you need this?"><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What problem does it solve?" rows={3} style={{ width: '100%', padding: '9px 12px', border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', color: S.ink, background: '#fff', resize: 'vertical', transition: 'border-color 0.15s' }} onFocus={e => e.target.style.borderColor = S.primary} onBlur={e => e.target.style.borderColor = S.border} /></Field>
                 <Btn onClick={() => form.title && setSubmitted(true)} disabled={!form.title} style={{ width: '100%', justifyContent: 'center' }}>Submit Request</Btn>
               </div>
             )}
@@ -1490,6 +1708,7 @@ function FeatureRequests() {
   )
 }
 
+// ─── Nav config ───────────────────────────────────────────────
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'CORE' },
   { id: 'intake', label: 'Intake', icon: Inbox, group: 'CORE' },
@@ -1505,6 +1724,7 @@ const NAV = [
   { id: 'featurereqs', label: 'Feature Requests', icon: Star, group: null },
 ]
 
+// ─── App ──────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -1518,46 +1738,30 @@ export default function App() {
     async function init() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
-      const user = session.user
-      setUser(user)
-      const { data: membership } = await supabase
-        .from('workspace_members')
-        .select('workspace_id, role')
-        .eq('user_id', user.id)
-        .single()
+      const user = session.user; setUser(user)
+      const { data: membership } = await supabase.from('workspace_members').select('workspace_id, role').eq('user_id', user.id).single()
       if (membership) {
-        setWorkspaceId(membership.workspace_id)
-        setUserRole(membership.role)
-        setLoading(false)
+        setWorkspaceId(membership.workspace_id); setUserRole(membership.role); setLoading(false)
         const seen = localStorage.getItem(`eos_walked_${user.id}`)
-        if (!seen) {
-          setTimeout(() => setShowWalkthrough(true), 600)
-          localStorage.setItem(`eos_walked_${user.id}`, '1')
-        }
+        if (!seen) { setTimeout(() => setShowWalkthrough(true), 600); localStorage.setItem(`eos_walked_${user.id}`, '1') }
       } else {
-        await supabase.auth.signOut()
-        router.push('/login?error=no_workspace')
+        await supabase.auth.signOut(); router.push('/login?error=no_workspace')
       }
     }
     init()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) init()
-    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => { if (event === 'SIGNED_IN' && session) init() })
     return () => subscription.unsubscribe()
   }, [router])
 
-  const signOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+  const signOut = async () => { await supabase.auth.signOut(); router.push('/login') }
 
   if (loading) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: S.canvas }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Zap size={20} color="#fff" />
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Zap size={22} color="#fff" />
         </div>
-        <div style={{ color: S.muted, fontSize: 14 }}>Loading EnableOS...</div>
+        <div style={{ color: S.muted, fontSize: 14, fontFamily: 'sans-serif' }}>Loading EnableOS...</div>
       </div>
     </div>
   )
@@ -1583,63 +1787,90 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
-      {showWalkthrough && <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab} />}
-      <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-        <a href="/" title="Back to enableos.app" style={{ display: 'block', padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none', cursor: 'pointer' }}>
-          <SidebarLogo />
-        </a>
-        <nav style={{ flex: 1, padding: '16px 12px' }}>
-          {['CORE', 'OPERATIONS'].map(group => (
-            <div key={group} style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', padding: '0 8px', marginBottom: 6 }}>{group}</div>
-              {NAV.filter(n => n.group === group).map(item => {
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Sora:wght@300;400;500;600;700&display=swap');
+        :root { --font-display: 'Libre Baskerville', Georgia, serif; --font-body: 'Sora', sans-serif; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; background: ${S.canvas}; }
+        input, select, textarea, button { font-family: var(--font-body); }
+        a { text-decoration: none; }
+        @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+      `}</style>
+
+      <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
+        {showWalkthrough && <Walkthrough onClose={() => setShowWalkthrough(false)} onNavigate={setActiveTab} />}
+
+        {/* Sidebar */}
+        <div style={{ width: S.sidebar.width, background: S.sidebar.background, display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
+          <a href="/" title="Back to enableos.app" style={{ display: 'block', padding: '20px 16px 16px', borderBottom: '1px solid rgba(155,126,255,0.14)', background: 'linear-gradient(180deg, rgba(124,92,252,0.07), transparent)', textDecoration: 'none', cursor: 'pointer' }}>
+            <SidebarLogo />
+          </a>
+
+          <nav style={{ flex: 1, padding: '16px 12px' }}>
+            {['CORE', 'OPERATIONS'].map(group => (
+              <div key={group} style={{ marginBottom: 24 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.12em', padding: '0 8px', marginBottom: 6, textTransform: 'uppercase' }}>{group}</div>
+                {NAV.filter(n => n.group === group).map(item => {
+                  const active = activeTab === item.id
+                  return (
+                    <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? 'linear-gradient(90deg, rgba(124,92,252,0.22), rgba(124,92,252,0.06))' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', marginBottom: 2, transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primaryHover}` : '2px solid transparent' }}
+                      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)' } }}
+                      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.48)' } }}
+                    >
+                      <item.icon size={16} />{item.label}
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
+
+            <div style={{ borderTop: '1px solid rgba(155,126,255,0.1)', paddingTop: 16 }}>
+              {NAV.filter(n => n.group === null).map(item => {
                 const active = activeTab === item.id
                 return (
-                  <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? `${S.primary}25` : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', marginBottom: 2, transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent' }}>
+                  <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? 'linear-gradient(90deg, rgba(124,92,252,0.22), rgba(124,92,252,0.06))' : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primaryHover}` : '2px solid transparent', marginBottom: 2 }}
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)' } }}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.48)' } }}
+                  >
                     <item.icon size={16} />{item.label}
                   </button>
                 )
               })}
+              <a href="/roadmap" target="_blank" rel="noreferrer" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, color: 'rgba(255,255,255,0.48)', fontSize: 13, fontWeight: 400, fontFamily: 'var(--font-body)', textDecoration: 'none', borderLeft: '2px solid transparent', marginTop: 2, transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.48)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <TrendingUp size={16} />Roadmap
+              </a>
             </div>
-          ))}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
-            {NAV.filter(n => n.group === null).map(item => {
-              const active = activeTab === item.id
-              return (
-                <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: active ? `${S.primary}25` : 'transparent', color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: active ? 600 : 400, fontFamily: 'var(--font-body)', transition: 'all 0.15s', textAlign: 'left', borderLeft: active ? `2px solid ${S.primary}` : '2px solid transparent' }}>
-                  <item.icon size={16} />{item.label}
-                </button>
-              )
-            })}
-            <a href="/roadmap" target="_blank" rel="noreferrer" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 400, fontFamily: 'var(--font-body)', textDecoration: 'none', borderLeft: '2px solid transparent', marginTop: 2 }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = `${S.primary}25` }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'transparent' }}
-            >
-              <TrendingUp size={16} />Roadmap
-            </a>
-          </div>
-        </nav>
-        <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          {user?.email === ADMIN_EMAIL && <WorkspaceSwitcher current="personal" />}
-          <button onClick={() => setShowWalkthrough(true)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 7, border: 'none', background: 'rgba(124,92,252,0.12)', color: '#BDA9FF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
-            <Sparkles size={12} />Replay walkthrough
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>{user?.email?.[0]?.toUpperCase()}</span>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{userRole === 'admin' ? 'Admin' : 'Member'}</div>
+          </nav>
+
+          {/* Sidebar footer */}
+          <div style={{ padding: '14px 16px 18px', borderTop: '1px solid rgba(155,126,255,0.1)' }}>
+            {user?.email === ADMIN_EMAIL && <WorkspaceSwitcher current="personal" />}
+            <button onClick={() => setShowWalkthrough(true)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 7, border: 'none', background: 'rgba(124,92,252,0.12)', color: '#BDA9FF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 12, transition: 'background 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,92,252,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(124,92,252,0.12)'}>
+              <Sparkles size={12} />Replay walkthrough
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>{user?.email?.[0]?.toUpperCase()}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)' }}>{userRole === 'admin' ? 'Admin' : 'Member'}</div>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Main content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '36px 40px' }}>
+          {renderView()}
+        </div>
       </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '32px 36px' }}>
-        {renderView()}
-      </div>
-      <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
-    </div>
+    </>
   )
 }
