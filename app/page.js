@@ -59,7 +59,7 @@ export default function Page() {
         </div>
         <div className="v6-scroll-hint">Scroll ↓</div>
         <div className="v6-content">
-          <nav className="v6-nav"><Logo /><div className="v6-navlinks"><a href="#how-it-works">How it works</a><a href="#who-its-for">Who it&apos;s for</a><a href="#faq">FAQ</a><a href="/login">Log in</a><a href="https://calendly.com/enableos-hq/30min" target="_blank" rel="noreferrer" className="v6-cta-nav">Book a call</a></div></nav>
+          <nav className="v6-nav"><Logo /><div className="v6-navlinks"><a href="#how-it-works">How it works</a><a href="#who-its-for">Who it&apos;s for</a><a href="#faq">FAQ</a><a href="/consulting">Consulting</a><a href="/login">Log in</a><a href="https://calendly.com/enableos-hq/30min" target="_blank" rel="noreferrer" className="v6-cta-nav">Book a call</a></div></nav>
 
           <section className="v6-section v6-hero"><div>
             <span className="v6-eyebrow">Sales enablement consulting + platform</span>
