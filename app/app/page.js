@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, Inbox, Users, MessageSquare, BookOpe
+  LayoutDashboard, Inbox, Users, MessageSquare, BookOpen
   Video, Activity, Calendar, TrendingUp, Trophy, Settings,
   LogOut, Plus, X, ChevronRight, Zap, Check,
   Sparkles, Target, Star, Loader, Trash2, Info
