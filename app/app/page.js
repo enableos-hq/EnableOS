@@ -331,8 +331,8 @@ function Dashboard({ userId, workspaceId, onNavigate }) {
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: S.ink, marginBottom: 6, letterSpacing: '-0.5px' }}>Good morning 👋</h1>
-        <p style={{ color: S.inkSecondary, fontSize: 15, fontWeight: 300 }}>Here&apos;s what&apos;s happening with your team today.</p>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: S.ink, marginBottom: 6, letterSpacing: '-0.5px' }}>{new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening'} 👋</h1>
+        <p style={{ color: S.inkSecondary, fontSize: 15, fontWeight: 300 }}>Here&apos;s what&apos;s happening — {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
       </div>
       {loading ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : (
         <>
@@ -447,12 +447,16 @@ export default function App() {
   const signOut = async () => { await supabase.auth.signOut(); router.push('/login') }
 
   if (loading) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: S.canvas }}>
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: S.ink }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${S.primary}, #a78bfa)`, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Zap size={22} color="#fff" />
+        <div style={{ margin: '0 auto 24px' }}><SidebarLogo /></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
+          <Loader size={16} color={S.primaryLight} style={{ animation: 'spin 1s linear infinite' }} />
+          <span style={{ color: S.primaryLight, fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 500 }}>Setting up your workspace...</span>
         </div>
-        <div style={{ color: S.muted, fontSize: 14, fontFamily: 'sans-serif' }}>Loading EnableOS...</div>
+        <div style={{ marginTop: 16, height: 3, width: 180, background: 'rgba(124,92,252,0.15)', borderRadius: 2, overflow: 'hidden', margin: '16px auto 0' }}>
+          <div style={{ height: '100%', width: '60%', background: `linear-gradient(90deg, ${S.primary}, ${S.primaryHover})`, borderRadius: 2, animation: 'loadBar 1.5s ease-in-out infinite' }} />
+        </div>
       </div>
     </div>
   )
@@ -486,7 +490,8 @@ export default function App() {
         body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; background: ${S.canvas}; }
         input, select, textarea, button { font-family: var(--font-body); }
         a { text-decoration: none; }
-        @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+        @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }      
+        @keyframes loadBar { 0% { width: 0%; margin-left: 0% } 50% { width: 60%; margin-left: 20% } 100% { width: 0%; margin-left: 100% } }
         @keyframes toastIn { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
       `}</style>
       <div style={{ display: 'flex', height: '100vh', background: S.canvas, overflow: 'hidden' }}>
