@@ -5,6 +5,17 @@ import { createClient } from '../../lib/supabase'
 
 const supabase = createClient()
 
+const fieldStyle = {
+  width: '100%', background: '#1a1235', border: '1px solid #3a3550',
+  borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14,
+  fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box'
+}
+
+const labelStyle = {
+  display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 12,
+  fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em'
+}
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -13,24 +24,24 @@ function LoginForm() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [company, setCompany] = useState('')
+  const [role, setRole] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [mode, setMode] = useState('login')
 
   useEffect(() => {
-    // Check if user already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) router.push(next)
     })
-
-    // Listen for auth state changes (handles implicit flow token in URL hash)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         router.push(next)
       }
     })
-
     return () => subscription.unsubscribe()
   }, [next, router])
 
@@ -58,11 +69,32 @@ function LoginForm() {
       if (error) { setErrorMsg(error.message); setLoading(false) }
       else router.push(next)
     } else {
-      const { error } = await supabase.auth.signUp({ email, password })
+      if (!firstName.trim() || !lastName.trim()) {
+        setErrorMsg('First and last name are required')
+        setLoading(false)
+        return
+      }
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            company: company.trim(),
+            role: role,
+            full_name: `${firstName.trim()} ${lastName.trim()}`
+          }
+        }
+      })
       if (error) { setErrorMsg(error.message); setLoading(false) }
       else router.push(next)
     }
   }
+
+  const canSubmit = mode === 'login'
+    ? email && password
+    : email && password && firstName.trim() && lastName.trim()
 
   return (
     <div style={{
@@ -96,7 +128,7 @@ function LoginForm() {
           {mode === 'login' ? 'Welcome back' : 'Create your account'}
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', marginBottom: 28 }}>
-          {mode === 'login' ? 'Sign in to your workspace' : 'Start your enablement OS'}
+          {mode === 'login' ? 'Sign in to your workspace' : 'Tell us a bit about yourself'}
         </p>
 
         {(error || errorMsg) && (
@@ -137,34 +169,85 @@ function LoginForm() {
           <div style={{ flex: 1, height: 1, background: '#3a3550' }} />
         </div>
 
-        {/* Email/Password */}
+        {/* Signup-only fields */}
+        {mode === 'signup' && (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+              <div>
+                <label style={labelStyle}>First name *</label>
+                <input
+                  type="text" value={firstName} onChange={e => setFirstName(e.target.value)}
+                  placeholder="Vedika"
+                  style={fieldStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Last name *</label>
+                <input
+                  type="text" value={lastName} onChange={e => setLastName(e.target.value)}
+                  placeholder="Agarwal"
+                  style={fieldStyle}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Company</label>
+              <input
+                type="text" value={company} onChange={e => setCompany(e.target.value)}
+                placeholder="Your company name"
+                style={fieldStyle}
+              />
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Your role</label>
+              <select
+                value={role} onChange={e => setRole(e.target.value)}
+                style={{ ...fieldStyle, cursor: 'pointer', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%239B7EFF\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', paddingRight: 36 }}
+              >
+                <option value="" style={{ color: '#666' }}>Select your role</option>
+                <option value="Sales Enablement">Sales Enablement</option>
+                <option value="Sales Leader">Sales Leader / Manager</option>
+                <option value="RevOps">Revenue Operations</option>
+                <option value="SDR Manager">SDR Manager</option>
+                <option value="Founder">Founder / CEO</option>
+                <option value="GTM">GTM / Growth</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        {/* Email */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</label>
+          <label style={labelStyle}>Email</label>
           <input
             type="email" value={email} onChange={e => setEmail(e.target.value)}
             placeholder="you@company.com"
-            style={{ width: '100%', background: '#1a1235', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+            style={fieldStyle}
           />
         </div>
 
+        {/* Password */}
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Password</label>
+          <label style={labelStyle}>Password</label>
           <input
             type="password" value={password} onChange={e => setPassword(e.target.value)}
             placeholder="••••••••"
-            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-            style={{ width: '100%', background: '#1a1235', border: '1px solid #3a3550', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+            onKeyDown={e => e.key === 'Enter' && canSubmit && handleSubmit()}
+            style={fieldStyle}
           />
         </div>
 
         <button
           onClick={handleSubmit}
-          disabled={loading || !email || !password}
+          disabled={loading || !canSubmit}
           style={{
             width: '100%', padding: '12px 16px', borderRadius: 10,
             border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #9B7EFF)',
             color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-            fontFamily: 'inherit', opacity: (loading || !email || !password) ? 0.6 : 1
+            fontFamily: 'inherit', opacity: (loading || !canSubmit) ? 0.6 : 1
           }}
         >
           {loading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
