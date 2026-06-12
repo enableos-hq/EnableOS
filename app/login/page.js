@@ -177,7 +177,7 @@ function LoginForm() {
                 <label style={labelStyle}>First name *</label>
                 <input
                   type="text" value={firstName} onChange={e => setFirstName(e.target.value)}
-                  placeholder="Vedika"
+                  placeholder="First name"
                   style={fieldStyle}
                 />
               </div>
@@ -185,7 +185,7 @@ function LoginForm() {
                 <label style={labelStyle}>Last name *</label>
                 <input
                   type="text" value={lastName} onChange={e => setLastName(e.target.value)}
-                  placeholder="Agarwal"
+                  placeholder="Last name"
                   style={fieldStyle}
                 />
               </div>
